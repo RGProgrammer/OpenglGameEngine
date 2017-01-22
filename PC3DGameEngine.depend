@@ -1,0 +1,237 @@
+# depslib dependency file v1.0
+1481401152 source:d:\rami\projects\pc projects\pc3dgameengine\core\baseactors\baseactor.cpp
+	"BaseActor.h"
+
+1478699010 d:\rami\projects\pc projects\pc3dgameengine\core\baseactors\baseactor.h
+	"..//Common//BasePrimitiveTypes.h"
+	"..//Common//Math.h"
+	<stdlib.h>
+	<stdio.h>
+
+1481454549 d:\rami\projects\pc projects\pc3dgameengine\core\\common\\baseprimitivetypes.h
+
+1480884109 d:\rami\projects\pc projects\pc3dgameengine\core\\common\\math.h
+	"BasePrimitiveTypes.h"
+	<math.h>
+
+1480090531 source:d:\rami\projects\pc projects\pc3dgameengine\core\baseactors\dynamic.cpp
+	".//Dynamic.h"
+
+1478275361 d:\rami\projects\pc projects\pc3dgameengine\core\baseactors\\dynamic.h
+	".//BaseActor.h"
+
+1478699010 d:\rami\projects\pc projects\pc3dgameengine\core\baseactors\\\baseactor.h
+	"..//Common//BasePrimitiveTypes.h"
+	"..//Common//Math.h"
+	<stdlib.h>
+	<stdio.h>
+
+1480091096 source:d:\rami\projects\pc projects\pc3dgameengine\core\baseactors\physical.cpp
+	".//Physical.h"
+
+1480092990 d:\rami\projects\pc projects\pc3dgameengine\core\baseactors\\physical.h
+	".//Dynamic.h"
+	"..//Physics//PhysicsEngine.h"
+
+1478275361 d:\rami\projects\pc projects\pc3dgameengine\core\baseactors\\\dynamic.h
+	".//BaseActor.h"
+
+1478699010 d:\rami\projects\pc projects\pc3dgameengine\core\baseactors\\\\baseactor.h
+	"..//Common//BasePrimitiveTypes.h"
+	"..//Common//Math.h"
+	<stdlib.h>
+	<stdio.h>
+
+1484853148 source:d:\rami\projects\pc projects\pc3dgameengine\core\baseactors\renderable.cpp
+	".//Renderable.h"
+
+1484853107 d:\rami\projects\pc projects\pc3dgameengine\core\baseactors\\renderable.h
+	".//BaseActor.h"
+	"..//Graphics//glHeaders.h"
+	"..//Graphics//GLRenderer.h"
+	"..//Scene//Camera.h"
+
+1480091745 source:d:\rami\projects\pc projects\pc3dgameengine\core\common\stringop.cpp
+	"StringOP.h"
+
+1480091762 d:\rami\projects\pc projects\pc3dgameengine\core\common\stringop.h
+	".//BasePrimitiveTypes.h"
+	<stdlib.h>
+	<stdio.h>
+	<string.h>
+
+1481454549 d:\rami\projects\pc projects\pc3dgameengine\core\common\\baseprimitivetypes.h
+
+1471177886 source:d:\rami\projects\pc projects\pc3dgameengine\core\common\timer.cpp
+	"Timer.h"
+
+1471177886 d:\rami\projects\pc projects\pc3dgameengine\core\common\timer.h
+	<sys/time.h>
+
+1485119426 source:d:\rami\projects\pc projects\pc3dgameengine\core\graphics\glrenderer.cpp
+	".//GLRenderer.h"
+
+1485117376 d:\rami\projects\pc projects\pc3dgameengine\core\graphics\\glrenderer.h
+	"..//Common//BasePrimitiveTypes.h"
+	"..//BaseActors//Renderable.h"
+	"..//Scene//GameScene.h"
+	".//Window.h"
+	<string.h>
+
+1484847027 d:\rami\projects\pc projects\pc3dgameengine\core\graphics\\\window.h
+	"..//Common//BasePrimitiveTypes.h"
+	"glHeaders.h"
+
+1484846080 d:\rami\projects\pc projects\pc3dgameengine\core\graphics\\\glheaders.h
+	"..//..//tools//glew//glew.h"
+	"..//..//tools//glfw//glfw3.h"
+
+1485111563 source:d:\rami\projects\pc projects\pc3dgameengine\core\graphics\model3d.cpp
+	".//Model3D.h"
+
+1484852977 d:\rami\projects\pc projects\pc3dgameengine\core\graphics\\model3d.h
+	"..//..//tools//SOIL//SOIL.h"
+	"..//..//tools//assimp//scene.h"
+	"..//..//tools//assimp//cimport.h"
+	"..//..//tools//assimp//postprocess.h"
+	"..//Common//StringOP.h"
+	"..//BaseActors//Renderable.h"
+	".//GLRenderer.h"
+
+1485117376 d:\rami\projects\pc projects\pc3dgameengine\core\graphics\\\glrenderer.h
+	"..//Common//BasePrimitiveTypes.h"
+	"..//BaseActors//Renderable.h"
+	"..//Scene//GameScene.h"
+	".//Window.h"
+	<string.h>
+
+1484847027 d:\rami\projects\pc projects\pc3dgameengine\core\graphics\\\\window.h
+	"..//Common//BasePrimitiveTypes.h"
+	"glHeaders.h"
+
+1484846080 d:\rami\projects\pc projects\pc3dgameengine\core\graphics\\\\glheaders.h
+	"..//..//tools//glew//glew.h"
+	"..//..//tools//glfw//glfw3.h"
+
+1484847029 source:d:\rami\projects\pc projects\pc3dgameengine\core\graphics\window.cpp
+	"Window.h"
+
+1484847027 d:\rami\projects\pc projects\pc3dgameengine\core\graphics\window.h
+	"..//Common//BasePrimitiveTypes.h"
+	"glHeaders.h"
+
+1484846080 d:\rami\projects\pc projects\pc3dgameengine\core\graphics\glheaders.h
+	"..//..//tools//glew//glew.h"
+	"..//..//tools//glfw//glfw3.h"
+
+1480093512 source:d:\rami\projects\pc projects\pc3dgameengine\core\physics\physicsengine.cpp
+	"PhysicsEngine.h"
+
+1483811691 d:\rami\projects\pc projects\pc3dgameengine\core\physics\physicsengine.h
+	"..//BaseActors//Physical.h"
+	"..//Scene//GameScene.h"
+
+1480092990 d:\rami\projects\pc projects\pc3dgameengine\core\\baseactors\\physical.h
+	".//Dynamic.h"
+	"..//Physics//PhysicsEngine.h"
+
+1478275361 d:\rami\projects\pc projects\pc3dgameengine\core\\baseactors\\\dynamic.h
+	".//BaseActor.h"
+
+1478699010 d:\rami\projects\pc projects\pc3dgameengine\core\\baseactors\\\\baseactor.h
+	"..//Common//BasePrimitiveTypes.h"
+	"..//Common//Math.h"
+	<stdlib.h>
+	<stdio.h>
+
+1482958967 d:\rami\projects\pc projects\pc3dgameengine\core\\scene\\gamescene.h
+	"..//Common//BasePrimitiveTypes.h"
+	"..//BaseActors//BaseActor.h"
+	".//Camera.h"
+
+1481311101 d:\rami\projects\pc projects\pc3dgameengine\core\\scene\\\camera.h
+	"..//Common//Math.h"
+	<stdlib.h>
+
+1481826469 source:d:\rami\projects\pc projects\pc3dgameengine\core\scene\camera.cpp
+	"Camera.h"
+	<stdio.h>
+
+1481311101 d:\rami\projects\pc projects\pc3dgameengine\core\scene\camera.h
+	"..//Common//Math.h"
+	<stdlib.h>
+
+1483818155 source:d:\rami\projects\pc projects\pc3dgameengine\core\scene\gamescene.cpp
+	"GameScene.h"
+
+1482958967 d:\rami\projects\pc projects\pc3dgameengine\core\scene\gamescene.h
+	"..//Common//BasePrimitiveTypes.h"
+	"..//BaseActors//BaseActor.h"
+	".//Camera.h"
+
+1478699010 d:\rami\projects\pc projects\pc3dgameengine\core\\baseactors\\baseactor.h
+	"..//Common//BasePrimitiveTypes.h"
+	"..//Common//Math.h"
+	<stdlib.h>
+	<stdio.h>
+
+1481311101 d:\rami\projects\pc projects\pc3dgameengine\core\scene\\camera.h
+	"..//Common//Math.h"
+	<stdlib.h>
+
+1484753461 source:d:\rami\projects\pc projects\pc3dgameengine\test\main.cpp
+	"Test.h"
+
+1484921642 d:\rami\projects\pc projects\pc3dgameengine\test\test.h
+	"../Core/Graphics/Window.h"
+	"../Core/Graphics/GLRenderer.h"
+	"../Core/Graphics/Model3D.h"
+	"../Core/Scene/GameScene.h"
+
+1485117376 d:\rami\projects\pc projects\pc3dgameengine\core\graphics\glrenderer.h
+	"..//Common//BasePrimitiveTypes.h"
+	"..//BaseActors//Renderable.h"
+	"..//Scene//GameScene.h"
+	".//Window.h"
+	<string.h>
+
+1484853107 d:\rami\projects\pc projects\pc3dgameengine\core\\baseactors\\renderable.h
+	".//BaseActor.h"
+	"..//Graphics//glHeaders.h"
+	"..//Graphics//GLRenderer.h"
+	"..//Scene//Camera.h"
+
+1478699010 d:\rami\projects\pc projects\pc3dgameengine\core\\baseactors\\\baseactor.h
+	"..//Common//BasePrimitiveTypes.h"
+	"..//Common//Math.h"
+	<stdlib.h>
+	<stdio.h>
+
+1484847027 d:\rami\projects\pc projects\pc3dgameengine\core\graphics\\window.h
+	"..//Common//BasePrimitiveTypes.h"
+	"glHeaders.h"
+
+1484846080 d:\rami\projects\pc projects\pc3dgameengine\core\graphics\\glheaders.h
+	"..//..//tools//glew//glew.h"
+	"..//..//tools//glfw//glfw3.h"
+
+1485119222 source:d:\rami\projects\pc projects\pc3dgameengine\test\test.cpp
+	"Test.h"
+
+1484852977 d:\rami\projects\pc projects\pc3dgameengine\core\graphics\model3d.h
+	"..//..//tools//SOIL//SOIL.h"
+	"..//..//tools//assimp//scene.h"
+	"..//..//tools//assimp//cimport.h"
+	"..//..//tools//assimp//postprocess.h"
+	"..//Common//StringOP.h"
+	"..//BaseActors//Renderable.h"
+	".//GLRenderer.h"
+
+1480091762 d:\rami\projects\pc projects\pc3dgameengine\core\\common\\stringop.h
+	".//BasePrimitiveTypes.h"
+	<stdlib.h>
+	<stdio.h>
+	<string.h>
+
+1481454549 d:\rami\projects\pc projects\pc3dgameengine\core\\common\\\baseprimitivetypes.h
+
