@@ -56,7 +56,8 @@ int TTB::Test::Init(){
     m_Renderer=new GLRenderer();
     if(!m_Renderer->InitRenderer({"SAMPLE",800,600,5}))
         return 0 ;
-    m_Camera=new PerspCamera(45.0f,800.0f/600.0f,1.0f,500.0f);
+    m_Camera=new PerspCamera(45.0f,800.0f/600.0f,0.0f,500.0f);
+    m_Camera->Translate({0.0f,0.0f,100.0f});
     m_CurrentScene->setCamera(m_Camera);
     m_Renderer->setScene(m_CurrentScene);
     ///add some models to the scene for test
@@ -64,9 +65,9 @@ int TTB::Test::Init(){
 
     testmodel=new Model3D();
     testmodel->setRenderer(m_Renderer);
-    /*if(!testmodel->LoadModelFromFile(".//test//Sky//skybox.obj"))
+    if(!testmodel->LoadModelFromFile(".//test//Sky//skybox.obj"))
         printf("error loading test Model\n");
-    m_CurrentScene->AddActor(testmodel);*/
+    m_CurrentScene->AddActor(testmodel);
     testmodel=new Model3D();
     testmodel->setRenderer(m_Renderer);
     if(!testmodel->LoadModelFromFile(".//test//test1.obj"))

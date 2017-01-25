@@ -83,7 +83,7 @@ namespace TTB{
         _bool GenBuffers(_u32b numBuffers,GLuint*    target);
         void  DeleteBuffers(_u32b numBuffers,GLuint*    target);
         void  setBufferData(_u32b Target ,_u32b Size , void* Data, _u32b flag);
-        void  BindBuffer(_u32b BufferID,_u32b Bindtype );
+        void  BindBuffer(_u32b Bindtype,_u32b BufferID );
 
         ///VAOs
         _bool GenVertexArrays(_u32b numBuffers,GLuint*    target);
@@ -106,7 +106,7 @@ namespace TTB{
         _bool   SetUniformF(_s32b Location,_float data );
         _bool   SetUniformFv(_s32b Location,_float* data ,_u32b numElements );
         _bool   SetUniformvMtx(_s32b Location,_float* Matrix_4x4 );
-        _bool   SetUniformSample(_s32b Location, _u32b TextureID);
+        _bool   SetUniformSample(_s32b Location, _u32b TextureUnit);
         _bool   SetVertexAttribPointer(_u32b Index,_u32b NumElemntsPerVertex,
                                             _u32b offsetBetweenElements=0,void* offsetFromFirst=0);
         _bool   EnableVertexAttribArray(_u32b index);

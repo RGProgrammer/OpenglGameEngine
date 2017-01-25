@@ -85,8 +85,6 @@ _bool TTB::GLRenderer::InitRenderer(gfxConfig Config){
         return false ;
     }
     m_NumFBOs=Config.NumBackBuffers;
-     printf("OpenGL %s, GLSL %s\n", glGetString(GL_VERSION), glGetString(GL_SHADING_LANGUAGE_VERSION));
-    glEnable(GL_TEXTURE_2D);
      if(!CreateNeededObjects()){
         printf("error Creating FBOs and Render Textures\n");
         return false ;
@@ -138,8 +136,8 @@ _bool TTB::GLRenderer::CreateNeededObjects(){
         glBindTexture(GL_TEXTURE_2D,m_AttachmentTextures[i][0]);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP );
-        glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP );
+        glTexParameteri ( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+        glTexParameteri ( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
         glGetError();
         glTexImage2D(GL_TEXTURE_2D,0,GL_DEPTH_COMPONENT,
                          m_Target->getWidth(),
@@ -185,6 +183,8 @@ _bool TTB::GLRenderer::AttachTextures(){
             continue ;
         }
         glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D,m_AttachmentTextures[i][DIFFUSE_TEXTURE],0);
+        if(glGetError())
+            printf("WTF \n ");
         glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT1,GL_TEXTURE_2D,m_AttachmentTextures[i][SPECULAR_TEXTURE],0);
         glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT2,GL_TEXTURE_2D,m_AttachmentTextures[i][NORMAL_TEXTURE],0);
         glFramebufferTexture2D(GL_FRAMEBUFFER,GL_DEPTH_ATTACHMENT,GL_TEXTURE_2D,m_AttachmentTextures[i][DEPTH_TEXTURE],0);
@@ -197,16 +197,16 @@ _bool TTB::GLRenderer::AttachTextures(){
     return true ;
 };
 _bool TTB::GLRenderer::InitFinalPhase(){
-    _float vertexBuffer[12]={-1.0f,1.0f,-5.0f,
-                           1.0f,1.0f,-5.0f,
-                          1.0f,-1.0f,-5.0f,
-                          -1.0f,-1.0f,-5.0f};
+    _float vertexBuffer[12]={   -1.0f,1.0f,-3.0f,
+                                1.0f,1.0f,-3.0f,
+                                1.0f,-1.0f,-3.0f,
+                                -1.0f,-1.0f,-3.0f};
     _float TexCoordBuffer[8]={0.0f,0.0f,
                             1.0f,0.0f,
                             1.0f,1.0f,
                             0.0f,1.0f};
     _u32b IndexBuffer[6]={0,2,1,
-                         0,2,3};
+                         0,3,2};
     m_FinalRenderSurface=(MeshBuffers*)malloc(sizeof(MeshBuffers));
     if(!m_FinalRenderSurface)
         return false ;
@@ -235,7 +235,6 @@ _bool TTB::GLRenderer::InitFinalPhase(){
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6*sizeof(_u32b) , IndexBuffer, GL_STATIC_DRAW);
 
     glGenVertexArrays(1,&(m_FinalRenderSurface->VertexArrayObject));
-    printf("VAO of the final render %u\n",m_FinalRenderSurface->VertexArrayObject);
     glBindVertexArray(m_FinalRenderSurface->VertexArrayObject);
     glBindBuffer(GL_ARRAY_BUFFER,m_FinalRenderSurface->VertexBuffer);
     glVertexAttribPointer(0,3,GL_FLOAT,GL_FALSE,0,0);
@@ -274,7 +273,7 @@ void  TTB::GLRenderer::RenderCurrentScene(){
 
         ///glClear attachements
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glClearColor(0.0f,0.0f,0.0f,0.0f);
+        glClearColor(1.0f,1.0f,1.0f,0.0f);
         ///start searching for renderable objects and rendering
         for(_u32b i=0 ; i< nbActors;++i){
             actor=m_SelectedScene->getActor(i);
@@ -291,9 +290,6 @@ void  TTB::GLRenderer::RenderCurrentScene(){
             m_SelectedFBO=0;
         else
             ++m_SelectedFBO;
-
-        glfwSwapBuffers(m_Target->getglfwWindow());
-
     }
 };
 void TTB::GLRenderer::RenderToScreen(){
@@ -339,12 +335,15 @@ void TTB::GLRenderer::RenderToScreen(){
         glUseProgram(0);
         glBindBuffer(GL_ARRAY_BUFFER,0);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
+
+        glfwSwapBuffers(m_Target->getglfwWindow());
 };
 _bool TTB::GLRenderer::GenBuffers(_u32b numBuffers,GLuint*    target){
     if(!target)
         return false ;
     glGenBuffers(numBuffers,target);
     if(glGetError()){
+        printf("error generating Buffers\n");
         return false ;
     }
     return true ;
@@ -358,8 +357,10 @@ void  TTB::GLRenderer::DeleteBuffers(_u32b numBuffers,GLuint*    target){
 };
 void  TTB::GLRenderer::setBufferData(_u32b Target,_u32b SizeinByte, void* Data, _u32b flag){
     glBufferData(Target,SizeinByte,Data,flag);
+    if(glGetError())
+        printf("error filling buffer with Data\n");
 };
-void  TTB::GLRenderer::BindBuffer(_u32b BufferID,_u32b Bindtype ){
+void  TTB::GLRenderer::BindBuffer(_u32b Bindtype,_u32b BufferID ){
     glBindBuffer(Bindtype,BufferID);
 };
 
@@ -400,6 +401,8 @@ _bool TTB::GLRenderer::GenTextures(_u32b numTextures,GLuint*    target){
         glBindTexture(GL_TEXTURE_2D,target[i]);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri ( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
+        glTexParameteri ( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
     }
     glBindTexture(GL_TEXTURE_2D,0);
     return true ;
@@ -505,10 +508,12 @@ _bool   TTB::GLRenderer::SetUniformvMtx(_s32b Location,_float* Matrix_4x4 ){
         return false ;
     return true ;
 };
-_bool   TTB::GLRenderer::SetUniformSample(_s32b Location, _u32b TextureID){
-    glUniform1i(Location,TextureID);
-     if(glGetError())
+_bool   TTB::GLRenderer::SetUniformSample(_s32b Location, _u32b TextureUnit){
+    glUniform1i(Location,TextureUnit);
+     if(glGetError()){
+        printf("problem \n");
         return false ;
+     }
     return true ;
 };
 _bool   TTB::GLRenderer::SetVertexAttribPointer(_u32b Index,_u32b NumElemntsPerVertex,

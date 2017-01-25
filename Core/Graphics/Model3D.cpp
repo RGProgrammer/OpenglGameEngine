@@ -187,39 +187,37 @@ _s16b   TTB::Model3D::LoadShaderProg(char* VS_File,char* FS_File){
 _s16b   TTB::Model3D::InitVAOs(){
     if(!m_ShaderProgram)
         return 0;
+    glGetError();
     for(_u32b i=0 ;i<m_nbMeshes;++i){
         m_GLRenderer->GenVertexArrays(1,&(v_Buffers[i].VertexArrayObject));
+
         m_GLRenderer->BindVertexArray(v_Buffers[i].VertexArrayObject);
-        if(v_Buffers[i].VertexBuffer){
-            m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER,v_Buffers[i].VertexBuffer);
-            m_GLRenderer->SetVertexAttribPointer(0,3,0,0);
-            m_GLRenderer->EnableVertexAttribArray(0);
-        }
-        if(v_Buffers[i].NormalBuffer){
-            m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER,v_Buffers[i].NormalBuffer);
-            m_GLRenderer->SetVertexAttribPointer(1,3,0,0);
-            m_GLRenderer->EnableVertexAttribArray(1);
-        }
-        if(v_Buffers[i].TexCoords){
-            m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER,v_Buffers[i].TexCoords);
-            m_GLRenderer->SetVertexAttribPointer(2,2,0,0);
-            m_GLRenderer->EnableVertexAttribArray(2);
-        }
-        if(v_Buffers[i].TangentBuffer){
-            m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER,v_Buffers[i].TangentBuffer);
-            m_GLRenderer->SetVertexAttribPointer(3,3,0,0);
-            m_GLRenderer->EnableVertexAttribArray(3);
-        }
-        if(v_Buffers[i].BitangentBuffer){
-            m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER,v_Buffers[i].BitangentBuffer);
-            m_GLRenderer->SetVertexAttribPointer(4,3,0,0);
-            m_GLRenderer->EnableVertexAttribArray(4);
-        }
-        if(v_Buffers[i].IndexBuffer){
-            m_GLRenderer->BindBuffer(GL_ELEMENT_ARRAY_BUFFER,v_Buffers[i].IndexBuffer);
-        }
+
+        m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER,v_Buffers[i].VertexBuffer);
+        m_GLRenderer->SetVertexAttribPointer(0,3,0,0);
+        m_GLRenderer->EnableVertexAttribArray(0);
+
+        m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER,v_Buffers[i].NormalBuffer);
+        m_GLRenderer->SetVertexAttribPointer(1,3,0,0);
+        m_GLRenderer->EnableVertexAttribArray(1);
+
+        m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER,v_Buffers[i].TexCoords);
+        m_GLRenderer->SetVertexAttribPointer(2,2,0,0);
+        m_GLRenderer->EnableVertexAttribArray(2);
+/*
+        m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER,v_Buffers[i].TangentBuffer);
+        m_GLRenderer->SetVertexAttribPointer(3,3,0,0);
+        m_GLRenderer->EnableVertexAttribArray(3);
+
+        m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER,v_Buffers[i].BitangentBuffer);
+        m_GLRenderer->SetVertexAttribPointer(4,3,0,0);
+        m_GLRenderer->EnableVertexAttribArray(4);*/
+
+        m_GLRenderer->BindBuffer(GL_ELEMENT_ARRAY_BUFFER,v_Buffers[i].IndexBuffer);
     }
     m_GLRenderer->BindVertexArray(0);
+    m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER,0);
+    m_GLRenderer->BindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
     return 1 ;
 };
 
@@ -230,6 +228,7 @@ void TTB::Model3D::Render(Camera* Selected){
     if(isVisible() && Selected && m_GLRenderer){
         ///new rendering code here using the high level opengl interface(m_GLRenderer)
         ///set the program to use
+        int Location ;
         m_GLRenderer->SetShaderProgram(m_ShaderProgram);
         ///setup uniform variable
         ///Matrices
@@ -238,18 +237,27 @@ void TTB::Model3D::Render(Camera* Selected){
         m_GLRenderer->SetUniformvMtx(m_GLRenderer->GetUniformLocation(m_ShaderProgram,"ProjMtx"),Selected->getProjectionMtx());
         for(_u32b i = 0 ;i<m_nbMeshes;++i){
             ///Texture
-            m_GLRenderer->SetActiveTexture(GL_TEXTURE0);
+            m_GLRenderer->SetActiveTexture(0);
             m_GLRenderer->BindTexture(v_oglMaterials[v_Meshes[i].AppliedMaterial].DiffuseMap);
-            m_GLRenderer->SetActiveTexture(GL_TEXTURE1);
+            Location=m_GLRenderer->GetUniformLocation(m_ShaderProgram,"Diffusemap");
+            m_GLRenderer->SetUniformSample(Location,0);
+
+            m_GLRenderer->SetActiveTexture(1);
             m_GLRenderer->BindTexture(v_oglMaterials[v_Meshes[i].AppliedMaterial].NormalsMap);
-            m_GLRenderer->SetActiveTexture(GL_TEXTURE2);
+            Location=m_GLRenderer->GetUniformLocation(m_ShaderProgram,"Normalmap");
+            m_GLRenderer->SetUniformSample(Location,1);
+
+            m_GLRenderer->SetActiveTexture(2);
             m_GLRenderer->BindTexture(v_oglMaterials[v_Meshes[i].AppliedMaterial].SpecularMap);
+            Location=m_GLRenderer->GetUniformLocation(m_ShaderProgram,"Specularmap");
+            m_GLRenderer->SetUniformSample(Location,2);
+
+
 
             ///Bind the VAO
             m_GLRenderer->BindVertexArray(v_Buffers[i].VertexArrayObject);
             m_GLRenderer->DrawElements(GL_TRIANGLES,v_Meshes[i].nbFaces*3,GL_UNSIGNED_INT,(void*)0  );
         }
-
         ///after rendering
         m_GLRenderer->BindVertexArray(0);
         m_GLRenderer->SetShaderProgram(0);
@@ -320,8 +328,10 @@ _u16b TTB::Model3D::CopyVertices(const aiVector3D*   buffer,_u32b nbVertices){
             v_Meshes[m_nbMeshes-1].VertexBuffer[i*3+1]=buffer[i].y;
             v_Meshes[m_nbMeshes-1].VertexBuffer[i*3+2]=buffer[i].z;
         }
+        return 1 ;
     }
-    return 1 ;
+    return 0 ;
+
 };
 _u16b TTB::Model3D::CopyNormals(const aiVector3D*   buffer,_u32b nbVertices){
     ///copy Normalbuffer to the last mesh
@@ -335,8 +345,10 @@ _u16b TTB::Model3D::CopyNormals(const aiVector3D*   buffer,_u32b nbVertices){
             v_Meshes[m_nbMeshes-1].NormalBuffer[i*3+1]=buffer[i].y;
             v_Meshes[m_nbMeshes-1].NormalBuffer[i*3+2]=buffer[i].z;
         }
+        return 1 ;
     }
-    return 1 ;
+    return 0 ;
+
 };
 _u16b TTB::Model3D::CopyTangents(const aiVector3D*   Tbuffer,const aiVector3D*   Bibuffer,_u32b nbVertices){
     if(Tbuffer && Bibuffer){
@@ -353,8 +365,9 @@ _u16b TTB::Model3D::CopyTangents(const aiVector3D*   Tbuffer,const aiVector3D*  
             v_Meshes[m_nbMeshes-1].BitangentBuffer[i*3+1]=Bibuffer[i].y;
             v_Meshes[m_nbMeshes-1].BitangentBuffer[i*3+2]=Bibuffer[i].z;
         }
+        return 1 ;
     }
-    return 1 ;
+    return 0 ;
 };
 _u16b TTB::Model3D::CopyFaces(const aiFace* Faces, _u32b nbFaces){
     ///copy Faces
@@ -368,8 +381,9 @@ _u16b TTB::Model3D::CopyFaces(const aiFace* Faces, _u32b nbFaces){
             v_Meshes[m_nbMeshes-1].IndexBuffer[i*3+1]=Faces[i].mIndices[1];
             v_Meshes[m_nbMeshes-1].IndexBuffer[i*3+2]=Faces[i].mIndices[2];
         }
+        return 1 ;
     }
-    return 1 ;
+    return 0 ;
 };
 _u16b TTB::Model3D::CopyTextureCoords(aiVector3D** TexCoords, _u32b nbTexCoords){
     ///copy tecture coords
@@ -384,17 +398,19 @@ _u16b TTB::Model3D::CopyTextureCoords(aiVector3D** TexCoords, _u32b nbTexCoords)
                 v_Meshes[m_nbMeshes-1].TexCoords[i*2+1]= 0.0f;
             }
             return 1 ;
-        }
-        v_Meshes[m_nbMeshes-1].TexCoords=(_float*)malloc(nbTexCoords*2*sizeof(_float));
-        if(!(v_Meshes[m_nbMeshes-1].TexCoords))
-            return 0;
-        v_Meshes[m_nbMeshes-1].nbTexCoords=nbTexCoords ;
-        for(_u32b i=0 ; i<nbTexCoords;i++){
-            v_Meshes[m_nbMeshes-1].TexCoords[i*2  ]= TexCoords[0][i].x;
-            v_Meshes[m_nbMeshes-1].TexCoords[i*2+1]= TexCoords[0][i].y;
+        }else{
+            v_Meshes[m_nbMeshes-1].TexCoords=(_float*)malloc(nbTexCoords*2*sizeof(_float));
+            if(!(v_Meshes[m_nbMeshes-1].TexCoords))
+                return 0;
+            v_Meshes[m_nbMeshes-1].nbTexCoords=nbTexCoords ;
+            for(_u32b i=0 ; i<nbTexCoords;i++){
+                v_Meshes[m_nbMeshes-1].TexCoords[i*2  ]= TexCoords[0][i].x;
+                v_Meshes[m_nbMeshes-1].TexCoords[i*2+1]= TexCoords[0][i].y;
+            }
+            return 1 ;
         }
     }
-    return 1 ;
+    return 0 ;
 };
 _u16b TTB::Model3D::LoadMaterial(const aiScene* Scene){
     if(!LoadMaterialstoMemory(Scene))
@@ -535,29 +551,21 @@ _u16b TTB::Model3D::GenerateOGLMaterials(){
 		if(v_Materials[i].DiffuseMap && v_Materials[i].DiffuseMap->Pixels){
                             m_GLRenderer->GenTextures(1,&(this->v_oglMaterials[i].DiffuseMap));
                             m_GLRenderer->BindTexture(v_oglMaterials[i].DiffuseMap);
-                            /*glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
-                            glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
-                            glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_S, GL_REPEAT);
-                            glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_WRAP_T, GL_REPEAT);*/
                             m_GLRenderer->SetImageData(v_Materials[i].DiffuseMap);
                             m_GLRenderer->BindTexture(0);
         }
 		if( v_Materials[i].SpecularMap && v_Materials[i].SpecularMap->Pixels){
                             m_GLRenderer->GenTextures(1,&(v_oglMaterials[i].SpecularMap));
                             m_GLRenderer->BindTexture(v_oglMaterials[i].SpecularMap);
-                            //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                            //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
                             m_GLRenderer->SetImageData(v_Materials[i].SpecularMap);
                             m_GLRenderer->BindTexture(0);
         }
 		if( v_Materials[i].NormalsMap && v_Materials[i].NormalsMap->Pixels){
                             m_GLRenderer->GenTextures(1,&(v_oglMaterials[i].NormalsMap));
                             m_GLRenderer->BindTexture(v_oglMaterials[i].NormalsMap);
-                            //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                            //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
                             m_GLRenderer->SetImageData(v_Materials[i].NormalsMap);
                             m_GLRenderer->BindTexture(0);
-                        }
+        }
 	}
     glDisable(GL_TEXTURE_2D);
     return 1 ;

@@ -8,5 +8,5 @@ uniform mat4 ProjMtx ;
 varying vec2 texcoord0 ;
 void main(){
 	texcoord0=texcoord ;
-	gl_Position=vec4(position,1.0) ;
+	gl_Position=ProjMtx*vec4(position,1.0) ;
 }
