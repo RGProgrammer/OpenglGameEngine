@@ -67,7 +67,7 @@ void main(){
 				}
 			}else{
 				if(Sources[i].CutoffAngle < 0.0){// is a Point light
-					LightDir=fragPosition-Sources[i].WorldMtx[2].xyz;
+					LightDir=fragPosition-Sources[i].WorldMtx[3].xyz;
 					Intensity=max(dot(NormalColor,LightDir),0.0);
 					if(Intensity>0.0){
 						FinalDiffuse=Intensity*DiffuseColor.rgb*Sources[i].DiffuseColor;
@@ -77,7 +77,7 @@ void main(){
 					}
 
 				}else{// is a SpotLight
-					LightDir=fragPosition-Sources[i].WorldMtx[2].xyz;
+					LightDir=fragPosition-Sources[i].WorldMtx[3].xyz;
 					SpotDirection=Sources[i].WorldMtx[2].xyz;
 					if(dot(SpotDirection,LightDir)> Sources[i].CutoffAngle){
 						Intensity=max(dot(NormalColor,LightDir),0.0);
