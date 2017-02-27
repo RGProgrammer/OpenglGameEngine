@@ -4,6 +4,8 @@
 #include "../Core/Graphics/GLRenderer.h"
 #include "../Core/Graphics/Model3D.h"
 #include "../Core/Scene/GameScene.h"
+#include "../Core/Scene/DirectionnalLight.h"
+#include "../Core/Scene/PointLight.h"
 
 
 namespace TTB {

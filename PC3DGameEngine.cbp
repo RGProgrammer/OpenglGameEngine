@@ -51,7 +51,6 @@
 		<Unit filename="Core/BaseActors/BaseActor.h" />
 		<Unit filename="Core/BaseActors/Dynamic.cpp" />
 		<Unit filename="Core/BaseActors/Dynamic.h" />
-		<Unit filename="Core/BaseActors/LightSource.h" />
 		<Unit filename="Core/BaseActors/Physical.cpp" />
 		<Unit filename="Core/BaseActors/Physical.h" />
 		<Unit filename="Core/BaseActors/Renderable.cpp" />
@@ -75,8 +74,15 @@
 		<Unit filename="Core/Physics/PhysicsEngine.h" />
 		<Unit filename="Core/Scene/Camera.cpp" />
 		<Unit filename="Core/Scene/Camera.h" />
+		<Unit filename="Core/Scene/DirectionnalLight.cpp" />
+		<Unit filename="Core/Scene/DirectionnalLight.h" />
 		<Unit filename="Core/Scene/GameScene.cpp" />
 		<Unit filename="Core/Scene/GameScene.h" />
+		<Unit filename="Core/Scene/LightSource.cpp" />
+		<Unit filename="Core/Scene/LightSource.h" />
+		<Unit filename="Core/Scene/PointLight.cpp" />
+		<Unit filename="Core/Scene/PointLight.h" />
+		<Unit filename="Core/Scene/SpotLight.h" />
 		<Unit filename="test/Test.cpp" />
 		<Unit filename="test/Test.h" />
 		<Unit filename="test/main.cpp" />

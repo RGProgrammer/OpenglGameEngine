@@ -59,8 +59,9 @@ namespace TTB{
     } gfxConfig;
     class GLRenderer{
     public:
-        const GLenum DrawBuff[5]={GL_COLOR_ATTACHMENT0,GL_COLOR_ATTACHMENT1,GL_COLOR_ATTACHMENT2,GL_COLOR_ATTACHMENT3,
-                                    GL_COLOR_ATTACHMENT4};
+        const GLenum DrawBuff[5]={GL_COLOR_ATTACHMENT0,
+                                    GL_COLOR_ATTACHMENT1,
+                                    GL_COLOR_ATTACHMENT2/*,GL_COLOR_ATTACHMENT3,GL_COLOR_ATTACHMENT4*/};
         enum TextureOrder {
             DEPTH_TEXTURE=0,
             DIFFUSE_TEXTURE=1,

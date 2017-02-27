@@ -340,6 +340,7 @@ _u16b TTB::Model3D::CopyNormals(const aiVector3D*   buffer,_u32b nbVertices){
         if(!(v_Meshes[m_nbMeshes-1].NormalBuffer))
             return 0;
         v_Meshes[m_nbMeshes-1].nbNormals=nbVertices ;
+        printf("has Normals \ n");
         for(_u32b i=0 ; i<nbVertices;i++){
             v_Meshes[m_nbMeshes-1].NormalBuffer[i*3  ]=buffer[i].x;
             v_Meshes[m_nbMeshes-1].NormalBuffer[i*3+1]=buffer[i].y;
@@ -529,10 +530,10 @@ _u16b TTB::Model3D::LoadMaterialstoMemory(const aiScene* Scene){
             v_Materials[i].SpecularMap->Height=1 ;
             v_Materials[i].SpecularMap->Width=1;
             v_Materials[i].SpecularMap->Pixels=(_u8b*)malloc(4*sizeof(_u8b));
-            v_Materials[i].SpecularMap->Pixels[0]=0 ;
-            v_Materials[i].SpecularMap->Pixels[1]=0 ;
-            v_Materials[i].SpecularMap->Pixels[2]=0 ;
-            v_Materials[i].SpecularMap->Pixels[3]=255 ;
+            v_Materials[i].SpecularMap->Pixels[0]=127 ;
+            v_Materials[i].SpecularMap->Pixels[1]=127 ;
+            v_Materials[i].SpecularMap->Pixels[2]=127 ;
+            v_Materials[i].SpecularMap->Pixels[3]=0 ;
         }
     }
     return 1;

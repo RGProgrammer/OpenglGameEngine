@@ -2,7 +2,7 @@
 
 TTB::GLRenderer::GLRenderer(RenderType Type):m_Target(NULL),m_isInitialized(false) ,
                                             m_NumFBOs(0),m_FBOs(NULL),m_SelectedFBO(0),
-                                            m_SelectedScene (NULL),//m_RenderBuffers(NULL),
+                                            m_SelectedScene (NULL),
                                             m_AttachmentTextures(NULL),
                                             m_FinalRenderSurface(NULL),
                                             m_FinalRenderProgram(0)
@@ -183,8 +183,6 @@ _bool TTB::GLRenderer::AttachTextures(){
             continue ;
         }
         glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D,m_AttachmentTextures[i][DIFFUSE_TEXTURE],0);
-        if(glGetError())
-            printf("WTF \n ");
         glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT1,GL_TEXTURE_2D,m_AttachmentTextures[i][SPECULAR_TEXTURE],0);
         glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT2,GL_TEXTURE_2D,m_AttachmentTextures[i][NORMAL_TEXTURE],0);
         glFramebufferTexture2D(GL_FRAMEBUFFER,GL_DEPTH_ATTACHMENT,GL_TEXTURE_2D,m_AttachmentTextures[i][DEPTH_TEXTURE],0);
@@ -197,10 +195,10 @@ _bool TTB::GLRenderer::AttachTextures(){
     return true ;
 };
 _bool TTB::GLRenderer::InitFinalPhase(){
-    _float vertexBuffer[12]={   -1.0f,1.0f,-3.0f,
-                                1.0f,1.0f,-3.0f,
-                                1.0f,-1.0f,-3.0f,
-                                -1.0f,-1.0f,-3.0f};
+    _float vertexBuffer[12]={   -1.0f,1.0f,-2.0f,
+                                1.0f,1.0f,-2.0f,
+                                1.0f,-1.0f,-2.0f,
+                                -1.0f,-1.0f,-2.0f};
     _float TexCoordBuffer[8]={0.0f,0.0f,
                             1.0f,0.0f,
                             1.0f,1.0f,
@@ -269,7 +267,8 @@ void  TTB::GLRenderer::RenderCurrentScene(){
         ///first step render to current FBO
         glBindFramebuffer(GL_FRAMEBUFFER,m_FBOs[m_SelectedFBO]);
         glViewport(0,0,m_Target->getWidth(),m_Target->getHeight());
-        glDrawBuffers(6,DrawBuff);
+        glDrawBuffers(3,DrawBuff);
+        glEnable(GL_DEPTH);
 
         ///glClear attachements
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -283,6 +282,7 @@ void  TTB::GLRenderer::RenderCurrentScene(){
 
         glBindFramebuffer(GL_FRAMEBUFFER,0);
         ///after render ;
+        glDisable(GL_DEPTH);
         RenderToScreen();
 
         ///go to the next framebuffer
@@ -294,6 +294,9 @@ void  TTB::GLRenderer::RenderCurrentScene(){
 };
 void TTB::GLRenderer::RenderToScreen(){
         _s32b location = -1 ;
+        _s8b shaderstring[50]="";
+        LightSource* Source=NULL ;
+        _u32b nbLights=0 ;
         glBindFramebuffer(GL_FRAMEBUFFER,0);
         glViewport(0,0,m_Target->getWidth(),m_Target->getHeight());
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -301,20 +304,62 @@ void TTB::GLRenderer::RenderToScreen(){
         ///construct and render the final result
         glUseProgram(m_FinalRenderProgram);
         ///uniforms
+
+        ///adding light code
+        if(nbLights=m_SelectedScene->getNBLights()){
+            ///init number of lights in the scene
+            location=glGetUniformLocation(m_FinalRenderProgram,"numLights");
+            glUniform1i(location,nbLights);
+
+            for (_u32b i=0 ; i<nbLights;++i ){
+                Source=m_SelectedScene->getLight(i);
+                ///initializing world matrix
+                sprintf(shaderstring,"Sources[%u].WorldMtx",i);
+                location=glGetUniformLocation(m_FinalRenderProgram,shaderstring);
+                glUniformMatrix4fv(location,4,GL_FALSE,Source->getTransMtx());
+
+                ///init Diffuse Color ;
+                sprintf(shaderstring,"Sources[%u].DiffuseColor",i);
+                location=glGetUniformLocation(m_FinalRenderProgram,shaderstring);
+                glUniform3fv(location,1,Source->getLightDiffuseColor());
+
+                ///init Specular Color
+                sprintf(shaderstring,"Sources[%u].SpecularColor",i);
+                location=glGetUniformLocation(m_FinalRenderProgram,shaderstring);
+                glUniform3fv(location,1,Source->getLightSpecularColor());
+
+                ///init Attinuation
+                sprintf(shaderstring,"Sources[%u].Attinuation",i);
+                location=glGetUniformLocation(m_FinalRenderProgram,shaderstring);
+                glUniform1f(location,Source->getLightAttinuation());
+
+                ///init CutoffAngle
+                sprintf(shaderstring,"Sources[%u].CutoffAngle",i);
+                location=glGetUniformLocation(m_FinalRenderProgram,shaderstring);
+                glUniform1f(location,Source->getLightCutoffAngle());
+
+                ///init Shiness
+                sprintf(shaderstring,"Sources[%u].Shininess",i);
+                location=glGetUniformLocation(m_FinalRenderProgram,shaderstring);
+                glUniform1f(location,Source->getLightShiness());
+
+            }
+        }else {
+            location=glGetUniformLocation(m_FinalRenderProgram,"numLights");
+            glUniform1i(location,0);
+        }
+        ///other uniforms
         location=glGetUniformLocation(m_FinalRenderProgram,"Diffuse");
-        //printf("Diffuse location = %d \n",location);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D,m_AttachmentTextures[m_SelectedFBO][DIFFUSE_TEXTURE]);
         glUniform1i(location,0);
 
         location=glGetUniformLocation(m_FinalRenderProgram,"Specular");
-        //printf("Specular location = %d \n",location);
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D,m_AttachmentTextures[m_SelectedFBO][SPECULAR_TEXTURE]);
         glUniform1i(location,1);
 
         location=glGetUniformLocation(m_FinalRenderProgram,"Normal");
-        //printf("Normal location = %d \n",location);
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D,m_AttachmentTextures[m_SelectedFBO][NORMAL_TEXTURE]);
         glUniform1i(location,2);
@@ -326,6 +371,10 @@ void TTB::GLRenderer::RenderToScreen(){
 
         location=glGetUniformLocation(m_FinalRenderProgram,"ProjMtx");
         glUniformMatrix4fv(location,1,GL_FALSE,m_SelectedScene->getCamera()->getProjectionMtx());
+
+        location=glGetUniformLocation(m_FinalRenderProgram,"ViewMtx");
+        glUniformMatrix4fv(location,1,GL_FALSE,m_SelectedScene->getCamera()->getViewMtx());
+        ///
         ///VAOs
         glBindVertexArray(m_FinalRenderSurface->VertexArrayObject);
         glDrawElements(GL_TRIANGLES,6,GL_UNSIGNED_INT,0);

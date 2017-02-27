@@ -6,21 +6,24 @@ TTB::Test::~Test(){
     this->Destroy() ;
 };
 void TTB::Test::Destroy(){
-    printf("Destroy and release resources \n");
+    printf("Destroy and release Scene \n");
     if(m_CurrentScene){
         m_CurrentScene->Destroy();
         delete m_CurrentScene ;
         m_CurrentScene=NULL ;
     }
+    printf("Destroy and release Camera \n");
     if(m_Camera){
         delete m_Camera;
         m_Camera=NULL ;
     }
+    printf("Destroy and release Renderer \n");
     if(m_Renderer){
         m_Renderer->Destroy();
         delete m_Renderer ;
         m_Renderer=NULL;
     }
+    printf("Done\n");
 };
 void TTB::Test::Start(){
     printf("Starting game loop\n");
@@ -62,7 +65,11 @@ int TTB::Test::Init(){
     m_Renderer->setScene(m_CurrentScene);
     ///add some models to the scene for test
     Model3D* testmodel=NULL ;
-
+    DirectionnalLight* light=new DirectionnalLight({0.0f,0.0f,0.0f},
+                                                    {0.0f,0.0f,1.0f},
+                                                    {0.0f,1.0f,0.0f});
+    //PointLight* light= new PointLight();
+    m_CurrentScene->AddLight(light);
     testmodel=new Model3D();
     testmodel->setRenderer(m_Renderer);
     if(!testmodel->LoadModelFromFile(".//test//Sky//skybox.obj"))
@@ -73,8 +80,6 @@ int TTB::Test::Init(){
     if(!testmodel->LoadModelFromFile(".//test//test1.obj"))
         printf("error loading test Model\n");
     m_CurrentScene->AddActor(testmodel);
-
-
 
     ///ecerything is good
     return 1 ;
