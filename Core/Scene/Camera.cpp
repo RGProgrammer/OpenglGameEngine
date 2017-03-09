@@ -39,7 +39,7 @@ Vertex3d TTB::Camera::getDirection(){
 Vertex3d TTB::Camera::getUp(){
 	return m_Up;
 };
-Vertex3d TTB::Camera::getLeft(){
+Vertex3d TTB::Camera::getSide(){
     return Normalize3d(CrossProduct3d(m_Up,m_Dir));
 }
 _float TTB::Camera::getNearValue(){ return m_Near ;};
@@ -55,20 +55,24 @@ void TTB::Camera::RotateViaUp        (_float Angle){
     m_Dir=Rotate3d(m_Dir,m_Up,Angle);
     if(Magnitude3d(m_Dir)!= 1.0f)
         m_Dir        =Normalize3d(m_Dir);
-};
-void TTB::Camera::RotateViaLeft      (_float Angle){
-    Vertex3d    Left        =Normalize3d(CrossProduct3d(m_Up,m_Dir));
-    if(Magnitude3d(Left)!= 1.0f)
-        Left        =Normalize3d(Left);
-    m_Dir =Normalize3d(Rotate3d(m_Dir,Left,Angle));
     if(Magnitude3d(m_Dir)!= 1.0f)
         m_Dir        =Normalize3d(m_Dir);
-    m_Up        =Normalize3d(CrossProduct3d(m_Dir,Left));
+};
+void TTB::Camera::RotateViaSide      (_float Angle){
+    Vertex3d    Side        =Normalize3d(CrossProduct3d(m_Dir,m_Up));
+    if(Magnitude3d(Side)!= 1.0f)
+        Side        =Normalize3d(Side);
+    m_Dir =Normalize3d(Rotate3d(m_Dir,Side,Angle));
+    if(Magnitude3d(m_Dir)!= 1.0f)
+        m_Dir        =Normalize3d(m_Dir);
+    m_Up        =Normalize3d(CrossProduct3d(Side,m_Dir));
     if(Magnitude3d(m_Up)!= 1.0f)
         m_Up        =Normalize3d(m_Up);
 };
 void TTB::Camera::Translate (Vertex3d ver){
-    m_Pos=AddVertex3d(m_Pos,ver);
+    m_Pos.x+=ver.x;
+    m_Pos.y+=ver.y;
+    m_Pos.z+=ver.z;
 };
 _float* TTB::Camera::getViewMtx(){
 	this->UpdateViewMtx();
@@ -80,13 +84,21 @@ _float* TTB::Camera::getProjectionMtx(){
 
 
 void TTB::Camera::UpdateViewMtx(){
-    Vertex3d f=(Normalize3d(SubsVertex3d(m_Dir , m_Pos)));
+    /*Vertex3d f=m_Dir ;
 	Vertex3d s=(Normalize3d(CrossProduct3d(f, m_Up)));
-	Vertex3d u=(CrossProduct3d(s, f));
+	Vertex3d u=m_Up;
 	m_ViewMatrix[0]=s.x     ; m_ViewMatrix[4]=u.x   ; m_ViewMatrix[8]=  -f.x    ; m_ViewMatrix[12]=-DotProduct3d(s,m_Pos);
     m_ViewMatrix[1]=s.y     ; m_ViewMatrix[5]=u.y   ; m_ViewMatrix[9]=  -f.y    ; m_ViewMatrix[13]=-DotProduct3d(u,m_Pos);
     m_ViewMatrix[2]=s.z     ; m_ViewMatrix[6]=u.z   ; m_ViewMatrix[10]= -f.z    ; m_ViewMatrix[14]=DotProduct3d(f,m_Pos);
-    m_ViewMatrix[3]=0.0f    ; m_ViewMatrix[7]=0.0f  ; m_ViewMatrix[11]=0.0f     ; m_ViewMatrix[15]=1.0f   ;
+    m_ViewMatrix[3]=0.0f    ; m_ViewMatrix[7]=0.0f  ; m_ViewMatrix[11]=0.0f     ; m_ViewMatrix[15]=1.0f   ;*/
+
+    Vertex3d    Side        =Normalize3d(CrossProduct3d(m_Dir,m_Up));
+    m_ViewMatrix[0]=Side.x     ; m_ViewMatrix[4]=Side.y   ; m_ViewMatrix[8]=  Side.z     ; m_ViewMatrix[12]=-DotProduct3d(Side,m_Pos);
+    m_ViewMatrix[1]=m_Up.x     ; m_ViewMatrix[5]=m_Up.y   ; m_ViewMatrix[9]=  m_Up.z     ; m_ViewMatrix[13]=-DotProduct3d(m_Up,m_Pos);
+    m_ViewMatrix[2]=-m_Dir.x   ; m_ViewMatrix[6]=-m_Dir.y ; m_ViewMatrix[10]=-m_Dir.z    ; m_ViewMatrix[14]=DotProduct3d(m_Dir,m_Pos);
+    m_ViewMatrix[3]=0.0f       ; m_ViewMatrix[7]=0.0f     ; m_ViewMatrix[11]= 0.0f       ; m_ViewMatrix[15]=1.0f   ;
+
+
 };
 
 
@@ -133,13 +145,12 @@ void TTB::PerspCamera::UpdateProjectionMtx(){
     m_ProjectionMtx[5] = 1.0f / (tanHalfFovy);
     m_ProjectionMtx[11] = -1;// -1 for right handed and 1 for left handed
 
-    if (m_Far-m_Near<=1.0f){
-        m_ProjectionMtx[10] = m_Far / (m_Far - m_Near);
-        m_ProjectionMtx[14] = -(m_Far * m_Near) / (m_Far - m_Near);
- 	}else{
-        m_ProjectionMtx[10] = -(m_Far + m_Near) / (m_Far - m_Near);
-        m_ProjectionMtx[14] = -(2.0f * m_Far * m_Near) / (m_Far - m_Near);
-    }
+    //m_ProjectionMtx[10] = m_Far / (m_Far - m_Near);
+    //m_ProjectionMtx[14] = -(m_Far * m_Near) / (m_Far - m_Near);
+
+    m_ProjectionMtx[10] = -(m_Far + m_Near) / (m_Far - m_Near);
+    m_ProjectionMtx[14] = -(2.0f * m_Far * m_Near) / (m_Far - m_Near);
+
 };
 
 

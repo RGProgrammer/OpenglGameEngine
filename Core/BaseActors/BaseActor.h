@@ -29,10 +29,10 @@ namespace TTB{
 		bool setOrientation  (Vertex3d Dir, Vertex3d Up);
 		Vertex3d getDirection();
 		Vertex3d getUp       ();
-		Vertex3d getLeft     ();
+		Vertex3d getSide     ();
 		void RotateViaDirection (_float Angle);
 		void RotateViaUp        (_float Angle);
-		void RotateViaLeft      (_float Angle);
+		void RotateViaSide      (_float Angle);
 		void Translate          (Vertex3d ver);
 		void 					ScaleUniform(_float value) ;
 		void 					Scale(Vertex3d scale);

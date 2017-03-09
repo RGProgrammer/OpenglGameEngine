@@ -1,4 +1,4 @@
-#version 410
+#version 330
 
 layout(location=0) in vec3 Position ;
 layout(location=1) in vec3 Normal ;
@@ -17,7 +17,6 @@ uniform mat4 ProjMtx ;
 out vec4 DiffuseColor ;
 out vec4 NormalColor;
 out vec4 SpecularColor ;
-out vec4 PositionColor ;
 
 void main(){
 
@@ -32,9 +31,7 @@ void main(){
 
 	DiffuseColor=vec4(texture2D(Diffusemap,Texcoord).rgb,1.0);
 	SpecularColor=texture2D(Specularmap,Texcoord);
-	
-	NormalColor=vec4(normalize(normalcolor0),0.0);
-	//NormalColor=vec4(N,0.0) ;
-	PositionColor=WorldMtx*vec4(Position,1.0);
+	NormalColor=vec4(normalcolor0,0.0);
+
 	gl_Position=ProjMtx*ViewMtx*WorldMtx*vec4(Position,1.0);
 }

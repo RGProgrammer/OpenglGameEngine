@@ -2,7 +2,7 @@
 
 TTB::BaseActor::BaseActor():BaseActor({0.0f,0.0f,0.0f})
 {};
-TTB::BaseActor::BaseActor(Vertex3d Pos):BaseActor(Pos,{0.0f,0.0f,1.0f},{0.0f,1.0f,0.0f})
+TTB::BaseActor::BaseActor(Vertex3d Pos):BaseActor(Pos,{0.0f,0.0f,-1.0f},{0.0f,1.0f,0.0f})
 {};
 TTB::BaseActor::BaseActor(Vertex3d Pos,Vertex3d Dir,Vertex3d Up):m_ID(UNKNOWN),  m_Position(Pos), m_Direction(Dir),
 			m_Up(Up),  m_TransMtx(NULL),m_Scale({1.0f,1.0f,1.0f})
@@ -42,29 +42,34 @@ Vertex3d TTB::BaseActor::getDirection(){
 Vertex3d TTB::BaseActor::getUp(){
 	return m_Up;
 };
-Vertex3d TTB::BaseActor::getLeft(){
-    return Normalize3d(CrossProduct3d(m_Up,m_Direction));
+Vertex3d TTB::BaseActor::getSide(){
+    return Normalize3d(CrossProduct3d(m_Direction,m_Up));
 };
 _float* TTB::BaseActor::getTransMtx(){
-	UpdateTransMtx();
+	this->UpdateTransMtx();
 	return m_TransMtx ;
 };
 void TTB::BaseActor::RotateViaDirection (_float Angle){
     m_Up=Rotate3d(m_Up,m_Direction,Angle);
-    m_Up=Normalize3d(m_Up);
+    if(Magnitude3d(m_Up)!= 1.0f)
+        m_Up        =Normalize3d(m_Up);
 };
 void TTB::BaseActor::RotateViaUp        (_float Angle){
+
     m_Direction=Rotate3d(m_Direction,m_Up,Angle);
-    m_Direction=Normalize3d(m_Direction);
-};
-void TTB::BaseActor::RotateViaLeft      (_float Angle){
-    Vertex3d    Left        =Normalize3d(CrossProduct3d(m_Up,m_Direction));
-    if(Magnitude3d(Left)!= 1.0f)
-        Left        =Normalize3d(Left);
-    m_Direction =Normalize3d(Rotate3d(m_Direction,Left,Angle));
     if(Magnitude3d(m_Direction)!= 1.0f)
         m_Direction        =Normalize3d(m_Direction);
-    m_Up        =Normalize3d(CrossProduct3d(m_Direction,Left));
+    if(Magnitude3d(m_Direction)!= 1.0f)
+        m_Direction        =Normalize3d(m_Direction);
+};
+void TTB::BaseActor::RotateViaSide      (_float Angle){
+    Vertex3d    Side        =Normalize3d(CrossProduct3d(m_Direction,m_Up));
+    if(Magnitude3d(Side)!= 1.0f)
+        Side        =Normalize3d(Side);
+    m_Direction =Normalize3d(Rotate3d(m_Direction,Side,Angle));
+    if(Magnitude3d(m_Direction)!= 1.0f)
+        m_Direction        =Normalize3d(m_Direction);
+    m_Up        =Normalize3d(CrossProduct3d(Side,m_Direction));
     if(Magnitude3d(m_Up)!= 1.0f)
         m_Up        =Normalize3d(m_Up);
 };
@@ -77,9 +82,9 @@ Vertex3d TTB::BaseActor::getScale(){ return m_Scale ;};
 void TTB::BaseActor::UpdateTransMtx(){
 	m_Direction=Normalize3d(m_Direction);
 	m_Up=Normalize3d(m_Up);
-	Vertex3d left=Normalize3d(CrossProduct3d(m_Up,m_Direction));
-    m_TransMtx[0]=m_Scale.x*left.x; 	m_TransMtx[4]=m_Scale.y*m_Up.x; 	m_TransMtx[8 ]=m_Scale.z*m_Direction.x; 	m_TransMtx[12]=m_Position.x ;
-    m_TransMtx[1]=m_Scale.x*left.y; 	m_TransMtx[5]=m_Scale.y*m_Up.y; 	m_TransMtx[9 ]=m_Scale.z*m_Direction.y; 	m_TransMtx[13]=m_Position.y ;
-    m_TransMtx[2]=m_Scale.x*left.z; 	m_TransMtx[6]=m_Scale.y*m_Up.z; 	m_TransMtx[10]=m_Scale.z*m_Direction.z; 	m_TransMtx[14]=m_Position.z ;
+	Vertex3d Side=Normalize3d(CrossProduct3d(m_Direction,m_Up));
+    m_TransMtx[0]=m_Scale.x*Side.x; 	m_TransMtx[4]=m_Scale.y*m_Up.x; 	m_TransMtx[8 ]=m_Scale.z*m_Direction.x; 	m_TransMtx[12]=m_Position.x ;
+    m_TransMtx[1]=m_Scale.x*Side.y; 	m_TransMtx[5]=m_Scale.y*m_Up.y; 	m_TransMtx[9 ]=m_Scale.z*m_Direction.y; 	m_TransMtx[13]=m_Position.y ;
+    m_TransMtx[2]=m_Scale.x*Side.z; 	m_TransMtx[6]=m_Scale.y*m_Up.z; 	m_TransMtx[10]=m_Scale.z*m_Direction.z; 	m_TransMtx[14]=m_Position.z ;
     m_TransMtx[3]=0.0f  ; 				m_TransMtx[7]=0.0f  ;  				m_TransMtx[11]=0.0f        ; 				m_TransMtx[15]=1.0f         ;
 };

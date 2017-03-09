@@ -60,14 +60,15 @@ namespace TTB{
     class GLRenderer{
     public:
         const GLenum DrawBuff[5]={GL_COLOR_ATTACHMENT0,
-                                    GL_COLOR_ATTACHMENT1,
-                                    GL_COLOR_ATTACHMENT2/*,GL_COLOR_ATTACHMENT3,GL_COLOR_ATTACHMENT4*/};
+                                   GL_COLOR_ATTACHMENT1,
+                                   GL_COLOR_ATTACHMENT2,
+                                   GL_COLOR_ATTACHMENT3/*,GL_COLOR_ATTACHMENT3,GL_COLOR_ATTACHMENT4*/};
         enum TextureOrder {
             DEPTH_TEXTURE=0,
             DIFFUSE_TEXTURE=1,
             SPECULAR_TEXTURE=2,///+roughness in alpha channel
-            NORMAL_TEXTURE=3,
-            SHADOW_TEXTURE=4
+            POSITION_TEXTURE=3,
+            NORMAL_TEXTURE=4
 
         };
         GLRenderer(RenderMode Type=DEFERRED_RENDERING);

@@ -132,10 +132,9 @@ void TTB::Model3D::Destroy(){
 _s16b TTB::Model3D::LoadModelFromFile(char* filename){
 	if(!m_GLRenderer)
         return 0 ;
-	const aiScene* Scene=aiImportFile(filename,aiProcess_GenSmoothNormals | aiProcess_Triangulate |
+	const aiScene* Scene=aiImportFile(filename,aiProcess_Triangulate |
                                                  aiProcess_GenUVCoords | aiProcess_PreTransformVertices|
-                                                 aiProcess_RemoveRedundantMaterials | aiProcess_FlipUVs |
-                                                 aiProcess_CalcTangentSpace);
+                                                 aiProcess_RemoveRedundantMaterials /*| aiProcess_FlipUVs*/ );
 	//if failed
 	if(!Scene){
         printf("error loading file\n");
@@ -204,14 +203,14 @@ _s16b   TTB::Model3D::InitVAOs(){
         m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER,v_Buffers[i].TexCoords);
         m_GLRenderer->SetVertexAttribPointer(2,2,0,0);
         m_GLRenderer->EnableVertexAttribArray(2);
-/*
+
         m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER,v_Buffers[i].TangentBuffer);
         m_GLRenderer->SetVertexAttribPointer(3,3,0,0);
         m_GLRenderer->EnableVertexAttribArray(3);
 
         m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER,v_Buffers[i].BitangentBuffer);
         m_GLRenderer->SetVertexAttribPointer(4,3,0,0);
-        m_GLRenderer->EnableVertexAttribArray(4);*/
+        m_GLRenderer->EnableVertexAttribArray(4);
 
         m_GLRenderer->BindBuffer(GL_ELEMENT_ARRAY_BUFFER,v_Buffers[i].IndexBuffer);
     }
@@ -232,7 +231,7 @@ void TTB::Model3D::Render(Camera* Selected){
         m_GLRenderer->SetShaderProgram(m_ShaderProgram);
         ///setup uniform variable
         ///Matrices
-        m_GLRenderer->SetUniformvMtx(m_GLRenderer->GetUniformLocation(m_ShaderProgram,"WorldMtx"),this->getTransMtx());
+        m_GLRenderer->SetUniformvMtx(m_GLRenderer->GetUniformLocation(m_ShaderProgram,"WorldMtx"),BaseActor::getTransMtx());
         m_GLRenderer->SetUniformvMtx(m_GLRenderer->GetUniformLocation(m_ShaderProgram,"ViewMtx"),Selected->getViewMtx());
         m_GLRenderer->SetUniformvMtx(m_GLRenderer->GetUniformLocation(m_ShaderProgram,"ProjMtx"),Selected->getProjectionMtx());
         for(_u32b i = 0 ;i<m_nbMeshes;++i){
@@ -340,11 +339,10 @@ _u16b TTB::Model3D::CopyNormals(const aiVector3D*   buffer,_u32b nbVertices){
         if(!(v_Meshes[m_nbMeshes-1].NormalBuffer))
             return 0;
         v_Meshes[m_nbMeshes-1].nbNormals=nbVertices ;
-        printf("has Normals \ n");
         for(_u32b i=0 ; i<nbVertices;i++){
-            v_Meshes[m_nbMeshes-1].NormalBuffer[i*3  ]=buffer[i].x;
-            v_Meshes[m_nbMeshes-1].NormalBuffer[i*3+1]=buffer[i].y;
-            v_Meshes[m_nbMeshes-1].NormalBuffer[i*3+2]=buffer[i].z;
+            v_Meshes[m_nbMeshes-1].NormalBuffer[i*3  ]=buffer[i].x+0.0f;
+            v_Meshes[m_nbMeshes-1].NormalBuffer[i*3+1]=buffer[i].y+0.0f;
+            v_Meshes[m_nbMeshes-1].NormalBuffer[i*3+2]=buffer[i].z+0.0f ;
         }
         return 1 ;
     }
@@ -378,9 +376,12 @@ _u16b TTB::Model3D::CopyFaces(const aiFace* Faces, _u32b nbFaces){
             return 0;
         v_Meshes[m_nbMeshes-1].nbFaces=nbFaces ;
         for(_u32b i=0 ; i<nbFaces;i++){
-            v_Meshes[m_nbMeshes-1].IndexBuffer[i*3  ]=Faces[i].mIndices[0];
+            /*v_Meshes[m_nbMeshes-1].IndexBuffer[i*3  ]=Faces[i].mIndices[0];
             v_Meshes[m_nbMeshes-1].IndexBuffer[i*3+1]=Faces[i].mIndices[1];
-            v_Meshes[m_nbMeshes-1].IndexBuffer[i*3+2]=Faces[i].mIndices[2];
+            v_Meshes[m_nbMeshes-1].IndexBuffer[i*3+2]=Faces[i].mIndices[2];*/
+            v_Meshes[m_nbMeshes-1].IndexBuffer[i*3  ]=Faces[i].mIndices[0];
+            v_Meshes[m_nbMeshes-1].IndexBuffer[i*3+1]=Faces[i].mIndices[2];
+            v_Meshes[m_nbMeshes-1].IndexBuffer[i*3+2]=Faces[i].mIndices[1];
         }
         return 1 ;
     }
