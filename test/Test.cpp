@@ -97,7 +97,7 @@ int TTB::Test::Init(){
     light->setOrientation({0.0f,0.0f,1.0f},{0.0f,1.0f,0.0f});
     m_CurrentScene->AddLight(light);*/
 
-
+    /*
     light= new PointLight({0.0f,-20.0f,0.0f});
     m_CurrentScene->AddLight(light);
 
@@ -109,8 +109,15 @@ int TTB::Test::Init(){
 
     light= new PointLight({0.0f,0.0f,20.0f});
     m_CurrentScene->AddLight(light);
+    */
 
+    light=new SpotLight({0.0,20.0f,-10.0f});
+    light->setOrientation({0.5f,-0.5f,0.0f},{0.0f,0.0f,1.0});
+    m_CurrentScene->AddLight(light);
 
+    light=new SpotLight({0.0,20.0f,10.0f});
+    light->setOrientation({-0.5f,-0.5f,0.0f},{0.0f,0.0f,1.0});
+    m_CurrentScene->AddLight(light);
 
     ///ecerything is good
     return 1 ;

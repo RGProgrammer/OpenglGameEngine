@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1489085428 source:d:\rami\projects\pc projects\pc3dgameengine\core\baseactors\baseactor.cpp
+1489146386 source:d:\rami\projects\pc projects\pc3dgameengine\core\baseactors\baseactor.cpp
 	"BaseActor.h"
 
 1488729648 d:\rami\projects\pc projects\pc3dgameengine\core\baseactors\baseactor.h
@@ -182,13 +182,14 @@
 1484753461 source:d:\rami\projects\pc projects\pc3dgameengine\test\main.cpp
 	"Test.h"
 
-1488195752 d:\rami\projects\pc projects\pc3dgameengine\test\test.h
+1489145078 d:\rami\projects\pc projects\pc3dgameengine\test\test.h
 	"../Core/Graphics/Window.h"
 	"../Core/Graphics/GLRenderer.h"
 	"../Core/Graphics/Model3D.h"
 	"../Core/Scene/GameScene.h"
 	"../Core/Scene/DirectionnalLight.h"
 	"../Core/Scene/PointLight.h"
+	"../Core/Scene/SpotLight.h"
 
 1489080804 d:\rami\projects\pc projects\pc3dgameengine\core\graphics\glrenderer.h
 	"..//Common//BasePrimitiveTypes.h"
@@ -217,7 +218,7 @@
 	"..//..//tools//glew//glew.h"
 	"..//..//tools//glfw//glfw3.h"
 
-1489086916 source:d:\rami\projects\pc projects\pc3dgameengine\test\test.cpp
+1489158752 source:d:\rami\projects\pc projects\pc3dgameengine\test\test.cpp
 	"Test.h"
 
 1484852977 d:\rami\projects\pc projects\pc3dgameengine\core\graphics\model3d.h
@@ -243,7 +244,7 @@
 1488109936 d:\rami\projects\pc projects\pc3dgameengine\core\scene\\lightsource.h
 	"..//BaseActors//BaseActor.h"
 
-1489086547 source:d:\rami\projects\pc projects\pc3dgameengine\core\scene\lightsource.cpp
+1489156175 source:d:\rami\projects\pc projects\pc3dgameengine\core\scene\lightsource.cpp
 	".//LightSource.h"
 
 1488051164 d:\rami\projects\pc projects\pc3dgameengine\core\scene\pointlight.h
@@ -265,5 +266,14 @@
 	".//DirectionnalLight.h"
 
 1488141785 d:\rami\projects\pc projects\pc3dgameengine\core\scene\\directionnallight.h
+	".//LightSource.h"
+
+1489142265 d:\rami\projects\pc projects\pc3dgameengine\core\scene\spotlight.h
+	".//LightSource.h"
+
+1489158687 source:d:\rami\projects\pc projects\pc3dgameengine\core\scene\spotlight.cpp
+	".//SpotLight.h"
+
+1489142265 d:\rami\projects\pc projects\pc3dgameengine\core\scene\\spotlight.h
 	".//LightSource.h"
 

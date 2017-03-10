@@ -82,6 +82,7 @@
 		<Unit filename="Core/Scene/LightSource.h" />
 		<Unit filename="Core/Scene/PointLight.cpp" />
 		<Unit filename="Core/Scene/PointLight.h" />
+		<Unit filename="Core/Scene/SpotLight.cpp" />
 		<Unit filename="Core/Scene/SpotLight.h" />
 		<Unit filename="test/Test.cpp" />
 		<Unit filename="test/Test.h" />

@@ -2,17 +2,17 @@
 
 TTB::LightSource::LightSource(): BaseActor(),
                                     m_DiffuseColor{1.0,1.0,1.0},m_SpecularColor{1.0,1.0,1.0},m_AmbientColor{1.0,1.0,1.0},
-                                    m_Distance(10.0f),m_Shiness(100.0f),m_CutoffAngle(-1.0f)
+                                    m_Distance(0.90f),m_Shiness(1.0f),m_CutoffAngle(-1.0f)
 { m_ID |= LIGHTSOURCE ;};
 
 TTB::LightSource::LightSource(Vertex3d Pos): BaseActor(Pos),
                                     m_DiffuseColor{1.0,1.0,1.0},m_SpecularColor{1.0,1.0,1.0},m_AmbientColor{1.0,1.0,1.0},
-                                    m_Distance(10.0f),m_Shiness(100.0f),m_CutoffAngle(-1.0f)
+                                    m_Distance(0.90f),m_Shiness(1.0f),m_CutoffAngle(-1.0f)
 { m_ID |= LIGHTSOURCE ;};
 
 TTB::LightSource::LightSource(Vertex3d Pos,Vertex3d Dir,Vertex3d Up): BaseActor(Pos,Dir,Up),
                                     m_DiffuseColor{1.0,1.0,1.0},m_SpecularColor{1.0,1.0,1.0},m_AmbientColor{1.0,1.0,1.0},
-                                    m_Distance(10.0f),m_Shiness(100.0f),m_CutoffAngle(-1.0f)
+                                    m_Distance(0.90f),m_Shiness(1.0f),m_CutoffAngle(-1.0f)
 { m_ID |= LIGHTSOURCE ;};
 
 TTB::LightSource::~LightSource(){

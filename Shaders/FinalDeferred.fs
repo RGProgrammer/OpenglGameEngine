@@ -71,7 +71,7 @@ void main(){
 					}
 
 				}else{// is a SpotLight
-					LightDir=(ViewMtx*Sources[i].WorldMtx[3]).xyz-PositionColor;
+					LightDir=PositionColor-Sources[i].WorldMtx[3].xyz;
 					SpotDirection=Sources[i].WorldMtx[2].xyz;
 					if(dot(SpotDirection,LightDir)> Sources[i].CutoffAngle){
 						Intensity=max(dot(NormalColor,LightDir),0.0);

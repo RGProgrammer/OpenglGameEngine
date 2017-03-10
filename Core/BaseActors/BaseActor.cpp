@@ -1,11 +1,19 @@
 #include "BaseActor.h"
 
-TTB::BaseActor::BaseActor():BaseActor({0.0f,0.0f,0.0f})
-{};
-TTB::BaseActor::BaseActor(Vertex3d Pos):BaseActor(Pos,{0.0f,0.0f,-1.0f},{0.0f,1.0f,0.0f})
-{};
+TTB::BaseActor::BaseActor():m_ID(UNKNOWN),  m_Position({0.0f,0.0f,0.0f}), m_Direction({0.0f,0.0f,-1.0f}),
+                            m_Up({0.0f,1.0f,0.0f}),  m_TransMtx(NULL),m_Scale({1.0f,1.0f,1.0f})
+{
+    m_TransMtx=(_float*)malloc(16*sizeof(_float));
+	UpdateTransMtx();
+};
+TTB::BaseActor::BaseActor(Vertex3d Pos):m_ID(UNKNOWN),  m_Position(Pos), m_Direction({0.0f,0.0f,-1.0f}),
+                                        m_Up({0.0f,1.0f,0.0f}),  m_TransMtx(NULL),m_Scale({1.0f,1.0f,1.0f})
+{
+    m_TransMtx=(_float*)malloc(16*sizeof(_float));
+	UpdateTransMtx();
+};
 TTB::BaseActor::BaseActor(Vertex3d Pos,Vertex3d Dir,Vertex3d Up):m_ID(UNKNOWN),  m_Position(Pos), m_Direction(Dir),
-			m_Up(Up),  m_TransMtx(NULL),m_Scale({1.0f,1.0f,1.0f})
+                                                                m_Up(Up),  m_TransMtx(NULL),m_Scale({1.0f,1.0f,1.0f})
 {
 	m_TransMtx=(_float*)malloc(16*sizeof(_float));
 	UpdateTransMtx();
