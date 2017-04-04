@@ -58,11 +58,9 @@ namespace TTB{
 
     } gfxConfig;
     class GLRenderer{
-    public:
-        const GLenum DrawBuff[5]={GL_COLOR_ATTACHMENT0,
-                                   GL_COLOR_ATTACHMENT1,
-                                   GL_COLOR_ATTACHMENT2,
-                                   GL_COLOR_ATTACHMENT3/*,GL_COLOR_ATTACHMENT3,GL_COLOR_ATTACHMENT4*/};
+    private:
+		GLenum DrawBuff[5];
+
         enum TextureOrder {
             DEPTH_TEXTURE=0,
             DIFFUSE_TEXTURE=1,
@@ -71,6 +69,7 @@ namespace TTB{
             NORMAL_TEXTURE=4
 
         };
+	public:
         GLRenderer(RenderMode Type=DEFERRED_RENDERING);
         ~GLRenderer();
         void Destroy();
@@ -101,8 +100,8 @@ namespace TTB{
         _bool BindTexture(_u32b textureID);
 
         ///ShaderProgramManagement
-        GLuint  CreateGLProgramFromBuffer(_s8b* VertexSource,_s8b* FragmentSource);
-        GLuint  CreateGLProgramFromFile(_s8b* VertexFile,_s8b* FragmentFile);
+        GLuint  CreateGLProgramFromBuffer(const _s8b* VertexSource,const _s8b* FragmentSource);
+        GLuint  CreateGLProgramFromFile(const _s8b* VertexFile,const _s8b* FragmentFile);
         void    DeleteGLProgram(_u32b ProgramID);
         _s32b   GetUniformLocation(_u32b program,_s8b*   Name);
         _bool   SetUniformF(_s32b Location,_float data );
@@ -119,8 +118,8 @@ namespace TTB{
         _bool AttachTextures();
         _bool InitFinalPhase();
         void RenderToScreen();
-        static inline GLuint LoadShaderFile(GLenum type,_s8b* filename);
-        static inline GLuint LoadShaderBuffer(GLenum type,_s8b* Buffer,int buffersize);
+        static inline GLuint LoadShaderFile(GLenum type,const _s8b* filename);
+        static inline GLuint LoadShaderBuffer(GLenum type,const _s8b* Buffer,int buffersize);
 
     private :
         Window*                 m_Target ;

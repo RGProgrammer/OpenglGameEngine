@@ -1,0 +1,126 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{1BC7B856-DDAE-45C5-9506-ADDEE1EFD93E}</ProjectGuid>
+    <RootNamespace>RGP_GameEngine</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(SolutionDir)$(Configuration)\..\..\bin</OutDir>
+    <TargetName>$(ProjectName)_VS_Release</TargetName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(SolutionDir)$(Configuration)\..\..\bin</OutDir>
+    <TargetName>$(ProjectName)_VS_Debug</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>../../tools/glew/lib/Release/Win32/glew32s.lib;../../tools/assimp/lib/assimp.lib;../../tools/glfw/VClibs/glfw3dll.lib;../../tools/openal/libs/Win32/OpenAL32.lib;../../tools/SOIL/lib/SOIL.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>../../tools/glew/lib/Release/Win32/glew32s.lib;../../tools/assimp/lib/assimp.lib;../../tools/glfw/VClibs/glfw3dll.lib;../../tools/openal/libs/Win32/OpenAL32.lib;../../tools/SOIL/lib/SOIL.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Core\BaseActors\BaseActor.cpp" />
+    <ClCompile Include="..\..\Core\BaseActors\Dynamic.cpp" />
+    <ClCompile Include="..\..\Core\BaseActors\Physical.cpp" />
+    <ClCompile Include="..\..\Core\BaseActors\Renderable.cpp" />
+    <ClCompile Include="..\..\Core\Common\StringOP.cpp" />
+    <ClCompile Include="..\..\Core\Common\Timer.cpp" />
+    <ClCompile Include="..\..\Core\Graphics\GLRenderer.cpp" />
+    <ClCompile Include="..\..\Core\Graphics\Model3D.cpp" />
+    <ClCompile Include="..\..\Core\Graphics\Window.cpp" />
+    <ClCompile Include="..\..\Core\Physics\PhysicsEngine.cpp" />
+    <ClCompile Include="..\..\Core\Scene\Camera.cpp" />
+    <ClCompile Include="..\..\Core\Scene\DirectionnalLight.cpp" />
+    <ClCompile Include="..\..\Core\Scene\GameScene.cpp" />
+    <ClCompile Include="..\..\Core\Scene\LightSource.cpp" />
+    <ClCompile Include="..\..\Core\Scene\PointLight.cpp" />
+    <ClCompile Include="..\..\Core\Scene\SpotLight.cpp" />
+    <ClCompile Include="..\..\Core\Sound\SoundEngine.cpp" />
+    <ClCompile Include="..\..\test\main.cpp" />
+    <ClCompile Include="..\..\test\Test.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Core\BaseActors\BaseActor.h" />
+    <ClInclude Include="..\..\Core\BaseActors\Dynamic.h" />
+    <ClInclude Include="..\..\Core\BaseActors\Physical.h" />
+    <ClInclude Include="..\..\Core\BaseActors\Renderable.h" />
+    <ClInclude Include="..\..\Core\Common\BasePrimitiveTypes.h" />
+    <ClInclude Include="..\..\Core\Common\Math.h" />
+    <ClInclude Include="..\..\Core\Common\StringOP.h" />
+    <ClInclude Include="..\..\Core\Common\Thread.h" />
+    <ClInclude Include="..\..\Core\Common\Timer.h" />
+    <ClInclude Include="..\..\Core\Graphics\glHeaders.h" />
+    <ClInclude Include="..\..\Core\Graphics\GLRenderer.h" />
+    <ClInclude Include="..\..\Core\Graphics\Model3D.h" />
+    <ClInclude Include="..\..\Core\Graphics\Window.h" />
+    <ClInclude Include="..\..\Core\Physics\ParticleSystem.h" />
+    <ClInclude Include="..\..\Core\Physics\PhysicsEngine.h" />
+    <ClInclude Include="..\..\Core\Scene\Camera.h" />
+    <ClInclude Include="..\..\Core\Scene\DirectionnalLight.h" />
+    <ClInclude Include="..\..\Core\Scene\GameScene.h" />
+    <ClInclude Include="..\..\Core\Scene\LightSource.h" />
+    <ClInclude Include="..\..\Core\Scene\PointLight.h" />
+    <ClInclude Include="..\..\Core\Scene\SpotLight.h" />
+    <ClInclude Include="..\..\Core\Sound\SoundEngine.h" />
+    <ClInclude Include="..\..\test\Test.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

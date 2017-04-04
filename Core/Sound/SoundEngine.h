@@ -1,6 +1,6 @@
 #ifndef PFE_SOUNDENGINE_H_
 #define PFE_SOUNDENGINE_H_
-#include "..//BaseActorsTypes//BaseActor.h"
+#include "..//BaseActors//BaseActor.h"
 #include "..//..//tools//Openal//al.h"
 #include "..//..//tools//Openal//alc.h"
 #include <stdlib.h>

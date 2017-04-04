@@ -25,14 +25,21 @@ void TTB::Test::Start(){
 
     TTB::Model3D* testmodel1=new Model3D();
     testmodel1->setRenderer(m_Renderer);
-    if(!testmodel1->LoadModelFromFile(".//test//Sky//skybox.obj"))
+    if(!testmodel1->LoadModelFromFile("..//test//Sky//skybox.obj"))
         printf("error loading test Model\n");
     m_CurrentScene->AddActor(testmodel1);
     TTB::Model3D* testmodel2=new Model3D();
     testmodel2->setRenderer(m_Renderer);
-    if(!testmodel2->LoadModelFromFile(".//test//test1.obj"))
+    if(!testmodel2->LoadModelFromFile("..//test//test1.obj"));
         printf("error loading test Model\n");
     m_CurrentScene->AddActor(testmodel2);
+/*
+    TTB::Model3D* testmodel3=new Model3D();
+    testmodel3->setRenderer(m_Renderer);
+    testmodel3->ScaleUniform(5.0f);
+    if(!testmodel3->LoadModelFromFile(".//test//test3.obj"))
+        printf("error loading test Model\n");
+    m_CurrentScene->AddActor(testmodel3);*/
 
     while(true){
         int state;
@@ -93,13 +100,13 @@ int TTB::Test::Init(){
     ///add some models to the scene for test
     LightSource* light=NULL ;
 
-    /*light=new DirectionnalLight();
+    light=new DirectionnalLight();
     light->setOrientation({0.0f,0.0f,1.0f},{0.0f,1.0f,0.0f});
-    m_CurrentScene->AddLight(light);*/
+    m_CurrentScene->AddLight(light);
 
     /*
     light= new PointLight({0.0f,-20.0f,0.0f});
-    m_CurrentScene->AddLight(light);
+    m_CurrentScene->AddLight(light);UpdateProjectionMtx
 
     light= new PointLight({20.0f,0.0f,0.0f});
     m_CurrentScene->AddLight(light);
@@ -110,15 +117,11 @@ int TTB::Test::Init(){
     light= new PointLight({0.0f,0.0f,20.0f});
     m_CurrentScene->AddLight(light);
     */
-
-    light=new SpotLight({0.0,20.0f,-10.0f});
-    light->setOrientation({0.5f,-0.5f,0.0f},{0.0f,0.0f,1.0});
+    /*
+    light=new SpotLight({0.0f,0.0f,20.0f});
+    light->setOrientation({0.0f,0.0,1.0f},{0.0f,1.0f,0.0f});
     m_CurrentScene->AddLight(light);
-
-    light=new SpotLight({0.0,20.0f,10.0f});
-    light->setOrientation({-0.5f,-0.5f,0.0f},{0.0f,0.0f,1.0});
-    m_CurrentScene->AddLight(light);
-
+    */
     ///ecerything is good
     return 1 ;
 

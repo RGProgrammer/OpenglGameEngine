@@ -34,12 +34,12 @@ namespace TTB {
         _float   getLightCutoffAngle();
         _float   getLightShiness();
     protected:
-        _float               m_DiffuseColor[3] ;
-        _float               m_SpecularColor[3] ;
-        _float               m_AmbientColor[3] ;
-        _float              m_Distance ;
-        _float              m_CutoffAngle ;
-        _float              m_Shiness ;     ///light strength
+        _float				m_DiffuseColor[3] ;
+        _float				m_SpecularColor[3] ;
+        _float				m_AmbientColor[3] ;
+        _float				m_Distance ;
+        _float				m_CutoffAngle ;
+        _float				m_Shiness ;     ///light strength
 
 
 	};

@@ -116,17 +116,35 @@ void TTB::PhysicsEngine::FreeCollisionData(){
 	}
 };
 _bool TTB::PhysicsEngine::CollisionCheck(Physical* obj1,Physical* obj2){
-
+	return true;
 };
 _bool TTB::PhysicsEngine::CollisionBetween(BoxCollider* Col1 ,BoxCollider* Col2 ,Vertex3d* Center){
-
+	return true;
 };
-_bool TTB::PhysicsEngine::CollisionBetween(BoxCollider* Col1 ,ShpereCollider* Col2 ,Vertex3d*){};
-_bool TTB::PhysicsEngine::CollisionBetween(BoxCollider* Col1 ,CapsuleCollider*  Col2 ,Vertex3d*){};
-_bool TTB::PhysicsEngine::CollisionBetween(BoxCollider* Col1 ,RayCollider* Col2 ,Vertex3d*){};
-_bool TTB::PhysicsEngine::CollisionBetween(ShpereCollider* Col1 ,ShpereCollider* Col2 ,Vertex3d*){};
-_bool TTB::PhysicsEngine::CollisionBetween(ShpereCollider* Col1 ,CapsuleCollider* Col2 ,Vertex3d*){};
-_bool TTB::PhysicsEngine::CollisionBetween(ShpereCollider* Col1 ,RayCollider* Col2 ,Vertex3d*){};
-_bool TTB::PhysicsEngine::CollisionBetween(CapsuleCollider* Col1 ,CapsuleCollider* Col2 ,Vertex3d*){};
-_bool TTB::PhysicsEngine::CollisionBetween(CapsuleCollider* Col1 ,RayCollider* Col2 ,Vertex3d*){};
-_bool TTB::PhysicsEngine::CollisionBetween(RayCollider* Col1 ,RayCollider* Col2 ,Vertex3d*){};
+_bool TTB::PhysicsEngine::CollisionBetween(BoxCollider* Col1 ,ShpereCollider* Col2 ,Vertex3d*){
+	return true;
+};
+_bool TTB::PhysicsEngine::CollisionBetween(BoxCollider* Col1 ,CapsuleCollider*  Col2 ,Vertex3d*){
+	return true;
+};
+_bool TTB::PhysicsEngine::CollisionBetween(BoxCollider* Col1 ,RayCollider* Col2 ,Vertex3d*){
+	return true;
+};
+_bool TTB::PhysicsEngine::CollisionBetween(ShpereCollider* Col1 ,ShpereCollider* Col2 ,Vertex3d*){
+	return true;
+};
+_bool TTB::PhysicsEngine::CollisionBetween(ShpereCollider* Col1 ,CapsuleCollider* Col2 ,Vertex3d*){
+	return true;
+};
+_bool TTB::PhysicsEngine::CollisionBetween(ShpereCollider* Col1 ,RayCollider* Col2 ,Vertex3d*){
+	return true;
+};
+_bool TTB::PhysicsEngine::CollisionBetween(CapsuleCollider* Col1 ,CapsuleCollider* Col2 ,Vertex3d*){
+	return true;
+};
+_bool TTB::PhysicsEngine::CollisionBetween(CapsuleCollider* Col1 ,RayCollider* Col2 ,Vertex3d*){
+	return true;
+};
+_bool TTB::PhysicsEngine::CollisionBetween(RayCollider* Col1 ,RayCollider* Col2 ,Vertex3d*){
+	return true;
+};

@@ -1,4 +1,4 @@
-#version 410 
+#version 330 
 #define MAX_LIGHTS 100
 struct Light {
 	mat4	WorldMtx ;
@@ -87,12 +87,6 @@ void main(){
 		}
 	}else{
 		FinalColor=normalize(DiffuseColor.rgb+specularColor.rgb);
-		//FinalColor=specularColor.xyz;
-		//FinalColor=vec3(getDepthValue(texcoord0,Depth)) ;
-		//FinalColor=abs(NormalColor);
-		FinalColor=abs(PositionColor);
 	}
 	gl_FragColor=vec4(FinalColor,1.0);
 }
-
-

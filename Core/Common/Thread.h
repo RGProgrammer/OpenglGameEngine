@@ -14,7 +14,7 @@
 
 
 namespace TTB {
-    class enum _ThreadStatus{
+     enum _ThreadStatus{
         THREAD_STARTED,
         THREAD_PAUSED,
         THREAD_STOPED,

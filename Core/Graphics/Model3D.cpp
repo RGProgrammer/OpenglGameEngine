@@ -84,46 +84,56 @@ void TTB::Model3D::Destroy(){
             }
         }
         free(v_Buffers);
-        v_Buffers=0 ;
+        v_Buffers=NULL ;
 	}
 	if(v_Meshes){
+		printf("1\n");
 		for(_u32b i=0; i< m_nbMeshes ;i++){
 			if(v_Meshes[i].Name){
 				free(v_Meshes[i].Name);
 				v_Meshes[i].Name=NULL ;
 			}
+			printf("2\n");
 			if(v_Meshes[i].VertexBuffer){
 				free(v_Meshes[i].VertexBuffer=NULL);
 				v_Meshes[i].VertexBuffer=NULL ;
 			}
+			printf("3\n");
 			if(v_Meshes[i].TangentBuffer){
                 free(v_Meshes[i].TangentBuffer);
                 free(v_Meshes[i].BitangentBuffer);
                 v_Meshes[i].TangentBuffer=NULL ;
                 v_Meshes[i].BitangentBuffer=NULL ;
 			}
+			printf("4\n");
 			if(v_Meshes[i].NormalBuffer){
 				free(v_Meshes[i].NormalBuffer);
 				v_Meshes[i].NormalBuffer=NULL ;
 			}
+			printf("5\n");
 			if(v_Meshes[i].IndexBuffer){
 				free(v_Meshes[i].IndexBuffer);
 				v_Meshes[i].IndexBuffer=NULL ;
 			}
+			printf("6\n");
 			if(v_Meshes[i].TexCoords){
                 free(v_Meshes[i].TexCoords);
 				v_Meshes[i].TexCoords=NULL ;
 			}
+			printf("7\n");
 		}
 	free(v_Meshes);
+	printf("8\n");
 	v_Meshes=NULL ;
 	m_nbMeshes=0 ;
 	}
-	if(m_ShaderProgram){
+	if (m_ShaderProgram){
+		printf("5\n");
         m_GLRenderer->DeleteGLProgram(m_ShaderProgram);
         m_ShaderProgram=0;
 	}
 	if(m_FileDirectory){
+		printf("6\n");
         free(m_FileDirectory);
         m_FileDirectory=NULL;
 	}
@@ -165,8 +175,10 @@ _s16b TTB::Model3D::LoadModelFromFile(char* filename){
         printf("could not generate vertices buffers \n");
         return 0;
     }
-    if(!LoadShaderProg(".//Shaders//Model_Deferred.vs",".//Shaders//Model_Deferred.fs"))
-        printf("error loading shader program\n");
+	if (!LoadShaderProg("..//Shaders//Model_Deferred.vs", "..//Shaders//Model_Deferred.fs")){
+		printf("error loading shader program\n");
+		return 0;
+	}
     InitVAOs();
     return 1;
 };
@@ -302,9 +314,16 @@ _u16b TTB::Model3D::AddMesh(const char* Name, _u16b MaterialID){
     free(v_Meshes);
     v_Meshes=tmp;
     m_nbMeshes++;
-    v_Meshes[m_nbMeshes-1].Name=(char*)malloc(strlen(Name)*sizeof(char)) ;
-    if(v_Meshes[m_nbMeshes-1].Name)
-        strcpy(v_Meshes[m_nbMeshes-1].Name,Name);
+	if (Name){
+		printf("%s\n", Name);
+		v_Meshes[m_nbMeshes - 1].Name = (char*)malloc((strlen(Name)+1)*sizeof(char));
+		if (v_Meshes[m_nbMeshes - 1].Name){
+			strcpy(v_Meshes[m_nbMeshes - 1].Name, Name);
+		}
+	}
+	else
+		v_Meshes[m_nbMeshes - 1].Name = NULL;
+
     v_Meshes[m_nbMeshes-1].IndexBuffer=NULL;
     v_Meshes[m_nbMeshes-1].nbFaces=0;
     v_Meshes[m_nbMeshes-1].VertexBuffer=NULL ;
@@ -314,6 +333,7 @@ _u16b TTB::Model3D::AddMesh(const char* Name, _u16b MaterialID){
     v_Meshes[m_nbMeshes-1].BitangentBuffer=NULL;
     v_Meshes[m_nbMeshes-1].nbNormals=0;
     v_Meshes[m_nbMeshes-1].AppliedMaterial=MaterialID ;
+	return 1;
 };
 _u16b TTB::Model3D::CopyVertices(const aiVector3D*   buffer,_u32b nbVertices){
     ///copy vertexbuffer to the last mesh
@@ -424,9 +444,9 @@ _u16b TTB::Model3D::LoadMaterial(const aiScene* Scene){
 };
 _u16b TTB::Model3D::LoadMaterialstoMemory(const aiScene* Scene){
     m_nbMaterials=Scene->mNumMaterials;
-    _bool hasDiffusemap;
-    _bool hasNormalmap;
-    _bool hasSpecularmap;
+    _bool hasDiffusemap=false;
+	_bool hasNormalmap = false;
+	_bool hasSpecularmap = false;
     this->v_Materials=(Material*)malloc(m_nbMaterials*sizeof(Material));
     if(!v_Materials){
         return 0 ;

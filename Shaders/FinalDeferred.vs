@@ -1,4 +1,4 @@
-#version 410
+#version 330
 
 layout(location=0)in vec2 position ;
 layout(location=1)in vec2 texcoord ;
@@ -9,6 +9,8 @@ uniform vec3 CameraPos;
 out vec2 texcoord0 ;
 out vec3 CameraDir;
 out vec3 EyeDirection ;
+
+
 void main(){
 	vec2 halfSizeNearPlane=vec2(1.0/ProjMtx[0][0],1.0/ProjMtx[1][1]);
 	texcoord0=texcoord ;

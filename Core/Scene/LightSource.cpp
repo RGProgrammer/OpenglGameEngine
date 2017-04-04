@@ -1,19 +1,31 @@
 #include ".//LightSource.h"
 
-TTB::LightSource::LightSource(): BaseActor(),
-                                    m_DiffuseColor{1.0,1.0,1.0},m_SpecularColor{1.0,1.0,1.0},m_AmbientColor{1.0,1.0,1.0},
+TTB::LightSource::LightSource() : BaseActor(),
                                     m_Distance(0.90f),m_Shiness(1.0f),m_CutoffAngle(-1.0f)
-{ m_ID |= LIGHTSOURCE ;};
+{ 
+	m_ID |= LIGHTSOURCE;
+	m_DiffuseColor[0]  = 1.0f ; m_DiffuseColor[1]  = 1.0f; m_DiffuseColor[2]  = 1.0f;
+	m_SpecularColor[0] = 1.0f ; m_SpecularColor[1] = 1.0f; m_SpecularColor[2] = 1.0f;
+	m_AmbientColor[0]  = 0.2f ; m_AmbientColor[1]  = 0.2f; m_AmbientColor[2]  = 0.2f;
+};
 
 TTB::LightSource::LightSource(Vertex3d Pos): BaseActor(Pos),
-                                    m_DiffuseColor{1.0,1.0,1.0},m_SpecularColor{1.0,1.0,1.0},m_AmbientColor{1.0,1.0,1.0},
-                                    m_Distance(0.90f),m_Shiness(1.0f),m_CutoffAngle(-1.0f)
-{ m_ID |= LIGHTSOURCE ;};
+                                                 m_Distance(0.90f),m_Shiness(1.0f),m_CutoffAngle(-1.0f)
+{ 
+	m_ID |= LIGHTSOURCE ;
+	m_DiffuseColor[0] = 1.0f; m_DiffuseColor[1] = 1.0f; m_DiffuseColor[2] = 1.0f;
+	m_SpecularColor[0] = 1.0f; m_SpecularColor[1] = 1.0f; m_SpecularColor[2] = 1.0f;
+	m_AmbientColor[0] = 0.2f; m_AmbientColor[1] = 0.2f; m_AmbientColor[2] = 0.2f;
+};
 
 TTB::LightSource::LightSource(Vertex3d Pos,Vertex3d Dir,Vertex3d Up): BaseActor(Pos,Dir,Up),
-                                    m_DiffuseColor{1.0,1.0,1.0},m_SpecularColor{1.0,1.0,1.0},m_AmbientColor{1.0,1.0,1.0},
                                     m_Distance(0.90f),m_Shiness(1.0f),m_CutoffAngle(-1.0f)
-{ m_ID |= LIGHTSOURCE ;};
+{ 
+	m_ID |= LIGHTSOURCE ;
+	m_DiffuseColor[0] = 1.0f; m_DiffuseColor[1] = 1.0f; m_DiffuseColor[2] = 1.0f;
+	m_SpecularColor[0] = 1.0f; m_SpecularColor[1] = 1.0f; m_SpecularColor[2] = 1.0f;
+	m_AmbientColor[0] = 0.2f; m_AmbientColor[1] = 0.2f; m_AmbientColor[2] = 0.2f;
+};
 
 TTB::LightSource::~LightSource(){
     this->Destroy();

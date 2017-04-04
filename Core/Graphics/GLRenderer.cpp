@@ -11,6 +11,12 @@ TTB::GLRenderer::GLRenderer(RenderType Type):m_Target(NULL),m_isInitialized(fals
         m_Mode=Type ;
     else
         m_Mode=DEFERRED_RENDERING;
+
+	DrawBuff[0] = GL_COLOR_ATTACHMENT0;
+	DrawBuff[1] = GL_COLOR_ATTACHMENT1;
+	DrawBuff[2] = GL_COLOR_ATTACHMENT2;
+	DrawBuff[3] = GL_COLOR_ATTACHMENT3;
+
 };
 TTB::GLRenderer::~GLRenderer(){
     this->Destroy();
@@ -99,7 +105,7 @@ _bool TTB::GLRenderer::InitRenderer(gfxConfig Config){
         printf("error initializing final phase\n");
         //return false ;
     }
-    m_FinalRenderProgram=this->CreateGLProgramFromFile(".//Shaders//FinalDeferred.vs",".//Shaders//FinalDeferred.fs");
+    m_FinalRenderProgram=this->CreateGLProgramFromFile("..//Shaders//FinalDeferred.vs","..//Shaders//FinalDeferred.fs");
     if(!m_FinalRenderProgram){
         printf("error loading render program \n");
         return false ;
@@ -504,36 +510,56 @@ _bool TTB::GLRenderer::BindTexture(_u32b textureID){
     return true ;
 };
 ///ShaderProgramManagement
-GLuint   TTB::GLRenderer::CreateGLProgramFromBuffer(_s8b* VertexSource,_s8b* FragmentSource){
+GLuint   TTB::GLRenderer::CreateGLProgramFromBuffer(const _s8b* VertexSource,const _s8b* FragmentSource){
     GLuint program=0,vs=0,fs=0;
+	GLint error;
     vs=LoadShaderBuffer(GL_VERTEX_SHADER,VertexSource,strlen(VertexSource));
-    if(!vs)
-        return program ;
+	if (!vs){
+		return program;
+	}
     fs=LoadShaderBuffer(GL_FRAGMENT_SHADER,FragmentSource,strlen(FragmentSource));
     if(!fs){
         glDeleteShader(vs);
         return program ;
     }
-    if(program=glCreateProgram()){
-        glAttachShader(program,vs);
-        glAttachShader(program,fs);
-        glLinkProgram(program);
-        GLint linked;
-        glGetProgramiv(program, GL_LINK_STATUS, &linked);
-        if(!linked){
-            printf("error linking shader program\n");
-            glDeleteProgram(program);
-            program=0 ;
-        }
-    }else{
-        printf("cannot create shader program\n");
-    }
-    glDeleteShader(vs);
-    glDeleteShader(fs);
-    return program;
+	if (program = glCreateProgram()){
+		error = glGetError();
+		glAttachShader(program, vs);
+		if (error = glGetError()){
+			printf("error attaching shader \n");
+		}
+		glAttachShader(program, fs);
+		if (error = glGetError()){
+			printf("error attaching shader \n");
+		}
+		glLinkProgram(program);
+		if (error = glGetError()){
+			printf("error linking error code %d \n", error);
+		}
+		GLint linked;
+		glGetProgramiv(program, GL_LINK_STATUS, &linked);
+		if (linked == 0){
+			printf("error linking shader program %d  %d \n", linked, error);
+			GLint maxLength = 0;
+			glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
+			GLchar log[1024];
+			glGetProgramInfoLog(program, maxLength, &maxLength, log);
+			log[maxLength] = '\0';
+			printf("\n%s\n", log);
+			glDeleteProgram(program);
+			program = 0;
+		}
+	}
+	else{
+		printf("cannot create shader program\n");
+	}
+	glDeleteShader(vs);
+	glDeleteShader(fs);
+	return program;
 };
-GLuint   TTB::GLRenderer::CreateGLProgramFromFile(_s8b* VertexFile,_s8b* FragmentFile){
+GLuint   TTB::GLRenderer::CreateGLProgramFromFile(const _s8b* VertexFile,const _s8b* FragmentFile){
     GLuint program=0,vs=0,fs=0;
+	GLuint error=0;
     vs=LoadShaderFile(GL_VERTEX_SHADER,VertexFile);
     if(!vs)
         return program ;
@@ -543,14 +569,30 @@ GLuint   TTB::GLRenderer::CreateGLProgramFromFile(_s8b* VertexFile,_s8b* Fragmen
         return program ;
     }
     if(program=glCreateProgram()){
+		error=glGetError();
         glAttachShader(program,vs);
+		if (error=glGetError()){
+			printf("error attaching shader \n");
+		}
         glAttachShader(program,fs);
-        glLinkProgram(program);
+		if (error=glGetError()){
+			printf("error attaching shader \n");
+		}
+		glLinkProgram(program);
+		if (error=glGetError()){
+			printf("error linking error code %d \n", error);
+		}
         GLint linked;
         glGetProgramiv(program, GL_LINK_STATUS, &linked);
-        if(!linked){
-            printf("error linking shader program\n");
-            glDeleteProgram(program);
+        if(linked==0){
+            printf("error linking shader program %d  %d \n",linked, error);
+			GLint maxLength = 0;
+			glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
+			GLchar log[1024];
+			glGetProgramInfoLog(program, maxLength, &maxLength, log);
+			log[maxLength] = '\0';
+			printf("\n%s\n", log);
+			glDeleteProgram(program);
             program=0 ;
         }
     }else{
@@ -585,7 +627,7 @@ _bool   TTB::GLRenderer::SetUniformvMtx(_s32b Location,_float* Matrix_4x4 ){
 _bool   TTB::GLRenderer::SetUniformSample(_s32b Location, _u32b TextureUnit){
     glUniform1i(Location,TextureUnit);
      if(glGetError()){
-        printf("problem \n");
+        //printf("problem \n");
         return false ;
      }
     return true ;
@@ -613,7 +655,7 @@ _bool   TTB::GLRenderer::DisableVertexAttribArray(_u32b index){
 void    TTB::GLRenderer::SetShaderProgram(GLuint program){
     glUseProgram(program);
 };
-GLuint TTB::GLRenderer::LoadShaderFile(GLenum type,_s8b* filename){
+GLuint TTB::GLRenderer::LoadShaderFile(GLenum type,const _s8b* filename){
     GLuint Shader=0 ;
     _u32b buffersize=0;
     _s8b* buffer=NULL;
@@ -631,27 +673,33 @@ GLuint TTB::GLRenderer::LoadShaderFile(GLenum type,_s8b* filename){
         return 0;
     }
     fseek(Shaderfile,0,SEEK_SET);
-    buffer=(_s8b*)malloc(buffersize*sizeof(_s8b));
+    buffer=(_s8b*)malloc((buffersize+1)*sizeof(_s8b));
     if(!buffer){
         fclose(Shaderfile);
         return Shader;
     }
     fflush(stdin);
     fread(buffer,buffersize,1,Shaderfile);
+	buffer[buffersize] = '\0';
     fclose(Shaderfile);
     Shader=LoadShaderBuffer(type,buffer,buffersize);
     free(buffer);
     return Shader ;
 
 };
- GLuint TTB::GLRenderer::LoadShaderBuffer(GLenum type,_s8b* Buffer,int buffersize){
+ GLuint TTB::GLRenderer::LoadShaderBuffer(GLenum type,const _s8b* Buffer,int buffersize){
      GLuint Shader=0;
-    if(!Buffer || !buffersize)
-        return Shader ;
+	 if (!Buffer || !buffersize){
+		 printf("error no shader buffer ");
+		 return Shader;
+	 }
 
     Shader=glCreateShader(type);
+	glGetError();
     if(Shader){
         glShaderSource(Shader,1,(const _s8b**)(&Buffer),&buffersize);
+		if (glGetError())
+			printf("error shader source\n");
         glCompileShader(Shader);
         GLint compiled;
         glGetObjectParameterivARB(Shader, GL_COMPILE_STATUS, &compiled);
