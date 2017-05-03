@@ -1,5 +1,5 @@
-#ifndef _TTB_MODEL_3D_H_
-#define _TTB_MODEL_3D_H_
+#ifndef _RGP_MODEL_3D_H_
+#define _RGP_MODEL_3D_H_
 
 
 #include "..//..//tools//SOIL//SOIL.h"
@@ -11,7 +11,7 @@
 #include ".//GLRenderer.h"
 
 
-namespace TTB {
+namespace RGP_CORE {
     ///Mesh structure
     typedef struct {
 		char*			Name;
@@ -33,12 +33,13 @@ namespace TTB {
 		Model3D();
 		Model3D(Vertex3d Pos);
 		Model3D(Vertex3d Pos, Vertex3d Dir, Vertex3d Up);
-		~Model3D() ;
+		virtual ~Model3D() ;
 		virtual void 	Destroy() ;
 		_s16b			LoadModelFromFile(char* filename);
 		virtual _s16b   LoadShaderProg(char* VS_File,char* FS_File);
 		virtual _s16b   InitVAOs();
 		virtual void 	Render(Camera* Selected);
+		virtual void	CastShadow();
 	protected:
 		_u16b ProcessNode(aiNode* Node,const aiScene* Scene);/// currently this function copy only a static model
         _u16b AddMesh(const char* Name,_u16b MaterialID);
@@ -55,6 +56,7 @@ namespace TTB {
 	protected:
 		pMesh					v_Meshes ;
 		MeshBuffers*            v_Buffers ;
+		GLuint*					m_VAOforShadowcasting;
 		_u32b					m_nbMeshes;
 		Material*               v_Materials;
 		OGLMaterial*            v_oglMaterials;

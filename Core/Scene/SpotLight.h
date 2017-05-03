@@ -1,9 +1,9 @@
-#ifndef _TTB_SPOT_LIGHT_H_
-#define _TTB_SPOT_LIGHT_H_
+#ifndef _RGP_SPOT_LIGHT_H_
+#define _RGP_SPOT_LIGHT_H_
 
 #include ".//LightSource.h"
 
-namespace TTB {
+namespace RGP_CORE {
     class SpotLight : virtual public LightSource {
     public:
         SpotLight();

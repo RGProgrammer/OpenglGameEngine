@@ -1,10 +1,11 @@
 #ifndef TTB_CAMERA_TYPE_H_
 #define TTB_CAMERA_TYPE_H_
 #include "..//Common//Math.h"
+#include "..//BaseActors//BaseActor.h"
 #include <stdlib.h>
-namespace TTB{
+namespace RGP_CORE{
 
-	class Camera {
+	class Camera : public BaseActor{
 	public:
 		Camera();
 		virtual ~Camera();
@@ -23,13 +24,9 @@ namespace TTB{
 		_float* getViewMtx();
 		_float* getProjectionMtx();
 	protected:
-        Vertex3d			m_Pos;
-        Vertex3d 			m_Dir ;
-        Vertex3d			m_Up;
-        _float*				m_ViewMatrix ;
-
         _float				m_Near ;
 		_float				m_Far;
+		_float*				m_ViewMatrix;
 		_float*             m_ProjectionMtx;
 
 

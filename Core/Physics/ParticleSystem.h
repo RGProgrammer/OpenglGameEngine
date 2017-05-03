@@ -1,7 +1,7 @@
-#ifndef _TTB_PARTICLE_SYSTEM_H_
-#define _TTB_PARTICLE_SYSTEM_H_
+#ifndef _RGP_PARTICLE_SYSTEM_H_
+#define _RGP_PARTICLE_SYSTEM_H_
 #include "..//BaseActorTypes//Physical.h"
-namespace TTB {
+namespace RGP_CORE {
 	class Particle : virtual public Physical{
 	public:
 		Particle();

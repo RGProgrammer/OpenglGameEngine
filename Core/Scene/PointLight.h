@@ -1,9 +1,9 @@
-#ifndef _TTB_POINT_LIGHT_H_
-#define _TTB_POINT_LIGHT_H_
+#ifndef _RGP_POINT_LIGHT_H_
+#define _RGP_POINT_LIGHT_H_
 
 #include ".//LightSource.h"
 
-namespace TTB {
+namespace RGP_CORE {
     class PointLight: public LightSource {
     public:
         PointLight();

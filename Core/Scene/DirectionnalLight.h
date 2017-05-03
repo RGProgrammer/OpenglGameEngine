@@ -1,9 +1,9 @@
-#ifndef _TTB_DIRECTIONNAL_LIGHT_H_
-#define _TTB_DIRECTIONNAL_LIGHT_H_
+#ifndef _RGP_DIRECTIONNAL_LIGHT_H_
+#define _RGP_DIRECTIONNAL_LIGHT_H_
 
 #include ".//LightSource.h"
 
-namespace TTB {
+namespace RGP_CORE {
 
     class DirectionnalLight : public LightSource {
     public:

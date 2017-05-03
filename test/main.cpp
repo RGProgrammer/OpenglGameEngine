@@ -1,6 +1,6 @@
 #include "Test.h"
 
-using namespace TTB ;
+using namespace RGP_CORE ;
 int main(void){
     Test*   testprogram=new Test();
     if(!testprogram->Init()){

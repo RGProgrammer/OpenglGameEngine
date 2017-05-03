@@ -1,5 +1,5 @@
-#ifndef _TTB_PHYSICAL_TYPE_H_
-#define _TTB_PHYSICAL_TYPE_H_
+#ifndef _RGP_PHYSICAL_TYPE_H_
+#define _RGP_PHYSICAL_TYPE_H_
 
 #include ".//Dynamic.h"
 #include "..//Physics//PhysicsEngine.h"
@@ -9,7 +9,7 @@
 #define PHYSICAL              0x00000004
 
 
-namespace TTB {
+namespace RGP_CORE {
 	//forward Declaration
 	class Collider ;
 	typedef struct CollisionData CollisionData ;

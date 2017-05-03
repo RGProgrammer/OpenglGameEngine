@@ -1,5 +1,5 @@
-#ifndef _TTB_TEST_SAMPLE_H_
-#define _TTB_TEST_SAMPLE_H_
+#ifndef _RGP_TEST_SAMPLE_H_
+#define _RGP_TEST_SAMPLE_H_
 #include "../Core/Graphics/Window.h"
 #include "../Core/Graphics/GLRenderer.h"
 #include "../Core/Graphics/Model3D.h"
@@ -9,7 +9,7 @@
 #include "../Core/Scene/SpotLight.h"
 
 
-namespace TTB {
+namespace RGP_CORE {
     class Test {
     public :
         Test();
@@ -23,4 +23,4 @@ namespace TTB {
         PerspCamera*        m_Camera ;
     };
 };
-#endif // _TTB_TEST_SAMPLE_H_
+#endif // _RGP_TEST_SAMPLE_H_

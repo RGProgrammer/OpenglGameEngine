@@ -1,5 +1,5 @@
-#ifndef _TTB_THREAD_IMPL_H_
-#define _TTB_THREAD_IMPL_H_
+#ifndef _RGP_THREAD_IMPL_H_
+#define _RGP_THREAD_IMPL_H_
 
 ///this file representation a crossplatform thread implementation
 ///since its(thread)  declaration between windows and linux is different.
@@ -13,7 +13,7 @@
 #endif // WIN32
 
 
-namespace TTB {
+namespace RGP_CORE {
      enum _ThreadStatus{
         THREAD_STARTED,
         THREAD_PAUSED,
@@ -40,4 +40,4 @@ namespace TTB {
 
     };
 };
-#endif // _TTB_THREAD_IMPL_H_
+#endif // _RGP_THREAD_IMPL_H_

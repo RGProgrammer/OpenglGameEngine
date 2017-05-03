@@ -6,7 +6,7 @@
 #include <string.h>
 
 
-namespace TTB{
+namespace RGP_CORE{
 
 	_s16b contains(const _s8b* str1,const _s8b* str2);//the resturn the index of the occurence starting from 1
 	_s16b CatStrings(const _s8b* str1,const _s8b* str2,_s8b** Dest);//concat 2 string

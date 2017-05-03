@@ -1,11 +1,11 @@
-#ifndef _TTB_LIGHTSOURCE_TYPE_H_
-#define _TTB_LIGHTSOURCE_TYPE_H_
+#ifndef _RGP_LIGHTSOURCE_TYPE_H_
+#define _RGP_LIGHTSOURCE_TYPE_H_
 
 #include "..//BaseActors//BaseActor.h"
 
 #define LIGHTSOURCE         0x00000008
 
-namespace TTB {
+namespace RGP_CORE {
 
 	class LightSource: virtual public BaseActor {
     protected:
@@ -33,13 +33,20 @@ namespace TTB {
         _float   getLightAttinuation();
         _float   getLightCutoffAngle();
         _float   getLightShiness();
+
+		_float*	getLightViewMtx();
+		_float*	getLightProjectionMtx();
     protected:
+		void	UpdateLightViewMtx();
+		void	UpdateLightProjectionMtx();
         _float				m_DiffuseColor[3] ;
         _float				m_SpecularColor[3] ;
         _float				m_AmbientColor[3] ;
         _float				m_Distance ;
         _float				m_CutoffAngle ;
         _float				m_Shiness ;     ///light strength
+		_float				m_LightViewMtx[16];
+		_float				m_LightProjectionMtx[16]; 
 
 
 	};

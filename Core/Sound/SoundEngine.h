@@ -10,7 +10,7 @@
 #define SPAUSE       1
 #define SPLAY        2
 
-namespace TTB {
+namespace RGP_CORE {
 
     typedef struct {
         ALenum Format ;
@@ -25,9 +25,9 @@ namespace TTB {
         ~SoundEngine();
         int InitEngine();
         void Destroy();
-        void setListener(TTB::BaseActor* Listener);
+        void setListener(RGP_CORE::BaseActor* Listener);
         ALuint LoadSound(Sound sound);
-        void PlaySound(ALuint IDSound,TTB::BaseActor* source=NULL);
+        void PlaySound(ALuint IDSound,RGP_CORE::BaseActor* source=NULL);
         _bool LoadMusic(Sound* Music ,_bool repeat=false);
         void setRepeatMusic(_bool Repeat);
         _bool isRepeating ();

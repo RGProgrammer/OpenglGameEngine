@@ -1,11 +1,22 @@
 #include ".//GLRenderer.h"
 
-TTB::GLRenderer::GLRenderer(RenderType Type):m_Target(NULL),m_isInitialized(false) ,
-                                            m_NumFBOs(0),m_FBOs(NULL),m_SelectedFBO(0),
-                                            m_SelectedScene (NULL),
+RGP_CORE::GLRenderer::GLRenderer(RenderType Type):m_Target(NULL),m_isInitialized(false) ,
+											m_SelectedScene(NULL),
+
+											m_NumFBOs(0),m_FBOs(NULL),m_SelectedFBO(0),
                                             m_AttachmentTextures(NULL),
+
                                             m_FinalRenderSurface(NULL),
-                                            m_FinalRenderProgram(0)
+                                            m_FinalRenderProgram(0),
+
+											m_NumShadowFBOs(0),
+											m_ShadowRenderingProgram(0),
+											m_ShadowFBOs(NULL),
+											m_ShadowAttachmentTexture(NULL),
+											m_CombinedShadowResultFBO(0),
+											m_CombinedShadowResultTexture(0),
+											m_CombineShadowProgram(0)
+											
 {
     if(Type==DEFERRED_RENDERING || Type==FORWARD_RENDERING)
         m_Mode=Type ;
@@ -18,10 +29,10 @@ TTB::GLRenderer::GLRenderer(RenderType Type):m_Target(NULL),m_isInitialized(fals
 	DrawBuff[3] = GL_COLOR_ATTACHMENT3;
 
 };
-TTB::GLRenderer::~GLRenderer(){
+RGP_CORE::GLRenderer::~GLRenderer(){
     this->Destroy();
 };
-void TTB::GLRenderer::Destroy(){
+void RGP_CORE::GLRenderer::Destroy(){
     if(m_FBOs){
         glDeleteFramebuffers(m_NumFBOs,m_FBOs);
         free(m_FBOs);
@@ -39,6 +50,34 @@ void TTB::GLRenderer::Destroy(){
         free(m_AttachmentTextures);
         m_AttachmentTextures=NULL ;
     }
+	if (m_ShadowFBOs){
+		if (m_ShadowAttachmentTexture){
+			glDeleteTextures(m_NumShadowFBOs, m_ShadowAttachmentTexture);
+			free(m_ShadowAttachmentTexture);
+			m_ShadowAttachmentTexture = NULL;
+		}
+		glDeleteFramebuffers(m_NumShadowFBOs, m_ShadowFBOs);
+		free(m_ShadowFBOs);
+		m_ShadowFBOs = NULL;
+		m_NumShadowFBOs = 0;
+	}
+	if (m_CombinedShadowResultFBO){
+		if (m_CombinedShadowResultTexture){
+			glDeleteTextures(1, &m_CombinedShadowResultTexture);
+			m_CombinedShadowResultTexture = 0;
+		}
+		glDeleteFramebuffers(1, &m_CombinedShadowResultFBO);
+		m_CombinedShadowResultFBO = 0;
+	}
+	if (m_ShadowRenderingProgram){
+		glDeleteProgram(m_ShadowRenderingProgram);
+		m_ShadowRenderingProgram = 0;
+	}
+	if (m_CombineShadowProgram){
+		glDeleteProgram(m_CombineShadowProgram);
+		m_CombineShadowProgram = 0;
+	}
+
     if(m_FinalRenderSurface){
         if(m_FinalRenderSurface->IndexBuffer){
             glDeleteBuffers(1,&(m_FinalRenderSurface->IndexBuffer));
@@ -72,7 +111,7 @@ void TTB::GLRenderer::Destroy(){
     glfwTerminate();
 
 };
-_bool TTB::GLRenderer::InitRenderer(gfxConfig Config){
+_bool RGP_CORE::GLRenderer::InitRenderer(gfxConfig Config){
 
     ///initializinf GLFW and creating window ;
     if(!glfwInit()){
@@ -90,30 +129,23 @@ _bool TTB::GLRenderer::InitRenderer(gfxConfig Config){
         printf("error init GLEW\n");
         return false ;
     }
+	m_Config = Config;
     m_NumFBOs=Config.NumBackBuffers;
      if(!CreateNeededObjects()){
         printf("error Creating FBOs and Render Textures\n");
         return false ;
      }
 
-    if(!AttachTextures()){
-        printf("error Creating FBOs and Render Textures\n");
-        return false ;
-    }
-    ///preparing a surface for the final render
+   //final step to initialize the renderer
     if(!InitFinalPhase()){
         printf("error initializing final phase\n");
         //return false ;
     }
-    m_FinalRenderProgram=this->CreateGLProgramFromFile("..//Shaders//FinalDeferred.vs","..//Shaders//FinalDeferred.fs");
-    if(!m_FinalRenderProgram){
-        printf("error loading render program \n");
-        return false ;
-    }
+    
     m_isInitialized=true ;
     return true ;
 };
-_bool TTB::GLRenderer::CreateNeededObjects(){
+_bool RGP_CORE::GLRenderer::CreateNeededObjects(){
     int error;
     ///generating textures(Diffuse,Specular+Roughness(RGBA),Normal,Depth+Stencil,shadow,trancprency)==>6maps;
     m_AttachmentTextures=(GLuint**)malloc(m_NumFBOs*sizeof(GLuint*));
@@ -176,9 +208,11 @@ _bool TTB::GLRenderer::CreateNeededObjects(){
         printf("error generating Framebuffers %d\n",error);
         return false;
     }
+	if (!AttachTextures())
+		return false;
     return true ;
 };
-_bool TTB::GLRenderer::AttachTextures(){
+_bool RGP_CORE::GLRenderer::AttachTextures(){
      int error;
      ///attaching texture to its FBO
     for(_s16b i = 0 ; i < m_NumFBOs ; ++i){
@@ -201,7 +235,7 @@ _bool TTB::GLRenderer::AttachTextures(){
     glBindFramebuffer(GL_FRAMEBUFFER,0);
     return true ;
 };
-_bool TTB::GLRenderer::InitFinalPhase(){
+_bool RGP_CORE::GLRenderer::InitFinalPhase(){
     _float vertexBuffer[8]={    -1.0f,1.0f,
                                 1.0f,1.0f,
                                 1.0f,-1.0f,
@@ -254,57 +288,171 @@ _bool TTB::GLRenderer::InitFinalPhase(){
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER,0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
+
+	m_FinalRenderProgram = this->CreateGLProgramFromFile("..//Shaders//FinalDeferred.vs", "..//Shaders//FinalDeferred.fs");
+	if (!m_FinalRenderProgram){
+		printf("error loading render program \n");
+		return false;
+	}
+
     return true ;
 };
 
-_bool TTB::GLRenderer::isInitialized(){ return m_isInitialized ;};
-TTB::RenderMode  TTB::GLRenderer::getRenderMode(){ return m_Mode ;};
-TTB::Window*   TTB::GLRenderer::getTarget(){ return m_Target ;};
-void  TTB::GLRenderer::setScene(GameScene*   Scene){ m_SelectedScene= Scene ;};
+_bool RGP_CORE::GLRenderer::isInitialized(){ return m_isInitialized ;};
+RGP_CORE::RenderMode  RGP_CORE::GLRenderer::getRenderMode(){ return m_Mode ;};
+RGP_CORE::Window*   RGP_CORE::GLRenderer::getTarget(){ return m_Target ;};
+void  RGP_CORE::GLRenderer::setScene(GameScene*   Scene){ m_SelectedScene= Scene ;};
 
 
-void  TTB::GLRenderer::RenderCurrentScene(){
-/// this methods do all the process to render the scene
-    _u32b nbActors=0 ;
-    BaseActor*  actor=NULL ;
+void  RGP_CORE::GLRenderer::RenderCurrentScene(){
 
-    glGetError();
-    if(m_SelectedScene){
-        nbActors=m_SelectedScene->getNBActors();
-        ///first step render to current FBO
-        glBindFramebuffer(GL_FRAMEBUFFER,m_FBOs[m_SelectedFBO]);
-        glViewport(0,0,m_Target->getWidth(),m_Target->getHeight());
-        glDrawBuffers(4,DrawBuff);
-        /*glEnable(GL_CULL_FACE);
-        glCullFace(GL_BACK);*/
-        glEnable(GL_DEPTH_TEST);
-        ///glClear attachements
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        if(glGetError()){
-            printf("WTW Clear \n ");
-        }
-        glClearColor(0.0f,0.0f,0.0f,0.0f);
-        ///start searching for renderable objects and rendering
-        for(_u32b i=0 ; i< nbActors;++i){
-            actor=m_SelectedScene->getActor(i);
-            if(actor->getID() & RENDERABLE)
-                dynamic_cast<Renderable*>(actor)->Render(m_SelectedScene->getCamera());
-        }
+	//RENDER SCENE Colors to the SelectedFBO
+	this->DrawSceneColors();
 
-        glBindFramebuffer(GL_FRAMEBUFFER,0);
-        ///after render ;
-        //glDisable(GL_CULL_FACE);
-        glDisable(GL_DEPTH_TEST);
-        RenderToScreen();
+	//if should draw shadows
+	if (m_Config.EnableShadows==true){
+		this->DrawSceneShadows();
+	}
+    
+	///combine results and render to the screen ;
+    glDisable(GL_CULL_FACE);
+    glDisable(GL_DEPTH_TEST);
+    RenderToScreen();
 
-        ///go to the next framebuffer
-        if(m_NumFBOs-1==m_SelectedFBO)
-            m_SelectedFBO=0;
-        else
-            ++m_SelectedFBO;
-    }
+	
 };
-void TTB::GLRenderer::RenderToScreen(){
+void	RGP_CORE::GLRenderer::LoadShadowProgram()
+{
+	glUseProgram(m_ShadowRenderingProgram);
+};
+void	RGP_CORE::GLRenderer::UnloadShadowProgram()
+{
+	glUseProgram(0);
+};
+void RGP_CORE::GLRenderer::DrawSceneColors()
+{
+	_u32b nbActors = 0;
+	BaseActor*  actor = NULL;
+
+	glGetError();
+	if (m_SelectedScene){
+		nbActors = m_SelectedScene->getNBActors();
+		///first step render to current FBO
+		glBindFramebuffer(GL_FRAMEBUFFER, m_FBOs[m_SelectedFBO]);
+		glViewport(0, 0, m_Target->getWidth(), m_Target->getHeight());
+		glDrawBuffers(4, DrawBuff);
+		/*glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK);*/
+		glEnable(GL_DEPTH_TEST);
+		///glClear attachements
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		if (glGetError()){
+			printf("WTW Clear \n ");
+		}
+		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+		///start searching for renderable objects and rendering
+		for (_u32b i = 0; i < nbActors; ++i){
+			actor = m_SelectedScene->getActor(i);
+			if (actor->getID() & RENDERABLE)
+				dynamic_cast<Renderable*>(actor)->Render(m_SelectedScene->getCamera());
+		}
+
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		//Next frame
+		if (m_NumFBOs - 1 == m_SelectedFBO)
+			m_SelectedFBO = 0;
+		else
+			++m_SelectedFBO;
+		
+	}
+};
+void RGP_CORE::GLRenderer::DrawSceneShadows()
+{
+	
+	if (m_SelectedScene && m_Config.EnableShadows){
+		_u32b NumActors = m_SelectedScene->getNBActors();
+		_u32b ShadowIndex = 0;
+		_s32b Location1 = -1,Location2=-1;
+		_s8b shaderstring[50] = "";
+		LightSource*	Source = NULL;
+		Renderable*		actor = NULL;
+		float VPMatrix[16];
+		glUseProgram(m_ShadowRenderingProgram);
+		Location1 = glGetUniformLocation(m_ShadowRenderingProgram, "World");
+		Location2 = glGetUniformLocation(m_ShadowRenderingProgram, "VP");
+		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_FRONT_FACE);
+		for (_u32b i = 0; i < NumActors && ShadowIndex < 50; ++i)
+			if (m_SelectedScene->getActor(i)->getID() & LIGHTSOURCE){
+				Source = dynamic_cast<LightSource*>(m_SelectedScene->getActor(i));
+				Multi4x4Mtx(Source->getLightProjectionMtx(), Source->getLightViewMtx(), VPMatrix);
+				glBindFramebuffer(GL_FRAMEBUFFER, m_ShadowFBOs[ShadowIndex]);
+				glClear(GL_DEPTH_BUFFER_BIT);
+				glUniform4fv(Location2, 4, VPMatrix);
+				for (_u32b j = 0; j < NumActors; ++j)
+					if (m_SelectedScene->getActor(j)->getID() & RENDERABLE){
+						actor = dynamic_cast<Renderable*>(m_SelectedScene->getActor(j));
+						glUniform4fv(Location1, 4, actor->getTransMtx());
+						actor->CastShadow();
+					}
+
+				++ShadowIndex;
+			}
+		glDisable(GL_DEPTH_TEST);
+		glDisable(GL_CULL_FACE);
+		//combine Shadow map to a single one
+		glUseProgram(m_CombineShadowProgram);
+		ShadowIndex = 0;
+
+		Location1=glGetUniformLocation(m_CombineShadowProgram,"CameraProMtx");
+		glUniform4fv(Location1, 4, m_SelectedScene->getCamera()->getProjectionMtx());
+
+		Location1 = glGetUniformLocation(m_CombineShadowProgram, "CameraWorldMtx");
+		glUniform4fv(Location1, 4, m_SelectedScene->getCamera()->getTransMtx());
+
+		Location1 = glGetUniformLocation(m_CombineShadowProgram,"NumLights");
+		glUniform1i(Location1, m_NumShadowFBOs);
+
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, m_AttachmentTextures[m_SelectedFBO][DEPTH_TEXTURE]);
+		glUniform1i(Location1, 0);
+
+		//lights uniforms
+		for (_u32b i = 0; i < NumActors && ShadowIndex < 50; ++i){
+			if (m_SelectedScene->getActor(i)->getID() & LIGHTSOURCE){
+				Source = dynamic_cast<LightSource*>(m_SelectedScene->getActor(i));
+
+				sprintf(shaderstring, "Source[%d].ProjMatrix", i);
+				Location1 = glGetUniformLocation(m_CombineShadowProgram, shaderstring);
+				glUniform4fv(Location1, 4, Source->getLightProjectionMtx());
+
+				sprintf(shaderstring, "Source[%d].LightViewMtx", i);
+				Location1 = glGetUniformLocation(m_CombineShadowProgram, shaderstring);
+				glUniform4fv(Location1, 4, Source->getLightViewMtx());
+
+				sprintf(shaderstring, "Source[%d].ShadowMap", i);
+				Location1 = glGetUniformLocation(m_CombineShadowProgram, shaderstring);
+				glActiveTexture(GL_TEXTURE0 + ShadowIndex + 1);
+				glBindTexture(GL_TEXTURE_2D, m_ShadowAttachmentTexture[ShadowIndex]);
+				glUniform1i(Location1, ShadowIndex + 1);
+
+				++ShadowIndex;
+
+			}
+		}
+		///VAOs
+		glBindVertexArray (m_FinalRenderSurface->VertexArrayObject);
+		glDrawElements (GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+		//end
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glBindVertexArray(0);
+		glActiveTexture(GL_NONE);
+		glUseProgram(0);
+	}
+};
+void RGP_CORE::GLRenderer::RenderToScreen(){
         _s32b location = -1 ;
         _s8b shaderstring[50]="";
         LightSource* Source=NULL ;
@@ -418,7 +566,7 @@ void TTB::GLRenderer::RenderToScreen(){
 
         glfwSwapBuffers(m_Target->getglfwWindow());
 };
-_bool TTB::GLRenderer::GenBuffers(_u32b numBuffers,GLuint*    target){
+_bool RGP_CORE::GLRenderer::GenBuffers(_u32b numBuffers,GLuint*    target){
     if(!target)
         return false ;
     glGenBuffers(numBuffers,target);
@@ -428,24 +576,24 @@ _bool TTB::GLRenderer::GenBuffers(_u32b numBuffers,GLuint*    target){
     }
     return true ;
 };
-void  TTB::GLRenderer::DeleteBuffers(_u32b numBuffers,GLuint*    target){
+void  RGP_CORE::GLRenderer::DeleteBuffers(_u32b numBuffers,GLuint*    target){
     if(!target)
         return ;
     glDeleteBuffers(numBuffers,target);
     for(_u32b i=0 ; i<numBuffers;++i)
         target[i]=0;
 };
-void  TTB::GLRenderer::setBufferData(_u32b Target,_u32b SizeinByte, void* Data, _u32b flag){
+void  RGP_CORE::GLRenderer::setBufferData(_u32b Target,_u32b SizeinByte, void* Data, _u32b flag){
     glBufferData(Target,SizeinByte,Data,flag);
     if(glGetError())
         printf("error filling buffer with Data\n");
 };
-void  TTB::GLRenderer::BindBuffer(_u32b Bindtype,_u32b BufferID ){
+void  RGP_CORE::GLRenderer::BindBuffer(_u32b Bindtype,_u32b BufferID ){
     glBindBuffer(Bindtype,BufferID);
 };
 
 ///VAOs
-_bool TTB::GLRenderer::GenVertexArrays(_u32b numBuffers,GLuint*    target){
+_bool RGP_CORE::GLRenderer::GenVertexArrays(_u32b numBuffers,GLuint*    target){
     if(!target)
         return false ;
     glGenVertexArrays(numBuffers,target);
@@ -453,24 +601,25 @@ _bool TTB::GLRenderer::GenVertexArrays(_u32b numBuffers,GLuint*    target){
         return false ;
     return true ;
 };
-void  TTB::GLRenderer::DeleteVertexArrays(_u32b numBuffers,GLuint*    target){
-    if(!target)
-        return ;
+void  RGP_CORE::GLRenderer::DeleteVertexArrays(_u32b numBuffers,GLuint*    target){
+	if (!target){
+		return;
+	}
     glDeleteVertexArrays(numBuffers,target);
     for(_u32b i=0; i<=numBuffers; ++i)
         target[i]=0;
 };
-_bool  TTB::GLRenderer::BindVertexArray(_u32b BufferID){
+_bool  RGP_CORE::GLRenderer::BindVertexArray(_u32b BufferID){
     glBindVertexArray(BufferID);
     if(glGetError())
         return false ;
     return true ;
 };
-void TTB::GLRenderer::DrawElements(GLenum mode,_u32b Count,GLenum Type,void* Offset){
+void RGP_CORE::GLRenderer::DrawElements(GLenum mode,_u32b Count,GLenum Type,void* Offset){
     glDrawElements(mode,Count,Type,Offset);
 };
 ///Textures
-_bool TTB::GLRenderer::GenTextures(_u32b numTextures,GLuint*    target){
+_bool RGP_CORE::GLRenderer::GenTextures(_u32b numTextures,GLuint*    target){
     if(!target)
         return false ;
     glGenTextures(numTextures,target);
@@ -487,30 +636,30 @@ _bool TTB::GLRenderer::GenTextures(_u32b numTextures,GLuint*    target){
     glBindTexture(GL_TEXTURE_2D,0);
     return true ;
 };
-void  TTB::GLRenderer::DeleteTextures(_u32b numTextures,GLuint*    target){
+void  RGP_CORE::GLRenderer::DeleteTextures(_u32b numTextures,GLuint*    target){
     if(!target)
         return ;
     glDeleteTextures(numTextures,target);
     for(_u32b i=0 ;i<numTextures;++i)
         target[i]=0;
 };
-void  TTB::GLRenderer::SetImageData(TTB::Image* ImageSource){
+void  RGP_CORE::GLRenderer::SetImageData(RGP_CORE::Image* ImageSource){
     glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA8,
                  ImageSource->Width,ImageSource->Height,
                  0,GL_RGBA,GL_UNSIGNED_BYTE,ImageSource->Pixels);
 
 };
-void  TTB::GLRenderer::SetActiveTexture(_u16b index){
+void  RGP_CORE::GLRenderer::SetActiveTexture(_u16b index){
     glActiveTexture(GL_TEXTURE0+index);
 };
-_bool TTB::GLRenderer::BindTexture(_u32b textureID){
+_bool RGP_CORE::GLRenderer::BindTexture(_u32b textureID){
     glBindTexture(GL_TEXTURE_2D,textureID);
     if(glGetError())
         return false ;
     return true ;
 };
 ///ShaderProgramManagement
-GLuint   TTB::GLRenderer::CreateGLProgramFromBuffer(const _s8b* VertexSource,const _s8b* FragmentSource){
+GLuint   RGP_CORE::GLRenderer::CreateGLProgramFromBuffer(const _s8b* VertexSource,const _s8b* FragmentSource){
     GLuint program=0,vs=0,fs=0;
 	GLint error;
     vs=LoadShaderBuffer(GL_VERTEX_SHADER,VertexSource,strlen(VertexSource));
@@ -557,7 +706,7 @@ GLuint   TTB::GLRenderer::CreateGLProgramFromBuffer(const _s8b* VertexSource,con
 	glDeleteShader(fs);
 	return program;
 };
-GLuint   TTB::GLRenderer::CreateGLProgramFromFile(const _s8b* VertexFile,const _s8b* FragmentFile){
+GLuint   RGP_CORE::GLRenderer::CreateGLProgramFromFile(const _s8b* VertexFile,const _s8b* FragmentFile){
     GLuint program=0,vs=0,fs=0;
 	GLuint error=0;
     vs=LoadShaderFile(GL_VERTEX_SHADER,VertexFile);
@@ -602,29 +751,29 @@ GLuint   TTB::GLRenderer::CreateGLProgramFromFile(const _s8b* VertexFile,const _
     glDeleteShader(fs);
     return program;
 };
-void    TTB::GLRenderer::DeleteGLProgram(_u32b ProgramID){
+void    RGP_CORE::GLRenderer::DeleteGLProgram(_u32b ProgramID){
     glDeleteProgram(ProgramID);
 };
-_s32b   TTB::GLRenderer::GetUniformLocation(_u32b program ,_s8b*   Name){
+_s32b   RGP_CORE::GLRenderer::GetUniformLocation(_u32b program ,_s8b*   Name){
     return glGetUniformLocation(program,Name);
 };
 _bool   SetUniformF(_s32b Location,_float data ){
      glUniform1f(Location,data);
      return true ;
 };
-_bool   TTB::GLRenderer::SetUniformFv(_s32b Location,_float* data,_u32b numElements ){
+_bool   RGP_CORE::GLRenderer::SetUniformFv(_s32b Location,_float* data,_u32b numElements ){
     glUniform1fv(Location,numElements,data);
     if(glGetError())
         return false ;
     return true ;
 };
-_bool   TTB::GLRenderer::SetUniformvMtx(_s32b Location,_float* Matrix_4x4 ){
+_bool   RGP_CORE::GLRenderer::SetUniformvMtx(_s32b Location,_float* Matrix_4x4 ){
     glUniformMatrix4fv(Location,1,GL_FALSE,Matrix_4x4);
     if(glGetError())
         return false ;
     return true ;
 };
-_bool   TTB::GLRenderer::SetUniformSample(_s32b Location, _u32b TextureUnit){
+_bool   RGP_CORE::GLRenderer::SetUniformSample(_s32b Location, _u32b TextureUnit){
     glUniform1i(Location,TextureUnit);
      if(glGetError()){
         //printf("problem \n");
@@ -632,7 +781,7 @@ _bool   TTB::GLRenderer::SetUniformSample(_s32b Location, _u32b TextureUnit){
      }
     return true ;
 };
-_bool   TTB::GLRenderer::SetVertexAttribPointer(_u32b Index,_u32b NumElemntsPerVertex,
+_bool   RGP_CORE::GLRenderer::SetVertexAttribPointer(_u32b Index,_u32b NumElemntsPerVertex,
                                _u32b offsetBetweenElements,void* offsetFromFirst)
 {
     glVertexAttribPointer(Index,NumElemntsPerVertex,GL_FLOAT,GL_FALSE,offsetBetweenElements,offsetFromFirst);
@@ -640,22 +789,22 @@ _bool   TTB::GLRenderer::SetVertexAttribPointer(_u32b Index,_u32b NumElemntsPerV
         return false ;
     return true ;
 };
-_bool   TTB::GLRenderer::EnableVertexAttribArray(_u32b index){
+_bool   RGP_CORE::GLRenderer::EnableVertexAttribArray(_u32b index){
     glEnableVertexAttribArray(index);
      if(glGetError())
         return false ;
     return true ;
 };
-_bool   TTB::GLRenderer::DisableVertexAttribArray(_u32b index){
+_bool   RGP_CORE::GLRenderer::DisableVertexAttribArray(_u32b index){
     glDisableVertexAttribArray(index);
      if(glGetError())
         return false ;
     return true ;
 };
-void    TTB::GLRenderer::SetShaderProgram(GLuint program){
+void    RGP_CORE::GLRenderer::SetShaderProgram(GLuint program){
     glUseProgram(program);
 };
-GLuint TTB::GLRenderer::LoadShaderFile(GLenum type,const _s8b* filename){
+GLuint RGP_CORE::GLRenderer::LoadShaderFile(GLenum type,const _s8b* filename){
     GLuint Shader=0 ;
     _u32b buffersize=0;
     _s8b* buffer=NULL;
@@ -687,7 +836,7 @@ GLuint TTB::GLRenderer::LoadShaderFile(GLenum type,const _s8b* filename){
     return Shader ;
 
 };
- GLuint TTB::GLRenderer::LoadShaderBuffer(GLenum type,const _s8b* Buffer,int buffersize){
+ GLuint RGP_CORE::GLRenderer::LoadShaderBuffer(GLenum type,const _s8b* Buffer,int buffersize){
      GLuint Shader=0;
 	 if (!Buffer || !buffersize){
 		 printf("error no shader buffer ");

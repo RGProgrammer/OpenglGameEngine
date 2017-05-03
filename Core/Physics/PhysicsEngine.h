@@ -1,11 +1,11 @@
-#ifndef _TTB_PHYSICS_ENGINE_H_
-#define _TTB_PHYSICS_ENGINE_H_
+#ifndef _RGP_PHYSICS_ENGINE_H_
+#define _RGP_PHYSICS_ENGINE_H_
 #include "..//BaseActors//Physical.h"
 #include "..//Scene//GameScene.h"
 
 
 
-namespace TTB{
+namespace RGP_CORE{
 	class Physical ;
 
 

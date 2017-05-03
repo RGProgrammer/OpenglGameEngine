@@ -1,5 +1,5 @@
-#ifndef _TTB_RENDERABLE_TYPE_H_
-#define _TTB_RENDERABLE_TYPE_H_
+#ifndef _RGP_RENDERABLE_TYPE_H_
+#define _RGP_RENDERABLE_TYPE_H_
 
 #include ".//BaseActor.h"
 #include "..//Graphics//glHeaders.h"
@@ -11,7 +11,7 @@
 
 
 
-namespace TTB{
+namespace RGP_CORE{
 
 class GLRenderer ;
 ///Renderable Type
@@ -24,11 +24,15 @@ class Renderable: public virtual BaseActor {
 		virtual ~Renderable();
 		virtual void Destroy();
 		virtual void Render(Camera* Selected)=0;
-		void setRenderer(GLRenderer* renderer);
-		void setVisible(_bool visible=true);
-		_bool isVisible();
+		virtual void CastShadow() = 0;
+		void	setRenderer(GLRenderer* renderer);
+		void	setVisible(_bool visible=true);
+		_bool	isVisible();
+		void	setShadowCast(_bool Value);
+		_bool   doesShadowCast();
     protected:
         GLRenderer*             m_GLRenderer ;
+		_bool					m_DoesCastShadow;
     private:
         _bool                   m_Visible ;
 	};

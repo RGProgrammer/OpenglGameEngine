@@ -12,7 +12,7 @@
 #include ".//LightSource.h"
 #include ".//Camera.h"
 
-namespace TTB {
+namespace RGP_CORE {
 	class GameScene {
 	public:
     	GameScene();

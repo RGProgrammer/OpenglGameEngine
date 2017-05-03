@@ -1,6 +1,6 @@
 #include "Window.h"
 
-TTB::Window* TTB::Window::CreateWindow(char* title,_u16b width, _u16b height, bool Fullscreen){
+RGP_CORE::Window* RGP_CORE::Window::CreateWindow(char* title,_u16b width, _u16b height, bool Fullscreen){
     Window *Target=NULL;
     Target=new Window();
     if(!Target)
@@ -13,12 +13,12 @@ TTB::Window* TTB::Window::CreateWindow(char* title,_u16b width, _u16b height, bo
     return Target ;
 };
 
-TTB::Window::Window(): m_ptrWindow(0),m_Height(0),m_Width(0),m_FullScreen(false){
+RGP_CORE::Window::Window(): m_ptrWindow(0),m_Height(0),m_Width(0),m_FullScreen(false){
 };
-TTB::Window::~Window(){
+RGP_CORE::Window::~Window(){
 	this->Destroy();
 };
-void TTB::Window::Destroy(){
+void RGP_CORE::Window::Destroy(){
     if(m_ptrWindow){
         glfwDestroyWindow(m_ptrWindow);
         m_ptrWindow=0;
@@ -26,7 +26,7 @@ void TTB::Window::Destroy(){
     this->m_Height=this->m_Width=0;
     m_FullScreen=false ;
 };
-_u16b TTB::Window::InitWindow(char* Title,_u16b Width, _u16b Height, bool Fullscreen){
+_u16b RGP_CORE::Window::InitWindow(char* Title,_u16b Width, _u16b Height, bool Fullscreen){
 	m_ptrWindow=glfwCreateWindow(Width,Height,Title,NULL,NULL);
 	if(m_ptrWindow==NULL)
         return 0 ;
@@ -35,15 +35,15 @@ _u16b TTB::Window::InitWindow(char* Title,_u16b Width, _u16b Height, bool Fullsc
     m_FullScreen=Fullscreen ;
     return 1;
 };
-void TTB::Window::setFullScreen(bool Value){
+void RGP_CORE::Window::setFullScreen(bool Value){
 
 };
 
-bool TTB::Window::isFullScreen(){ return m_FullScreen ;};
+bool RGP_CORE::Window::isFullScreen(){ return m_FullScreen ;};
 
-void TTB::Window::Reszie(_u16b Width,_u16b Height){
+void RGP_CORE::Window::Reszie(_u16b Width,_u16b Height){
 
 };
-_u16b TTB::Window::getHeight(){ return m_Height ;};
-_u16b TTB::Window::getWidth(){ return m_Width ;};
-GLFWwindow* TTB::Window::getglfwWindow(){ return m_ptrWindow; };
+_u16b RGP_CORE::Window::getHeight(){ return m_Height ;};
+_u16b RGP_CORE::Window::getWidth(){ return m_Width ;};
+GLFWwindow* RGP_CORE::Window::getglfwWindow(){ return m_ptrWindow; };

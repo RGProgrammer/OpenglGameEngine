@@ -1,5 +1,5 @@
-#ifndef _TTB_GL_RENDERER_H_
-#define _TTB_GL_RENDERER_H_
+#ifndef _RGP_GL_RENDERER_H_
+#define _RGP_GL_RENDERER_H_
 //////////////////////////////////////////////////////////////////////////
 /// GL_Renderer is like a transformation of Opengl low level
 /// to a high level interface to make adding another renderer
@@ -13,7 +13,7 @@
 ///there are more includes here
 
 
-namespace TTB{
+namespace RGP_CORE{
 
     typedef struct {
 		_s32b		Width;
@@ -55,6 +55,8 @@ namespace TTB{
         _s32b       Witdh;
         _s32b       Height ;
         _u16b       NumBackBuffers;///max 5
+		_bool		EnableShadows;
+		_s32b		ShadowResolution;
 
     } gfxConfig;
     class GLRenderer{
@@ -77,8 +79,10 @@ namespace TTB{
         _bool isInitialized();
         RenderMode  getRenderMode();
         Window*     getTarget();
-        void  setScene(GameScene*   Scene);
-        void  RenderCurrentScene();
+        void	setScene(GameScene*   Scene);
+        void	RenderCurrentScene();
+		void	LoadShadowProgram();
+		void	UnloadShadowProgram();
         ///buffers manager
         ///VBOs
         _bool GenBuffers(_u32b numBuffers,GLuint*    target);
@@ -117,6 +121,8 @@ namespace TTB{
         _bool CreateNeededObjects();//FBOs and Textures
         _bool AttachTextures();
         _bool InitFinalPhase();
+		void DrawSceneColors();
+		void DrawSceneShadows();
         void RenderToScreen();
         static inline GLuint LoadShaderFile(GLenum type,const _s8b* filename);
         static inline GLuint LoadShaderBuffer(GLenum type,const _s8b* Buffer,int buffersize);
@@ -124,18 +130,28 @@ namespace TTB{
     private :
         Window*                 m_Target ;
         RenderMode              m_Mode;
+		gfxConfig				m_Config;
         _bool                   m_isInitialized ;
+		GameScene*              m_SelectedScene;
+		MeshBuffers*            m_FinalRenderSurface;
+		GLuint                  m_FinalRenderProgram;
+
+		//colors
         _s16b                   m_NumFBOs;
         GLuint*                 m_FBOs;
-        //GLuint*                 m_RenderBuffers;
         GLuint**                m_AttachmentTextures;
         _s16b                   m_SelectedFBO;
 
-        GameScene*              m_SelectedScene ;
-
-        MeshBuffers*            m_FinalRenderSurface ;
-        GLuint                  m_FinalRenderProgram ;
+		//Shadows
+		_u32b					m_NumShadowFBOs;
+		GLuint					m_ShadowRenderingProgram;
+		GLuint*					m_ShadowFBOs;
+		GLuint*					m_ShadowAttachmentTexture;
+		GLuint					m_CombineShadowProgram;
+		GLuint					m_CombinedShadowResultFBO;
+		GLuint					m_CombinedShadowResultTexture;
+		
 
     };
 };
-#endif // _TTB_GL_RENDERER_H_
+#endif // _RGP_GL_RENDERER_H_

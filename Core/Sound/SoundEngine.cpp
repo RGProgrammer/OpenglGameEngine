@@ -1,11 +1,11 @@
 #include "SoundEngine.h"
 
-TTB::SoundEngine::SoundEngine():m_Device(NULL) ,m_Context(NULL),m_MusicBuffer(0),m_MusicSource(0),m_MusicStatus(SSTOP),
+RGP_CORE::SoundEngine::SoundEngine():m_Device(NULL) ,m_Context(NULL),m_MusicBuffer(0),m_MusicSource(0),m_MusicStatus(SSTOP),
                             m_Repeat(false),m_nbSounds(0),v_Sounds(NULL),v_Sources(NULL){};
-TTB::SoundEngine::~SoundEngine(){
+RGP_CORE::SoundEngine::~SoundEngine(){
     this->Destroy();
 };
-int TTB::SoundEngine::InitEngine(){
+int RGP_CORE::SoundEngine::InitEngine(){
 
     m_Device=alcOpenDevice(NULL);
     if(!m_Device){
@@ -19,7 +19,7 @@ int TTB::SoundEngine::InitEngine(){
     alcProcessContext(m_Context);
     return 1 ;
 };
-void TTB::SoundEngine::Destroy(){
+void RGP_CORE::SoundEngine::Destroy(){
     ReleaseBuffers();
     if(m_MusicSource){
         alDeleteSources(1,&m_MusicSource);
@@ -38,7 +38,7 @@ void TTB::SoundEngine::Destroy(){
         m_Device=NULL ;
     }
 };
-void TTB::SoundEngine::setListener(TTB::BaseActor* Listener){
+void RGP_CORE::SoundEngine::setListener(RGP_CORE::BaseActor* Listener){
     Vertex3d  ver1,ver2;
     if(!Listener){
         Vertex3d  ver1,ver2;
@@ -54,7 +54,7 @@ void TTB::SoundEngine::setListener(TTB::BaseActor* Listener){
         alListenerfv(AL_ORIENTATION,tab);
     }
 };
-ALuint TTB::SoundEngine::LoadSound(Sound sound){
+ALuint RGP_CORE::SoundEngine::LoadSound(Sound sound){
     ALuint IDSound=0,IDSource=0 ;
     alGenBuffers(1,&IDSound);
     if(!IDSound)
@@ -74,7 +74,7 @@ ALuint TTB::SoundEngine::LoadSound(Sound sound){
     return IDSound;
 
 };
-void TTB::SoundEngine::PlaySound(ALuint IDSound,TTB::BaseActor* Source){
+void RGP_CORE::SoundEngine::PlaySound(ALuint IDSound,RGP_CORE::BaseActor* Source){
     ALuint ID=0;
     for(;ID<m_nbSounds && v_Sounds[ID]!=IDSound;ID++);
     if(ID<m_nbSounds){
@@ -88,7 +88,7 @@ void TTB::SoundEngine::PlaySound(ALuint IDSound,TTB::BaseActor* Source){
         alSourcePlay(v_Sources[ID]);
     }
 };
-bool TTB::SoundEngine::LoadMusic(Sound* Music ,bool Repeat){
+bool RGP_CORE::SoundEngine::LoadMusic(Sound* Music ,bool Repeat){
     if(!m_MusicSource){
         alGenSources(1,&m_MusicSource);
         if(!m_MusicSource)
@@ -113,37 +113,37 @@ bool TTB::SoundEngine::LoadMusic(Sound* Music ,bool Repeat){
     this->setRepeatMusic(Repeat);
     return true ;
 };
-void TTB::SoundEngine::setRepeatMusic(bool Repeat){
+void RGP_CORE::SoundEngine::setRepeatMusic(bool Repeat){
     if(m_MusicSource){
         alSourcei(m_MusicSource,AL_LOOPING,(Repeat?AL_TRUE:AL_FALSE));
         m_Repeat=Repeat;
     }
 };
-bool TTB::SoundEngine::isRepeating (){
+bool RGP_CORE::SoundEngine::isRepeating (){
     return m_Repeat;
 };
-void TTB::SoundEngine::PlayMusic(){
+void RGP_CORE::SoundEngine::PlayMusic(){
     if(m_MusicSource)
     if(m_MusicStatus !=SPLAY){
         alSourcePlay(m_MusicSource);
         m_MusicStatus=SPLAY;
     }
 };
-void TTB::SoundEngine::PauseMusic(){
+void RGP_CORE::SoundEngine::PauseMusic(){
     if(m_MusicSource)
     if(m_MusicStatus !=SPAUSE){
         alSourcePause(m_MusicSource);
         m_MusicStatus=SPAUSE;
     }
 };
-void TTB::SoundEngine::StopMusic(){
+void RGP_CORE::SoundEngine::StopMusic(){
     if(m_MusicSource)
     if(m_MusicStatus !=SSTOP){
         alSourceStop(m_MusicSource);
         m_MusicStatus=SSTOP;
     }
 };
-bool TTB::SoundEngine::isPlaying(){
+bool RGP_CORE::SoundEngine::isPlaying(){
     if(!m_MusicSource)
         return false;
     if(m_MusicStatus==SPLAY)
@@ -156,21 +156,21 @@ bool TTB::SoundEngine::isPlaying(){
     else
         return false ;*/
 };
-bool TTB::SoundEngine::isPaused(){
+bool RGP_CORE::SoundEngine::isPaused(){
     if(!m_MusicSource)
         return false;
     if(m_MusicStatus==SPAUSE)
         return true ;
     return false ;
 };
-bool TTB::SoundEngine::isStopped(){
+bool RGP_CORE::SoundEngine::isStopped(){
     if(!m_MusicSource)
         return false;
     if(m_MusicStatus==SSTOP)
         return true ;
     return false ;
 };
-void TTB::SoundEngine::ReleaseBuffers(){
+void RGP_CORE::SoundEngine::ReleaseBuffers(){
     if(v_Sounds){
         for(int i=0; i<m_nbSounds;i++){
             alDeleteBuffers(1,&(v_Sounds[i]));
@@ -183,7 +183,7 @@ void TTB::SoundEngine::ReleaseBuffers(){
         m_nbSounds=0;
     }
 };
-bool TTB::SoundEngine::addID(ALuint IDSound,ALuint IDSource){
+bool RGP_CORE::SoundEngine::addID(ALuint IDSound,ALuint IDSource){
     ALuint* tmp1=(ALuint*)malloc((m_nbSounds+1)*sizeof(ALuint));//for sounds
     ALuint* tmp2=(ALuint*)malloc((m_nbSounds+1)*sizeof(ALuint));
     if(!tmp2 && !tmp2)

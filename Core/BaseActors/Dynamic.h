@@ -1,12 +1,12 @@
-#ifndef _TTB_DYNAMIC_TYPE_H_
-#define _TTB_DYNAMIC_TYPE_H_
+#ifndef _RGP_DYNAMIC_TYPE_H_
+#define _RGP_DYNAMIC_TYPE_H_
 
 #include ".//BaseActor.h"
 
 // Dynamic Actor type ID
 #define DYNAMIC              0x00000002
 
-namespace TTB{
+namespace RGP_CORE{
 ///Dynamic Type
 	class Dynamic: public virtual BaseActor {
 	protected:

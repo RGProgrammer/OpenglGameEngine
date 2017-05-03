@@ -4,7 +4,7 @@
 #include "glHeaders.h"
 
 
-namespace TTB{
+namespace RGP_CORE{
 
 	class Window {
 	public:

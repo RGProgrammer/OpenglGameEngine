@@ -1,8 +1,8 @@
 #include ".//PointLight.h"
 
-TTB::PointLight::PointLight(): TTB::LightSource()
+RGP_CORE::PointLight::PointLight(): RGP_CORE::LightSource()
 {};
-TTB::PointLight::PointLight(Vertex3d Pos): TTB::LightSource(Pos)
+RGP_CORE::PointLight::PointLight(Vertex3d Pos): RGP_CORE::LightSource(Pos)
 {};
-TTB::PointLight::PointLight(Vertex3d Pos, Vertex3d Dir, Vertex3d Up): TTB::LightSource(Pos,Dir,Up)
+RGP_CORE::PointLight::PointLight(Vertex3d Pos, Vertex3d Dir, Vertex3d Up): RGP_CORE::LightSource(Pos,Dir,Up)
 {};

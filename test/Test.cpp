@@ -1,11 +1,11 @@
 #include "Test.h"
 
-TTB::Test::Test():m_Renderer(NULL),m_CurrentScene(NULL),m_Camera(NULL){
+RGP_CORE::Test::Test():m_Renderer(NULL),m_CurrentScene(NULL),m_Camera(NULL){
 };
-TTB::Test::~Test(){
+RGP_CORE::Test::~Test(){
     this->Destroy() ;
 };
-void TTB::Test::Destroy(){
+void RGP_CORE::Test::Destroy(){
     if(m_CurrentScene){
         m_CurrentScene->Destroy();
         delete m_CurrentScene ;
@@ -21,20 +21,20 @@ void TTB::Test::Destroy(){
         m_Renderer=NULL;
     }
 };
-void TTB::Test::Start(){
+void RGP_CORE::Test::Start(){
 
-    TTB::Model3D* testmodel1=new Model3D();
+    RGP_CORE::Model3D* testmodel1=new Model3D();
     testmodel1->setRenderer(m_Renderer);
     if(!testmodel1->LoadModelFromFile("..//test//Sky//skybox.obj"))
         printf("error loading test Model\n");
     m_CurrentScene->AddActor(testmodel1);
-    TTB::Model3D* testmodel2=new Model3D();
+    RGP_CORE::Model3D* testmodel2=new Model3D();
     testmodel2->setRenderer(m_Renderer);
     if(!testmodel2->LoadModelFromFile("..//test//test1.obj"));
         printf("error loading test Model\n");
     m_CurrentScene->AddActor(testmodel2);
 /*
-    TTB::Model3D* testmodel3=new Model3D();
+    RGP_CORE::Model3D* testmodel3=new Model3D();
     testmodel3->setRenderer(m_Renderer);
     testmodel3->ScaleUniform(5.0f);
     if(!testmodel3->LoadModelFromFile(".//test//test3.obj"))
@@ -85,13 +85,13 @@ void TTB::Test::Start(){
         m_Renderer->RenderCurrentScene();
     }
 };
-int TTB::Test::Init(){
+int RGP_CORE::Test::Init(){
 
     m_CurrentScene=new GameScene ();
     if(!m_CurrentScene)
         return 0 ;
     m_Renderer=new GLRenderer();
-    if(!m_Renderer->InitRenderer({"SAMPLE",800,600,5}))
+    if(!m_Renderer->InitRenderer({"SAMPLE",800,600,5,false,0}))
         return 0 ;
     m_Camera=new PerspCamera(45.0f,800.0f/600.0f,1.0f,5000.0f);
     m_Camera->Translate({0.0f,0.0f,50.0f});

@@ -1,6 +1,6 @@
 
-#ifndef RGP_CORE_TIMER_H_
-#define RGP_CORE_TIMER_H_
+#ifndef _RGP_CORE_TIMER_H_
+#define _RGP_CORE_TIMER_H_
 
 #if defined __GNUC__
 	#include <sys/time.h>
@@ -17,7 +17,7 @@
 	typedef _u64b _LUINT;
 	#endif
 #endif
-namespace TTB {
+namespace RGP_CORE {
     class Timer {
     public :
         //Constructor

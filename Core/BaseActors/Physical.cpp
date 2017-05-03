@@ -1,25 +1,25 @@
 #include ".//Physical.h"
 
 
-TTB::Physical::Physical():Dynamic(),m_nbColliders(0),m_Colliders(NULL) , m_Velocity({0.0f,0.0f,0.0f}),
+RGP_CORE::Physical::Physical():Dynamic(),m_nbColliders(0),m_Colliders(NULL) , m_Velocity({0.0f,0.0f,0.0f}),
 							m_Mass(0.0f),m_AppliedTranslationForce({0.0f,0.0f,0.0f}),m_AppliedRotationForce({0.0f,0.0f,0.0f})
 {
 	m_ID |= PHYSICAL ;
 };
-TTB::Physical::Physical(Vertex3d Pos):Dynamic(Pos),m_nbColliders(0),m_Colliders(NULL) , m_Velocity({0.0f,0.0f,0.0f}),
+RGP_CORE::Physical::Physical(Vertex3d Pos):Dynamic(Pos),m_nbColliders(0),m_Colliders(NULL) , m_Velocity({0.0f,0.0f,0.0f}),
 							m_Mass(0.0f),m_AppliedTranslationForce({0.0f,0.0f,0.0f}),m_AppliedRotationForce({0.0f,0.0f,0.0f})
 {
 	m_ID |= PHYSICAL ;
 };
-TTB::Physical::Physical(Vertex3d Pos, Vertex3d Dir, Vertex3d Up):Dynamic(Pos,Dir,Up),m_nbColliders(0),m_Colliders(NULL) , m_Velocity({0.0f,0.0f,0.0f}),
+RGP_CORE::Physical::Physical(Vertex3d Pos, Vertex3d Dir, Vertex3d Up):Dynamic(Pos,Dir,Up),m_nbColliders(0),m_Colliders(NULL) , m_Velocity({0.0f,0.0f,0.0f}),
 							m_Mass(0.0f),m_AppliedTranslationForce({0.0f,0.0f,0.0f}),m_AppliedRotationForce({0.0f,0.0f,0.0f})
 {
 	m_ID |= PHYSICAL ;
 };
-TTB::Physical::~Physical(){
+RGP_CORE::Physical::~Physical(){
 	this->Destroy();
 };
-void TTB::Physical::Destroy(){
+void RGP_CORE::Physical::Destroy(){
 		if(m_Colliders){
 			for(_u16b i=0; i<m_nbColliders ; ++i){
 				m_Colliders[i]->Destroy();
@@ -30,21 +30,21 @@ void TTB::Physical::Destroy(){
 		}
 		m_nbColliders=0 ;
 }
-void TTB::Physical::Update(_float DeltaTime){
+void RGP_CORE::Physical::Update(_float DeltaTime){
 	///Calculate m_velocity and then update orientation
 	///code should be here.......
 	///then reCalculate m_Velocity and update Position
 	m_Velocity=ScaleVertex3d(m_AppliedTranslationForce,DeltaTime);
 	m_Position=AddVertex3d(m_Position,m_Velocity);
 };
-void TTB::Physical::ApplyTranslationForce(Vertex3d Force){
+void RGP_CORE::Physical::ApplyTranslationForce(Vertex3d Force){
 	m_AppliedTranslationForce=Force ;
 };
-void TTB::Physical::ApplyRotationForce(Vertex3d Force){
+void RGP_CORE::Physical::ApplyRotationForce(Vertex3d Force){
 	m_AppliedRotationForce=Force ;
 
 };
-_u16b TTB::Physical::AddCollider(Collider* collider){
+_u16b RGP_CORE::Physical::AddCollider(Collider* collider){
 	if(collider){
 		Collider** temp=(Collider**)malloc((m_nbColliders+1)*sizeof(Collider*));
 		if(!temp)
@@ -57,10 +57,10 @@ _u16b TTB::Physical::AddCollider(Collider* collider){
 	}else
 		return 0 ;
 };
-_u16b TTB::Physical::getNbColliders(){
+_u16b RGP_CORE::Physical::getNbColliders(){
 	return m_nbColliders ;
 };
-const TTB::Collider*	TTB::Physical::getColliderByIndex(_u16b Index){
+const RGP_CORE::Collider*	RGP_CORE::Physical::getColliderByIndex(_u16b Index){
 	if(Index>0 && Index<= m_nbColliders){
 		return m_Colliders[Index-1] ;
 	}else

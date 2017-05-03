@@ -1,14 +1,14 @@
 #include "GameScene.h"
 
 
-TTB::GameScene::GameScene(): Size(10) ,m_NBActors(0) ,v_Actors(NULL) ,m_NBLights(0),m_LightSources(NULL),
+RGP_CORE::GameScene::GameScene(): Size(10) ,m_NBActors(0) ,v_Actors(NULL) ,m_NBLights(0),m_LightSources(NULL),
                             m_Camera(NULL) ,m_Gravity({0.0f,0.0f,0.0f})//,m_PlayerRef(NULL)
 {
 };
-TTB::GameScene::~GameScene() {
+RGP_CORE::GameScene::~GameScene() {
     this->Destroy();
 };
-_s16b TTB::GameScene::AddActor(BaseActor* actor){
+_s16b RGP_CORE::GameScene::AddActor(BaseActor* actor){
     if(actor==NULL)
         return 0 ;
     if(v_Actors==NULL){
@@ -34,7 +34,7 @@ _s16b TTB::GameScene::AddActor(BaseActor* actor){
         m_NBActors++;
         return 1 ;
 };
-void TTB::GameScene::FreeVector(){
+void RGP_CORE::GameScene::FreeVector(){
     BaseActor* tmp=NULL ;
     if(v_Actors){
         for(_u32b i=0;i<m_NBActors ;++i){
@@ -57,19 +57,19 @@ void TTB::GameScene::FreeVector(){
         m_NBLights=0 ;
     }
 };
-void TTB::GameScene::Destroy() {
+void RGP_CORE::GameScene::Destroy() {
     this->FreeVector();
     m_Camera=NULL ;
     //m_PlayerRef=NULL;
     m_Gravity={0.0f,0.0f,0.0f};
 
 };
-TTB::BaseActor*  TTB::GameScene::getActor(_u32b index){
+RGP_CORE::BaseActor*  RGP_CORE::GameScene::getActor(_u32b index){
     if(index>=0 && index< m_NBActors){
         return v_Actors[index];
     }else return NULL ;
 };
-void TTB::GameScene::RemoveActorAt(_u32b index){
+void RGP_CORE::GameScene::RemoveActorAt(_u32b index){
     BaseActor* tmp =NULL ;
     if(index>=0 && index< m_NBActors){
         tmp=v_Actors[index] ;
@@ -81,11 +81,11 @@ void TTB::GameScene::RemoveActorAt(_u32b index){
     }
 };
 
-_u32b TTB::GameScene::getNBActors(){ return m_NBActors ;};
-_s16b TTB::GameScene::AddLight(TTB::LightSource* Source){
+_u32b RGP_CORE::GameScene::getNBActors(){ return m_NBActors ;};
+_s16b RGP_CORE::GameScene::AddLight(RGP_CORE::LightSource* Source){
     if(!Source)
         return 0 ;
-    TTB::LightSource** tmp=(TTB::LightSource**)malloc((m_NBLights+1)*sizeof(TTB::LightSource*));
+    RGP_CORE::LightSource** tmp=(RGP_CORE::LightSource**)malloc((m_NBLights+1)*sizeof(RGP_CORE::LightSource*));
     if(!tmp)
         return 0 ;
     for(_u32b i=0; i< m_NBLights;++i){
@@ -98,7 +98,7 @@ _s16b TTB::GameScene::AddLight(TTB::LightSource* Source){
     ++m_NBLights ;
     return 1 ;
 };
-void TTB::GameScene::RemoveLightAt(_u32b index){
+void RGP_CORE::GameScene::RemoveLightAt(_u32b index){
     if(!m_LightSources)
         if(index>=0 && index< m_NBLights){
             m_LightSources[index]->Destroy();
@@ -107,15 +107,15 @@ void TTB::GameScene::RemoveLightAt(_u32b index){
                 m_LightSources[i]=m_LightSources[i+1];
         }
 };
-TTB::LightSource*  TTB::GameScene::getLight(_u32b index){
+RGP_CORE::LightSource*  RGP_CORE::GameScene::getLight(_u32b index){
     if(index>=0 && index <m_NBLights)
         return m_LightSources[index];
     else
         return NULL ;
 
 };
-_u32b TTB::GameScene::getNBLights(){ return m_NBLights ;};
-void TTB::GameScene::setCamera(Camera* cam){ m_Camera=cam ;};
-TTB::Camera* TTB::GameScene::getCamera(){ return m_Camera ;};
-void TTB::GameScene::setGravity(Vertex3d force){ m_Gravity= force ;};
-Vertex3d TTB::GameScene::getGravity(){ return m_Gravity ;};
+_u32b RGP_CORE::GameScene::getNBLights(){ return m_NBLights ;};
+void RGP_CORE::GameScene::setCamera(Camera* cam){ m_Camera=cam ;};
+RGP_CORE::Camera* RGP_CORE::GameScene::getCamera(){ return m_Camera ;};
+void RGP_CORE::GameScene::setGravity(Vertex3d force){ m_Gravity= force ;};
+Vertex3d RGP_CORE::GameScene::getGravity(){ return m_Gravity ;};

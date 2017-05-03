@@ -1,7 +1,7 @@
 #include "Timer.h"
 
 
-TTB::Timer::Timer(){
+RGP_CORE::Timer::Timer(){
 #if defined __GNUC__
 	gettimeofday(&current_time,NULL);
 #elif defined _MSC_VER
@@ -15,13 +15,13 @@ TTB::Timer::Timer(){
 	last_time=current_time ;
 	m_Started=false;
 };
-TTB::Timer::~Timer(){
+RGP_CORE::Timer::~Timer(){
 
 };
-void TTB::Timer::Stop(){
+void RGP_CORE::Timer::Stop(){
     m_Started=false ;
 };
-void TTB::Timer::Reset(){
+void RGP_CORE::Timer::Reset(){
 #if defined __GNUC__
 	gettimeofday(&current_time, NULL);
 #elif defined _MSC_VER
@@ -31,7 +31,7 @@ void TTB::Timer::Reset(){
 	last_time=current_time ;
     m_Started=true ;
 };
-double TTB::Timer::getDeltaTime(){
+double RGP_CORE::Timer::getDeltaTime(){
     dt=0.0f;
     if(m_Started){
 #if defined __GNUC__ 

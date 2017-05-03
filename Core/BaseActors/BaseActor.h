@@ -1,5 +1,5 @@
-#ifndef TTB_ACTOR_BASE_TYPES_H_
-#define TTB_ACTOR_BASE_TYPES_H_
+#ifndef _RGP_ACTOR_BASE_TYPE_H_
+#define _RGP_ACTOR_BASE_TYPE_H_
 
 
 
@@ -13,7 +13,7 @@
 #define  UNKNOWN		0x00000000
 
 
-namespace TTB{
+namespace RGP_CORE {
 //Actors base types
 	class BaseActor {
 	protected :
@@ -21,7 +21,7 @@ namespace TTB{
 		BaseActor(Vertex3d Pos);
 		BaseActor();
 	public:
-		virtual ~BaseActor       ();
+		virtual ~BaseActor   ();
 		virtual void Destroy ();
 		_u32b getID          ();
 		void setPosition     (Vertex3d Pos);

@@ -1,7 +1,7 @@
 #include "StringOP.h"
 
 
-_s16b TTB::contains(const _s8b* str1,const _s8b* str2){
+_s16b RGP_CORE::contains(const _s8b* str1,const _s8b* str2){
     _s16b result ;
     if(str1==NULL || str2==NULL )
         return 0 ;
@@ -17,7 +17,7 @@ _s16b TTB::contains(const _s8b* str1,const _s8b* str2){
     }
     return result;
 };
-_s16b TTB::CatStrings(const _s8b* str1,const _s8b* str2,_s8b** Dest){
+_s16b RGP_CORE::CatStrings(const _s8b* str1,const _s8b* str2,_s8b** Dest){
     if(!str1 || !str2 || !Dest)
         return 0 ;
     *Dest=(_s8b*)malloc((strlen(str1)+strlen(str2)+1)*sizeof(_s8b));
@@ -31,7 +31,7 @@ _s16b TTB::CatStrings(const _s8b* str1,const _s8b* str2,_s8b** Dest){
     (*Dest)[i]='\0';
 return 1 ;
 };
-_s8b* TTB::ExtractString(_s8b* source,_s8b* borderstr1,_s8b* borderstr2){
+_s8b* RGP_CORE::ExtractString(_s8b* source,_s8b* borderstr1,_s8b* borderstr2){
     _s16b border1,border2;
     _s8b* rslt=NULL ;
     _s16b length,str1len ;
@@ -52,7 +52,7 @@ _s8b* TTB::ExtractString(_s8b* source,_s8b* borderstr1,_s8b* borderstr2){
     return rslt;
 };
 
-_s8b* TTB::ExtractDirectory  (_s8b* filename){
+_s8b* RGP_CORE::ExtractDirectory  (_s8b* filename){
     if(!filename || filename[0]=='\0')
         return NULL ;
     _s32b divider=0,length=strlen(filename);
