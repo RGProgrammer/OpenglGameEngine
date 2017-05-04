@@ -28,7 +28,7 @@ void main(){
 	normalcolor0 = normalize(TBN * normalcolor0);
 	DiffuseColor=vec4(texture2D(Diffusemap,Texcoord).rgb,1.0);
 	SpecularColor=texture2D(Specularmap,Texcoord);
-	NormalColor=vec4(normalize(normalcolor0),0.0);
+	NormalColor=ViewMtx*vec4(normalize(normalcolor0),0.0);
 	PositionColor=WorldMtx*vec4(Position,1.0);
 	gl_Position=ProjMtx*ViewMtx*WorldMtx*vec4(Position,1.0);
 }

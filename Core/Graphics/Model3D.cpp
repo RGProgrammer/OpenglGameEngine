@@ -64,7 +64,7 @@ void RGP_CORE::Model3D::Destroy(){
 
 	if (m_VAOforShadowcasting){
 		m_GLRenderer->DeleteVertexArrays(m_nbMeshes, m_VAOforShadowcasting);
-		free(m_VAOforShadowcasting);
+		//free(m_VAOforShadowcasting);
 		m_VAOforShadowcasting = NULL;
 	}
 

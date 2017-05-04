@@ -101,27 +101,33 @@ int RGP_CORE::Test::Init(){
     LightSource* light=NULL ;
 
     light=new DirectionnalLight();
-    light->setOrientation({0.0f,0.0f,1.0f},{0.0f,1.0f,0.0f});
+	/*
+	light->setOrientation({0.0f,0.0f,1.0f},{0.0f,1.0f,0.0f});
+    m_CurrentScene->AddLight(light);*/
+
+	/*
+    light= new PointLight();
+	light->setPosition({ 0.0f, -20.0f, 0.0f });
     m_CurrentScene->AddLight(light);
 
-    /*
-    light= new PointLight({0.0f,-20.0f,0.0f});
-    m_CurrentScene->AddLight(light);UpdateProjectionMtx
-
-    light= new PointLight({20.0f,0.0f,0.0f});
+    light= new PointLight();
+	light->setPosition({ 20.0f, 0.0f, 0.0f });
     m_CurrentScene->AddLight(light);
 
-    light= new PointLight({-20.0f,0.0f,0.0f});
+    light= new PointLight();
+	light->setPosition({ -20.0f, 0.0f, 0.0f });
     m_CurrentScene->AddLight(light);
 
-    light= new PointLight({0.0f,0.0f,20.0f});
+    light= new PointLight();
+	light->setPosition({ 0.0f, 0.0f, 20.0f });
     m_CurrentScene->AddLight(light);
     */
-    /*
-    light=new SpotLight({0.0f,0.0f,20.0f});
+    
+    light=new SpotLight();
+	light->setPosition({ 0.0f, 0.0f, 20.0f });
     light->setOrientation({0.0f,0.0,1.0f},{0.0f,1.0f,0.0f});
     m_CurrentScene->AddLight(light);
-    */
+    
     ///ecerything is good
     return 1 ;
 
