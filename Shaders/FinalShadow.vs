@@ -1,16 +1,16 @@
 #version 330 
 
 
-//all vertex operation should be done in the eye space
-//magnitude(frag, light, eyespace)- pos in 
 layout(location=0)in vec2 position ;
 layout(location=1)in vec2 texcoord ;
 
+
 uniform mat4 CameraProMtx ;
-uniform	mat4 CameraWorldMtx ;
 uniform sampler2D CameraDepthMap ;
 
 out vec4 VSFragCoord;
+
+
 vec4 EyeSpaceFragCoord(sampler2D Depthtex,vec2 texCoord,mat4 projMtx){
 	vec3 NDC;
 	NDC.xy=(2.0*texCoord-1.0);
@@ -23,6 +23,7 @@ vec4 EyeSpaceFragCoord(sampler2D Depthtex,vec2 texCoord,mat4 projMtx){
 
 }
 void main(){
-	VSFragCoord=EyeSpaceFragCoord(CameraDepthMap,texcoord0,CameraProMtx) ;
+	
+	VSFragCoord=EyeSpaceFragCoord(CameraDepthMap,texcoord,CameraProMtx) ;
 	gl_Position=vec4(position,0.0,1.0);
 }

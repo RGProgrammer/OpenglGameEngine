@@ -9,16 +9,6 @@ namespace RGP_CORE{
 	public:
 		Camera();
 		virtual ~Camera();
-		void RotateViaDirection (_float Angle);
-		void RotateViaUp        (_float Angle);
-		void RotateViaSide      (_float Angle);
-		void Translate          (Vertex3d ver);
-		void setPosition(Vertex3d Pos);
-		bool setOrientation(Vertex3d Dir,Vertex3d Up);
-		Vertex3d getPosition();
-		Vertex3d getDirection();
-		Vertex3d getUp();
-		Vertex3d getSide();
 		_float getNearValue();
 		_float getFarValue();
 		_float* getViewMtx();

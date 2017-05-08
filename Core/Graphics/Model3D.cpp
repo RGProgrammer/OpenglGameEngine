@@ -2,7 +2,7 @@
 
 RGP_CORE::Model3D::Model3D():Model3D({0.0f,0.0f,0.0f}){
 };
-RGP_CORE::Model3D::Model3D(Vertex3d Pos): Model3D(Pos,{0.0f,0.0f,1.0f},{0.0f,1.0f,0.0f}){
+RGP_CORE::Model3D::Model3D(Vertex3d Pos): Model3D(Pos,{0.0f,0.0f,-1.0f},{0.0f,1.0f,0.0f}){
 };
 RGP_CORE::Model3D::Model3D(Vertex3d Pos, Vertex3d Dir, Vertex3d Up): Renderable(Pos,Dir, Up),
 															m_nbMeshes(0), v_Meshes(NULL), v_Buffers(NULL),

@@ -30,9 +30,15 @@ void RGP_CORE::Test::Start(){
     m_CurrentScene->AddActor(testmodel1);
     RGP_CORE::Model3D* testmodel2=new Model3D();
     testmodel2->setRenderer(m_Renderer);
-    if(!testmodel2->LoadModelFromFile("..//test//test1.obj"));
+    if(!testmodel2->LoadModelFromFile("..//test//test1.obj"))
         printf("error loading test Model\n");
     m_CurrentScene->AddActor(testmodel2);
+
+	RGP_CORE::Model3D* testmodel3 = new Model3D();
+	testmodel3->setRenderer(m_Renderer);
+	if (!testmodel3->LoadModelFromFile("..//test//Monkey.obj"))
+	printf("error loading test Model completetly\n");
+	m_CurrentScene->AddActor(testmodel3);
 /*
     RGP_CORE::Model3D* testmodel3=new Model3D();
     testmodel3->setRenderer(m_Renderer);
@@ -91,17 +97,17 @@ int RGP_CORE::Test::Init(){
     if(!m_CurrentScene)
         return 0 ;
     m_Renderer=new GLRenderer();
-    if(!m_Renderer->InitRenderer({"SAMPLE",800,600,5,false,0}))
+    if(!m_Renderer->InitRenderer({"SAMPLE",800,600,5,true,0}))
         return 0 ;
     m_Camera=new PerspCamera(45.0f,800.0f/600.0f,1.0f,5000.0f);
-    m_Camera->Translate({0.0f,0.0f,50.0f});
+    m_Camera->setPosition({0.0f,0.0f,-30.0f});
+	m_Camera->setOrientation({ 0.0f, 0.0f, 1.0f }, { 0.0f, 1.0f, 0.0f });
     m_CurrentScene->setCamera(m_Camera);
     m_Renderer->setScene(m_CurrentScene);
     ///add some models to the scene for test
     LightSource* light=NULL ;
 
-    light=new DirectionnalLight();
-	/*
+    /*light=new DirectionnalLight();
 	light->setOrientation({0.0f,0.0f,1.0f},{0.0f,1.0f,0.0f});
     m_CurrentScene->AddLight(light);*/
 
@@ -122,12 +128,15 @@ int RGP_CORE::Test::Init(){
 	light->setPosition({ 0.0f, 0.0f, 20.0f });
     m_CurrentScene->AddLight(light);
     */
-    
+
     light=new SpotLight();
-	light->setPosition({ 0.0f, 0.0f, 20.0f });
-    light->setOrientation({0.0f,0.0,1.0f},{0.0f,1.0f,0.0f});
+	light->setPosition({ 0.0f, 0.0f, -30.0f });
+	if (!light->setOrientation({ 0.0f, 0.0, 1.0f }, { 0.0f, 1.0f, 0.0f })){
+		printf("WHHHHHHHHHHHHHHHHAAAAAAAAAAAT\n");
+	}
+
     m_CurrentScene->AddLight(light);
-    
+
     ///ecerything is good
     return 1 ;
 

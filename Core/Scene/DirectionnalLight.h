@@ -10,6 +10,8 @@ namespace RGP_CORE {
         DirectionnalLight();
         DirectionnalLight(Vertex3d Pos);
         DirectionnalLight(Vertex3d Pos, Vertex3d Dir, Vertex3d Up);
+	protected:
+		void UpdateLightProjectionMtx();
     };
 };
 

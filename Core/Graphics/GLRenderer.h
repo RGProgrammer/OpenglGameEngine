@@ -61,14 +61,13 @@ namespace RGP_CORE{
     } gfxConfig;
     class GLRenderer{
     private:
-		GLenum DrawBuff[5];
+		GLenum DrawBuff[4];
 
         enum TextureOrder {
             DEPTH_TEXTURE=0,
             DIFFUSE_TEXTURE=1,
             SPECULAR_TEXTURE=2,///+roughness in alpha channel
-            POSITION_TEXTURE=3,
-            NORMAL_TEXTURE=4
+            NORMAL_TEXTURE=3
 
         };
 	public:

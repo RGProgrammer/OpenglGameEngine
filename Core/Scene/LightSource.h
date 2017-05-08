@@ -37,8 +37,8 @@ namespace RGP_CORE {
 		_float*	getLightViewMtx();
 		_float*	getLightProjectionMtx();
     protected:
-		void	UpdateLightViewMtx();
-		void	UpdateLightProjectionMtx();
+		void	UpdateLightViewMtx() ;
+		virtual void	UpdateLightProjectionMtx()= 0;
         _float				m_DiffuseColor[3] ;
         _float				m_SpecularColor[3] ;
         _float				m_AmbientColor[3] ;

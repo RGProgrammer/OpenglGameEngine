@@ -210,6 +210,37 @@ _bool RGP_CORE::GLRenderer::CreateNeededObjects(){
     }
 	if (!AttachTextures())
 		return false;
+	int what;
+	
+	m_ShadowRenderingProgram = CreateGLProgramFromFile("..//Shaders//ShadowMapProgram.vs", "..//Shaders//ShadowMapProgram.fs");
+	if (!m_ShadowRenderingProgram){
+		printf("error loading Shadow Mapping program");
+		scanf("%d", &what);
+		return false;
+	}
+	/*m_CombineShadowProgram = CreateGLProgramFromFile("..//Shaders//FinalShadow.vs", "..//Shaders//FinalShadow.fs");
+	if (!m_CombineShadowProgram){
+		printf("error loading Shadow Maps Combiner program");
+		scanf("%d", &what);
+		return false;
+	}*/
+	
+	glGenFramebuffers(1, &m_CombinedShadowResultFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER,m_CombinedShadowResultFBO);
+	glGenTextures(1, &m_CombinedShadowResultTexture);
+	glBindTexture(GL_TEXTURE_2D, m_CombinedShadowResultTexture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB,
+		m_Target->getWidth(),
+		m_Target->getHeight(),
+		0, GL_RGB, GL_FLOAT, 0);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_CombinedShadowResultTexture, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindTexture(GL_TEXTURE_2D, 0);
+	
     return true ;
 };
 _bool RGP_CORE::GLRenderer::AttachTextures(){
@@ -224,8 +255,7 @@ _bool RGP_CORE::GLRenderer::AttachTextures(){
         }
         glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D,m_AttachmentTextures[i][DIFFUSE_TEXTURE],0);
         glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT1,GL_TEXTURE_2D,m_AttachmentTextures[i][SPECULAR_TEXTURE],0);
-        glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT2,GL_TEXTURE_2D,m_AttachmentTextures[i][POSITION_TEXTURE],0);
-        glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT3,GL_TEXTURE_2D,m_AttachmentTextures[i][NORMAL_TEXTURE],0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT2,GL_TEXTURE_2D,m_AttachmentTextures[i][NORMAL_TEXTURE],0);
         glFramebufferTexture2D(GL_FRAMEBUFFER,GL_DEPTH_ATTACHMENT,GL_TEXTURE_2D,m_AttachmentTextures[i][DEPTH_TEXTURE],0);
         error=glCheckFramebufferStatus(GL_FRAMEBUFFER);
         if(GL_FRAMEBUFFER_COMPLETE != error){
@@ -294,6 +324,7 @@ _bool RGP_CORE::GLRenderer::InitFinalPhase(){
 		printf("error loading render program \n");
 		return false;
 	}
+	
 
     return true ;
 };
@@ -340,7 +371,7 @@ void RGP_CORE::GLRenderer::DrawSceneColors()
 		///first step render to current FBO
 		glBindFramebuffer(GL_FRAMEBUFFER, m_FBOs[m_SelectedFBO]);
 		glViewport(0, 0, m_Target->getWidth(), m_Target->getHeight());
-		glDrawBuffers(4, DrawBuff);
+		glDrawBuffers(3, DrawBuff);
 		/*glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);*/
 		glEnable(GL_DEPTH_TEST);
@@ -521,10 +552,10 @@ void RGP_CORE::GLRenderer::RenderToScreen(){
         glBindTexture(GL_TEXTURE_2D,m_AttachmentTextures[m_SelectedFBO][SPECULAR_TEXTURE]);
         glUniform1i(location,1);
 
-        location=glGetUniformLocation(m_FinalRenderProgram,"Position");
+        location=glGetUniformLocation(m_FinalRenderProgram,"Shadow");
          //if(location==-1) printf("WTW Position \n");
         glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_2D,m_AttachmentTextures[m_SelectedFBO][POSITION_TEXTURE]);
+        glBindTexture(GL_TEXTURE_2D,m_CombinedShadowResultTexture);
         glUniform1i(location,2);
 
         location=glGetUniformLocation(m_FinalRenderProgram,"Normal");
@@ -717,6 +748,7 @@ GLuint   RGP_CORE::GLRenderer::CreateGLProgramFromFile(const _s8b* VertexFile,co
         glDeleteShader(vs);
         return program ;
     }
+	glGetError();
     if(program=glCreateProgram()){
 		error=glGetError();
         glAttachShader(program,vs);
@@ -728,9 +760,7 @@ GLuint   RGP_CORE::GLRenderer::CreateGLProgramFromFile(const _s8b* VertexFile,co
 			printf("error attaching shader \n");
 		}
 		glLinkProgram(program);
-		if (error=glGetError()){
-			printf("error linking error code %d \n", error);
-		}
+		error=glGetError();
         GLint linked;
         glGetProgramiv(program, GL_LINK_STATUS, &linked);
         if(linked==0){
@@ -809,7 +839,8 @@ GLuint RGP_CORE::GLRenderer::LoadShaderFile(GLenum type,const _s8b* filename){
     _u32b buffersize=0;
     _s8b* buffer=NULL;
     FILE* Shaderfile=NULL ;
-
+	if (!filename)
+		return 0;
     if(!(Shaderfile=fopen(filename,"rb"))){
         printf("shader file %s not found \n",filename);
         return Shader;

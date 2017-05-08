@@ -30,49 +30,63 @@ typedef struct {
 
 
 inline _float Magnitude3d(Vertex3d Ver){
-    return (_float)sqrt(Ver.x*Ver.x+Ver.y*Ver.y+Ver.z*Ver.z);
+    return sqrt(Ver.x*Ver.x+Ver.y*Ver.y+Ver.z*Ver.z);
 };
 inline Vertex3d getVertex3d(Vertex3d point1,Vertex3d point2){
-    return {point2.x-point1.x,point2.y-point1.y,point2.z-point1.z};
+	Vertex3d Result;
+	Result.x = point2.x - point1.x;
+	Result.y = point2.y - point1.y;
+	Result.z = point2.z - point1.z;
+	return Result;
 }
 inline _float Distance3d(Vertex3d point1,Vertex3d point2){
     return Magnitude3d(getVertex3d(point1,point2));
 }
 inline Vertex3d ScaleVertex3d(Vertex3d Ver,_float s){
-    return {Ver.x*s,Ver.y*s,Ver.z*s};
+	Vertex3d Result;
+	Result.x = Ver.x*s;
+	Result.y = Ver.y*s;
+	Result.z = Ver.z*s;
+	return Result;
 };
 inline _float DotProduct3d(Vertex3d Ver1 ,Vertex3d Ver2){
     return Ver1.x*Ver2.x+Ver1.y*Ver2.y+Ver1.z*Ver2.z;
 };
-inline Vertex3d CrossProduct3d(Vertex3d Ver1,Vertex3d Ver2){
-    return {Ver1.y*Ver2.z-Ver1.z*Ver2.y,
-            Ver1.z*Ver2.x-Ver1.x*Ver2.z,
-            Ver1.x*Ver2.y-Ver1.y*Ver2.x};
+inline Vertex3d CrossProduct3d(Vertex3d x,Vertex3d y){
+	Vertex3d Result;
+
+	Result.x = x.y * y.z - y.y * x.z;
+	Result.y = x.z * y.x - y.z * x.x;
+	Result.z = x.x * y.y - y.x * x.y;
+	return Result;
 };
 inline Vertex3d Normalize3d(Vertex3d Ver){
     _float d=Magnitude3d(Ver);
-    return ScaleVertex3d(Ver,1.f/d);
+    return ScaleVertex3d(Ver,1.0f/d);
 };
 inline Vertex3d AddVertex3d(Vertex3d Ver1 ,Vertex3d Ver2){
-    return {Ver1.x+Ver2.x,Ver1.y+Ver2.y,Ver1.z+Ver2.z};
+	Vertex3d Result;
+	Result.x = Ver1.x + Ver2.x;
+	Result.y = Ver1.y + Ver2.y;
+	Result.z = Ver1.z + Ver2.z;
+	return Result;
 };
 inline Vertex3d SubsVertex3d(Vertex3d Ver1,Vertex3d Ver2){
-    return {Ver1.x-Ver2.x,Ver1.y-Ver2.y,Ver1.z-Ver2.z};
+	Vertex3d Result;
+	Result.x = Ver1.x - Ver2.x;
+	Result.y = Ver1.y - Ver2.y;
+	Result.z = Ver1.z - Ver2.z;
+	return Result;
 };
 inline Vertex3d Rotate3d(Vertex3d Ver,Vertex3d Pers,_double ang ){
-    Pers=Normalize3d(Pers);
-    Vertex3d tmp ;
-    tmp.x=Ver.x*(cos(ang)+Pers.x*Pers.x*(1-cos(ang)))+
-          Ver.y*(Pers.x*Pers.y*(1-cos(ang))-Pers.z*sin(ang))+
-          Ver.z*(Pers.x*Pers.z*(1-cos(ang))+Pers.y*sin(ang));
-    tmp.y=Ver.x*(Pers.x*Pers.y*(1-cos(ang))+Pers.z*sin(ang))+
-          Ver.y*(cos(ang)+Pers.y*Pers.y*(1-cos(ang)))+
-          Ver.z*(Pers.y*Pers.z*(1-cos(ang))-Pers.x*sin(ang));
-    tmp.z=Ver.x*(Pers.x*Pers.z*(1-cos(ang))-Pers.y*sin(ang))+
-          Ver.y*(Pers.y*Pers.z*(1-cos(ang))+Pers.x*sin(ang))+
-          Ver.z*(cos(ang)+Pers.z*Pers.z*(1-cos(ang)));
-    return tmp;
-
+    Vertex3d Result ;
+	Pers = Normalize3d(Pers);
+	_float MC = 1.0f - cos(ang), S = sin(ang), C = cos(ang);
+	_float	DP = (Ver.x*Pers.x + Ver.y*Pers.y + Ver.z*Pers.z);
+	Result.x = MC*(Pers.x*DP) + S*(Ver.z*Pers.y - Ver.y*Pers.z) + C*Ver.x;
+	Result.y = MC*(Pers.y*DP) + S*(Ver.x*Pers.z - Ver.z*Pers.x) + C*Ver.y;
+	Result.z = MC*(Pers.z*DP) + S*(Ver.y*Pers.x - Ver.x*Pers.y) + C*Ver.z;
+	return Result;
 };
 inline void Multi4x4Mtx(_float* leftMtx, _float* rightMtx,_float* resultMtx){
         resultMtx[0] =leftMtx[0]*rightMtx[0]+leftMtx[4]*rightMtx[1]+leftMtx[8]*rightMtx[2] +leftMtx[12]*rightMtx[3];
@@ -107,6 +121,48 @@ inline bool OppositeDirection(Vertex3d ver1,Vertex3d ver2){
         return true ;
     else
         return false;
+}
+inline float DegreetoRadius(float Degree)
+{
+	return Degree* M_PI / 180.0f;
+}
+inline float RadiustoDegree(float Radius)
+{
+	return Radius*180.0 / M_PI;
+}
+inline void FillViewMatrix(Vertex3d Position, Vertex3d Direction, Vertex3d Up, _float* Dest)
+{
+	Vertex3d	Forward = Direction; 
+	Vertex3d    Side = Normalize3d(CrossProduct3d(Direction, Up));
+	Vertex3d	Upward = Normalize3d(CrossProduct3d(Side, Direction));
+	Dest[0] = Side.x;		Dest[4] = Side.y;			Dest[8]  = Side.z;			Dest[12] = -DotProduct3d(Side, Position);
+	Dest[1] = Upward.x;		Dest[5] = Upward.y;			Dest[9]  = Upward.z;		Dest[13] = -DotProduct3d(Upward, Position);
+	Dest[2] = -Forward.x;	Dest[6] = -Forward.y;		Dest[10] = -Forward.z;		Dest[14] = DotProduct3d(Direction, Position);
+	Dest[3] = 0.0f;			Dest[7] = 0.0f;				Dest[11] = 0.0f;			Dest[15] = 1.0f;
+}
+inline void FillPersPectiveMatrix(float Aspect, float FOV,float Near,float Far , _float* Dest)
+{
+	float tanHalfFovy = tan(FOV / 2.0f);
+
+	Dest[1] = Dest[2] = Dest[3] = 0.0f;
+	Dest[4] = Dest[6] = Dest[7] = 0.0f;
+	Dest[8] = Dest[9] = 0.0f;
+	Dest[12] = Dest[13] = Dest[15] = 0.0f;
+
+	Dest[0] = 1.0f / (Aspect * tanHalfFovy);
+	Dest[5] = 1.0f / (tanHalfFovy);
+	Dest[11] = -1;// -1 for right handed and 1 for left handed
+
+	//m_ProjectionMtx[10] = m_Far / (m_Far - m_Near);
+	//m_ProjectionMtx[14] = -(m_Far * m_Near) / (m_Far - m_Near);
+
+	Dest[10] = -(Far + Near) / (Far - Near);
+	Dest[14] = -(2.0f * Far * Near) / (Far - Near);
+
+}
+inline void FillOrthographicsMatrix(float left,float right, float top,float bottom,float Near,float Far)
+{
+
 }
 #endif // PFE_MATH_H_
 

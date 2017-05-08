@@ -97,3 +97,8 @@ _float   RGP_CORE::LightSource::getLightShiness(){return m_Shiness ;};
 
 _float*	RGP_CORE::LightSource::getLightViewMtx(){ return m_LightViewMtx; };
 _float*	RGP_CORE::LightSource::getLightProjectionMtx(){ return m_LightProjectionMtx; };
+
+void RGP_CORE::LightSource::UpdateLightViewMtx()
+{
+	FillViewMatrix(m_Position, m_Direction, m_Up, m_LightViewMtx);
+};
