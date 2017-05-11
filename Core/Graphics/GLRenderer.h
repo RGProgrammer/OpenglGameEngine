@@ -142,6 +142,7 @@ namespace RGP_CORE{
         _s16b                   m_SelectedFBO;
 
 		//Shadows
+		_u32b					m_ShadowVectorSize;
 		_u32b					m_NumShadowFBOs;
 		GLuint					m_ShadowRenderingProgram;
 		GLuint*					m_ShadowFBOs;

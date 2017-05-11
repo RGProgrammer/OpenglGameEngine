@@ -62,12 +62,6 @@ void RGP_CORE::Model3D::Destroy(){
          m_nbMaterials=0 ;
     }
 
-	if (m_VAOforShadowcasting){
-		m_GLRenderer->DeleteVertexArrays(m_nbMeshes, m_VAOforShadowcasting);
-		//free(m_VAOforShadowcasting);
-		m_VAOforShadowcasting = NULL;
-	}
-
 	if(v_Buffers){
         for(_u32b i=0; i< m_nbMeshes ;i++){
             if(v_Buffers[i].VertexBuffer){
@@ -94,6 +88,11 @@ void RGP_CORE::Model3D::Destroy(){
         }
         free(v_Buffers);
         v_Buffers=NULL ;
+	}
+	if (m_VAOforShadowcasting){
+		m_GLRenderer->DeleteVertexArrays(m_nbMeshes, m_VAOforShadowcasting);
+		free(m_VAOforShadowcasting);
+		m_VAOforShadowcasting = NULL;
 	}
 	if(v_Meshes){
 		for(_u32b i=0; i< m_nbMeshes ;i++){
@@ -124,11 +123,10 @@ void RGP_CORE::Model3D::Destroy(){
 				v_Meshes[i].TexCoords=NULL ;
 			}
 		}
-	free(v_Meshes);
-
-	v_Meshes=NULL ;
-	m_nbMeshes=0 ;
+		free(v_Meshes);
+		v_Meshes=NULL ;
 	}
+	m_nbMeshes = 0;
 	if (m_ShaderProgram){
 
         m_GLRenderer->DeleteGLProgram(m_ShaderProgram);
@@ -292,14 +290,16 @@ void RGP_CORE::Model3D::Render(Camera* Selected){
         m_GLRenderer->BindTexture(0);
         m_GLRenderer->SetActiveTexture(GL_TEXTURE2);
         m_GLRenderer->BindTexture(0);
+		m_GLRenderer->SetActiveTexture(GL_NONE);
 
     }
 };
 void	RGP_CORE::Model3D::CastShadow()
 {
 	 
-	if (!m_DoesCastShadow || !m_GLRenderer)
+	if (!m_DoesCastShadow || !m_GLRenderer){
 		return;
+	}
 	//the shadow pogram is already loaded and the need FBO is Bound
 	//just need to define shader program input paramters(only VAOs)
 	for (_u32b i = 0; i < m_nbMeshes; ++i){
@@ -559,9 +559,9 @@ _u16b RGP_CORE::Model3D::LoadMaterialstoMemory(const aiScene* Scene){
             v_Materials[i].DiffuseMap->Height=1 ;
             v_Materials[i].DiffuseMap->Width=1;
             v_Materials[i].DiffuseMap->Pixels=(_u8b*)malloc(4*sizeof(_u8b));
-            v_Materials[i].DiffuseMap->Pixels[0]=255 ;
-            v_Materials[i].DiffuseMap->Pixels[1]=0 ;
-            v_Materials[i].DiffuseMap->Pixels[2]=255 ;
+            v_Materials[i].DiffuseMap->Pixels[0]=128 ;
+            v_Materials[i].DiffuseMap->Pixels[1]=128 ;
+            v_Materials[i].DiffuseMap->Pixels[2]=128 ;
             v_Materials[i].DiffuseMap->Pixels[3]=0 ;
         }
         if(!hasNormalmap){

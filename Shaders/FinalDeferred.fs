@@ -1,5 +1,5 @@
 #version 330 
-#define MAX_LIGHTS 50
+#define MAX_LIGHTS 25
 struct Light {
 	mat4	WorldMtx ;
 	vec3	DiffuseColor;
@@ -14,7 +14,6 @@ uniform Light Sources[MAX_LIGHTS];
 uniform int numLights ;
 uniform mat4 ViewMtx;
 uniform mat4 ProjMtx ;
-uniform vec3 CameraPos;
 uniform sampler2D Specular ;
 uniform sampler2D Normal ;
 uniform sampler2D Diffuse ;
@@ -50,14 +49,17 @@ void main(){
 	vec3 NormalColor=texture2D(Normal,texcoord0).xyz;
 	vec3 FragCoord=EyeSpaceFragCoord(Depth,texcoord0,ProjMtx).xyz ;
 	float roughness = specularColor.a;
+	float ShadowValue=texture2D(Shadow,texcoord0).r ;
 	float Attinuation;
+	float LightFragDistance ;
+	vec3 LightEyeSpacePos ;
 
 	//
 	float Intensity ;
 	vec3 LightDir;
 	vec3 HalfV;
 	vec3 SpotDirection ;
-	if(texture2D(Shadow,texcoord0).r==1.0){
+	if(ShadowValue==1.0){
 		FinalColor=DiffuseColor.rgb/2.0 ;
 	}else{
 
@@ -76,11 +78,13 @@ void main(){
 						FinalDiffuse=DiffuseColor.rgb/2.0 ;
 					}
 				}else{
-				
-					Attinuation=clamp ( 1.0/(Sources[i].Distance*Sources[i].Distance),0.0,1.0) ;
+					LightEyeSpacePos=(ViewMtx*Sources[i].WorldMtx[3]).xyz;
+					LightFragDistance=distance(FragCoord,LightEyeSpacePos);
+					Attinuation=1.0/(LightFragDistance/Sources[i].Distance) ;
+					Attinuation*=Attinuation;
 
 					if(Sources[i].CutoffAngle < 0.0){// is a Point light
-						LightDir=normalize((ViewMtx*Sources[i].WorldMtx[3]).xyz-FragCoord);
+						LightDir=normalize(LightEyeSpacePos-FragCoord);
 						Intensity=max(dot(NormalColor,LightDir),0.0);
 						if(Intensity>0.0){
 							FinalDiffuse=Intensity*DiffuseColor.rgb*Sources[i].DiffuseColor;
@@ -90,7 +94,7 @@ void main(){
 						}
 
 					}else{// is a SpotLight
-						LightDir=(normalize((ViewMtx*Sources[i].WorldMtx[3]).xyz-FragCoord));
+						LightDir=(normalize(LightEyeSpacePos-FragCoord));
 						SpotDirection=(ViewMtx*Sources[i].WorldMtx[2]).xyz*(-1);
 						if(acos(dot(SpotDirection,LightDir))<= Sources[i].CutoffAngle){
 							Intensity=max(dot(NormalColor,LightDir),0.0);
@@ -103,10 +107,9 @@ void main(){
 						}
 					}
 				}
-		}
+			}
 		}else{
 			FinalColor=normalize(DiffuseColor.rgb+specularColor.rgb);
-			//FinalColor=FragCoord;
 		}
 	}
 	gl_FragColor=vec4(FinalColor,1.0);

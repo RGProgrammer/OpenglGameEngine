@@ -37,7 +37,7 @@ _s16b RGP_CORE::GameScene::AddActor(BaseActor* actor){
 void RGP_CORE::GameScene::FreeVector(){
     BaseActor* tmp=NULL ;
     if(v_Actors){
-        for(_u32b i=0;i<m_NBActors ;++i){
+        for(_u32b i=0;i< m_NBActors ;++i){
             tmp=v_Actors[i];
             tmp->Destroy();
             delete tmp;
@@ -59,9 +59,8 @@ void RGP_CORE::GameScene::FreeVector(){
 };
 void RGP_CORE::GameScene::Destroy() {
     this->FreeVector();
-    m_Camera=NULL ;
-    //m_PlayerRef=NULL;
     m_Gravity={0.0f,0.0f,0.0f};
+	m_Camera = NULL;
 
 };
 RGP_CORE::BaseActor*  RGP_CORE::GameScene::getActor(_u32b index){

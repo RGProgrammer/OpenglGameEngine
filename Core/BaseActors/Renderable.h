@@ -25,11 +25,12 @@ class Renderable: public virtual BaseActor {
 		virtual void Destroy();
 		virtual void Render(Camera* Selected)=0;
 		virtual void CastShadow() = 0;
+		void	setShadowCast(_bool Value);
+		_bool   doesShadowCast();
 		void	setRenderer(GLRenderer* renderer);
 		void	setVisible(_bool visible=true);
 		_bool	isVisible();
-		void	setShadowCast(_bool Value);
-		_bool   doesShadowCast();
+		
     protected:
         GLRenderer*             m_GLRenderer ;
 		_bool					m_DoesCastShadow;

@@ -1,7 +1,7 @@
 #include ".//LightSource.h"
 
 RGP_CORE::LightSource::LightSource() : BaseActor(),
-                                    m_Distance(0.90f),m_Shiness(1.0f),m_CutoffAngle(-1.0f)
+										m_Distance(10.0f), m_Shiness(1.0f), m_CutoffAngle(-1.0f)
 { 
 	m_ID |= LIGHTSOURCE;
 	m_DiffuseColor[0]  = 1.0f ; m_DiffuseColor[1]  = 1.0f; m_DiffuseColor[2]  = 1.0f;
@@ -10,7 +10,7 @@ RGP_CORE::LightSource::LightSource() : BaseActor(),
 };
 
 RGP_CORE::LightSource::LightSource(Vertex3d Pos): BaseActor(Pos),
-                                                 m_Distance(0.90f),m_Shiness(1.0f),m_CutoffAngle(-1.0f)
+													m_Distance(10.0f), m_Shiness(1.0f), m_CutoffAngle(-1.0f)
 { 
 	m_ID |= LIGHTSOURCE ;
 	m_DiffuseColor[0] = 1.0f; m_DiffuseColor[1] = 1.0f; m_DiffuseColor[2] = 1.0f;
@@ -19,7 +19,7 @@ RGP_CORE::LightSource::LightSource(Vertex3d Pos): BaseActor(Pos),
 };
 
 RGP_CORE::LightSource::LightSource(Vertex3d Pos,Vertex3d Dir,Vertex3d Up): BaseActor(Pos,Dir,Up),
-                                    m_Distance(0.90f),m_Shiness(1.0f),m_CutoffAngle(-1.0f)
+										m_Distance(10.f), m_Shiness(1.0f), m_CutoffAngle(-1.0f)
 { 
 	m_ID |= LIGHTSOURCE ;
 	m_DiffuseColor[0] = 1.0f; m_DiffuseColor[1] = 1.0f; m_DiffuseColor[2] = 1.0f;
@@ -95,8 +95,12 @@ _float   RGP_CORE::LightSource::getLightAttinuation(){ return 1.0f / m_Distance 
 _float   RGP_CORE::LightSource::getLightCutoffAngle(){ return m_CutoffAngle ;};
 _float   RGP_CORE::LightSource::getLightShiness(){return m_Shiness ;};
 
-_float*	RGP_CORE::LightSource::getLightViewMtx(){ return m_LightViewMtx; };
-_float*	RGP_CORE::LightSource::getLightProjectionMtx(){ return m_LightProjectionMtx; };
+_float*	RGP_CORE::LightSource::getLightViewMtx(){ 
+	UpdateLightViewMtx();
+	return m_LightViewMtx; };
+_float*	RGP_CORE::LightSource::getLightProjectionMtx(){ 
+	UpdateLightProjectionMtx();
+	return m_LightProjectionMtx; };
 
 void RGP_CORE::LightSource::UpdateLightViewMtx()
 {
