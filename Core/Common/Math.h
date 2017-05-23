@@ -30,7 +30,10 @@ typedef struct {
 
 
 inline _float Magnitude3d(Vertex3d Ver){
-    return sqrt(Ver.x*Ver.x+Ver.y*Ver.y+Ver.z*Ver.z);
+	float tmp = Ver.x*Ver.x + Ver.y*Ver.y + Ver.z*Ver.z;
+	if (tmp < 0.0f)
+		return 0;
+    return sqrt(tmp);
 };
 inline Vertex3d getVertex3d(Vertex3d point1,Vertex3d point2){
 	Vertex3d Result;
@@ -62,6 +65,9 @@ inline Vertex3d CrossProduct3d(Vertex3d x,Vertex3d y){
 };
 inline Vertex3d Normalize3d(Vertex3d Ver){
     _float d=Magnitude3d(Ver);
+	if (d == 0.0f) {
+		return Ver;
+	}
     return ScaleVertex3d(Ver,1.0f/d);
 };
 inline Vertex3d AddVertex3d(Vertex3d Ver1 ,Vertex3d Ver2){

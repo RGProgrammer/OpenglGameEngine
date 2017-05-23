@@ -49,7 +49,7 @@ void main(){
 	vec3 NormalColor=texture2D(Normal,texcoord0).xyz;
 	vec3 FragCoord=EyeSpaceFragCoord(Depth,texcoord0,ProjMtx).xyz ;
 	float roughness = specularColor.a;
-	float ShadowValue=texture2D(Shadow,texcoord0).r ;
+	vec3 ShadowValue=texture2D(Shadow,texcoord0).rgb;
 	float Attinuation;
 	float LightFragDistance ;
 	vec3 LightEyeSpacePos ;
@@ -112,5 +112,6 @@ void main(){
 			FinalColor=normalize(DiffuseColor.rgb+specularColor.rgb);
 		}
 	}
+	//FinalColor=ShadowValue;
 	gl_FragColor=vec4(FinalColor,1.0);
 }

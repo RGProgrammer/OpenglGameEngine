@@ -3,44 +3,61 @@
 
 struct Light {
 	mat4 ProjMatrix ;
-	mat4 LightBiasVPMtx ;//not bias yet, it just ViewProjection
+	mat4 LightViewMtx ;
 	sampler2D ShadowMap ;
 };
+
 uniform Light Sources[MAX_LIGHTS] ;
 uniform int NumLights ;
-uniform	mat4 CameraViewMtx ;
+uniform mat4 CameraProMtx ;
+uniform mat4 CameraViewMtx ;
+uniform sampler2D CameraDepthMap ;
 
-in vec4 VSFragCoord0 ;
-in vec2 texcoord0;
-vec4 EyeSpaceFragCoord(in sampler2D Depthtex,in vec2 texCoord,in mat4 projMtx){
+vec4 EyeSpaceFragCoord(sampler2D Depthtex,vec2 texCoord,mat4 projMtx)
+{
 	vec3 NDC;
-	NDC.xy=(2.0*texCoord-1.0);
+	NDC.xy=2.0*texCoord-1.0 ;
 	NDC.z=(2.0 * texture2D(Depthtex,texCoord).r-1.0);
 
 	vec4 clipPos;
 	clipPos.w=projMtx[3][2]/(NDC.z-(projMtx[2][2]/projMtx[2][3]));
 	clipPos.xyz=NDC*clipPos.w ;
-	return inverse(projMtx)*clipPos ;
-
+	return inverse(projMtx)*clipPos  ;
 }
+vec4 EyetoWorldSpace(vec4 EyeSpace,mat4 ViewMtx){
+	return inverse(ViewMtx)*EyeSpace;
+	//return ViewMtx*EyeSpace;
+}
+//in vec4 WSFragCoord0 ;
+in vec2 texcoord0;
 void main (){
-	
 	float value=1.0;//means shadowed
-	vec4 FragLightEyeSpaceCoord;
-	vec2 ShadowMapTexCoord;
-	int numlights ;
+	int numlights0 ;
+	vec4 ShadowMapTexCoord=vec4(0.0);
+	vec4 ShadowViewCoord=vec4(0.0) ;
+	vec4 LightViewCoord=vec4(0.0);
+	vec4 WSFragCoord0=EyetoWorldSpace(EyeSpaceFragCoord(CameraDepthMap,texcoord0,CameraProMtx),CameraViewMtx) ;
 	if(NumLights > MAX_LIGHTS)
-		numlights=25 ;
+		numlights0=25 ;
 	else
-		numlights=NumLights ;
-	for(int i=0 ; (i< numlights); ++i){
-		//ShadowMapTexCoord= (Sources[i].LightBiasVPMtx*inverse(CameraViewMtx)*VSFragCoord0).xy;
-		//FragLightEyeSpaceCoord=EyeSpaceFragCoord(Sources[i].ShadowMap,ShadowMapTexCoord,Sources[i].ProjMatrix);
-		//if(length(VSFragCoord0)-length(FragLightEyeSpaceCoord) <=0.005){
-			//value=length(VSFragCoord0)-length(FragLightEyeSpaceCoord);
-			//break ;
+		numlights0=NumLights ;
+
+	for(int i=0 ; i< numlights0; ++i){
+		ShadowViewCoord=Sources[i].LightViewMtx*WSFragCoord0;
+		ShadowMapTexCoord=Sources[i].ProjMatrix*ShadowViewCoord ;
+		//ShadowMapTexCoord/=ShadowMapTexCoord.w ;
+		ShadowMapTexCoord=ShadowMapTexCoord*0.5+0.5;
+		LightViewCoord=EyeSpaceFragCoord(Sources[i].ShadowMap,ShadowMapTexCoord.xy,Sources[i].ProjMatrix);
+		if(ShadowViewCoord.z <= LightViewCoord.z){
+			value=0.0 ;
+			break ;
+		}
+		//if(ShadowMapTexCoord.z<=texture2D(Sources[0].ShadowMap,ShadowMapTexCoord.xy).r){
+		//	value=0.0 ; //means lit
+		//	break ;
 		//}
-		value=texture(Sources[i].ShadowMap,texcoord0).r*2.0-1.0 ;
 	}
-	gl_FragColor=vec4(value,value,value,1.0);
+	gl_FragData[0]=vec4(value,value,value,1.0);
+	//gl_FragData[0]=vec4(ShadowMapTexCoord.rgb,1.0);
+
 }

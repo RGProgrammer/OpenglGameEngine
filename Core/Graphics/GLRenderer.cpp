@@ -234,10 +234,10 @@ _bool RGP_CORE::GLRenderer::CreateNeededObjects(){
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB,
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F,
 		m_Target->getWidth(),
 		m_Target->getHeight(),
-		0, GL_RGB, GL_FLOAT, 0);
+		0, GL_RGBA, GL_FLOAT, 0);
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_CombinedShadowResultTexture, 0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glBindTexture(GL_TEXTURE_2D, 0);
@@ -466,7 +466,6 @@ void RGP_CORE::GLRenderer::DrawSceneShadows()
 		_s8b shaderstring[50] = "";
 		LightSource*	Source = NULL;
 		Renderable*		actor = NULL;
-		float VPMatrix[16];
 		glUseProgram(m_ShadowRenderingProgram);
 		Location1 = glGetUniformLocation(m_ShadowRenderingProgram, "World");
 		if (Location1 == -1)
@@ -478,29 +477,31 @@ void RGP_CORE::GLRenderer::DrawSceneShadows()
 		if (Location3 == -1)
 			printf("error error error");
 		glEnable(GL_DEPTH_TEST);
-		glDisable(GL_CULL_FACE);
-		//glCullFace(GL_BACK);
-		for (_u32b i = 0; i < NumActors && ShadowIndex < 25; ++i)
-			if (m_SelectedScene->getActor(i)->getID() & LIGHTSOURCE){
-				Source = dynamic_cast<LightSource*>(m_SelectedScene->getActor(i));
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK);
+		//for (_u32b i = 0; i < NumActors && ShadowIndex < 25; ++i)
+		for(ShadowIndex = 0 ; ShadowIndex < m_NumShadowFBOs ; ++ShadowIndex){
+			//if (m_SelectedScene->getActor(i)->getID() & LIGHTSOURCE){
+				//Source = dynamic_cast<LightSource*>(m_SelectedScene->getActor(ShadowIndex));
+				Source = m_SelectedScene->getLight(ShadowIndex);
 				//Multi4x4Mtx(Source->getLightProjectionMtx(), Source->getLightViewMtx(), VPMatrix);
 				glBindFramebuffer(GL_FRAMEBUFFER, m_ShadowFBOs[ShadowIndex]);
 				glViewport(0, 0, m_Config.ShadowResolution, m_Config.ShadowResolution);
 				glClear(GL_DEPTH_BUFFER_BIT);
 				glEnable(GL_DEPTH_TEST);
-				glDisable(GL_CULL_FACE);
-				glUniform4fv(Location2, 4, Source->getLightViewMtx());
-				glUniform4fv(Location3, 4, Source->getLightProjectionMtx());
+				//glDisable(GL_CULL_FACE);
+				glUniformMatrix4fv(Location2, 4, GL_FALSE, Source->getLightViewMtx());
+				glUniformMatrix4fv(Location3, 4, GL_FALSE, Source->getLightProjectionMtx());
 				for (_u32b j = 0; j < NumActors; ++j)
 					if (m_SelectedScene->getActor(j)->getID() & RENDERABLE){
 						actor = dynamic_cast<Renderable*>(m_SelectedScene->getActor(j));
-						glUniform4fv(Location1, 4, actor->getTransMtx());
+						glUniformMatrix4fv(Location1, 4, GL_FALSE, actor->getTransMtx());
 						actor->CastShadow();
-						printf("at least \n");
 					}
 
-				++ShadowIndex;
-			}
+			//	++ShadowIndex;
+			//}
+		}
 		glDisable(GL_DEPTH_TEST);
 		glDisable(GL_CULL_FACE);
 
@@ -510,43 +511,44 @@ void RGP_CORE::GLRenderer::DrawSceneShadows()
 		glBindFramebuffer(GL_FRAMEBUFFER, m_CombinedShadowResultFBO);
 		glViewport(0, 0, m_Target->getWidth(), m_Target->getHeight());
 		ShadowIndex = 0;
-
-		Location1=glGetUniformLocation(m_CombineShadowProgram,"CameraProMtx");
-		glUniform4fv(Location1, 4, m_SelectedScene->getCamera()->getProjectionMtx());
-
-		Location1 = glGetUniformLocation(m_CombineShadowProgram, "CameraViewMtx");
-		glUniform4fv(Location1, 4, m_SelectedScene->getCamera()->getViewMtx());
-
-		Location1 = glGetUniformLocation(m_CombineShadowProgram,"NumLights");
+		Location1 = glGetUniformLocation(m_CombineShadowProgram, "NumLights");
 		glUniform1i(Location1, m_NumShadowFBOs);
 
+		Location1=glGetUniformLocation(m_CombineShadowProgram,"CameraProMtx");
+		glUniformMatrix4fv(Location1, 4, GL_FALSE, m_SelectedScene->getCamera()->getProjectionMtx());
+
+		Location1 = glGetUniformLocation(m_CombineShadowProgram, "CameraViewMtx");
+		glUniformMatrix4fv(Location1, 4, GL_FALSE, m_SelectedScene->getCamera()->getViewMtx());
+
+		
+		Location1 = glGetUniformLocation(m_CombineShadowProgram, "CameraDepthMap");
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, m_AttachmentTextures[m_SelectedFBO][DEPTH_TEXTURE]);
 		glUniform1i(Location1, 0);
 
 		//lights uniforms
-		for (_u32b i = 0; i < NumActors && ShadowIndex < m_NumShadowFBOs; ++i){
-			if (m_SelectedScene->getActor(i)->getID() & LIGHTSOURCE){
-				Source = dynamic_cast<LightSource*>(m_SelectedScene->getActor(i));
-
-				sprintf(shaderstring, "Source[%d].ProjMatrix", ShadowIndex);
+		//for (_u32b i = 0; i < NumActors && ShadowIndex < m_NumShadowFBOs; ++i){
+		for (ShadowIndex = 0; ShadowIndex<m_NumShadowFBOs; ++ShadowIndex) {
+			//if (m_SelectedScene->getActor(ShadowIndex)->getID() & LIGHTSOURCE){
+				//Source = dynamic_cast<LightSource*>(m_SelectedScene->getActor(ShadowIndex));
+				Source = m_SelectedScene->getLight(ShadowIndex);
+				sprintf(shaderstring, "Sources[%d].ProjMatrix", ShadowIndex);
 				Location1 = glGetUniformLocation(m_CombineShadowProgram, shaderstring);
-				glUniform4fv(Location1, 4, Source->getLightProjectionMtx());
-				sprintf(shaderstring, "Source[%d].LightViewMtx", ShadowIndex);
+				glUniformMatrix4fv(Location1, 4, GL_FALSE, Source->getLightProjectionMtx());
 
+				sprintf(shaderstring, "Sources[%d].LightViewMtx", ShadowIndex);
 				Location1 = glGetUniformLocation(m_CombineShadowProgram, shaderstring);
-				Multi4x4Mtx(Source->getLightProjectionMtx(), Source->getLightViewMtx(), VPMatrix);
-				glUniform4fv(Location1, 4, VPMatrix);
+				glUniformMatrix4fv(Location1, 4, GL_FALSE, Source->getLightViewMtx());
 
-				sprintf(shaderstring, "Source[%d].ShadowMap", ShadowIndex);
+				sprintf(shaderstring, "Sources[%d].ShadowMap", ShadowIndex);
 				Location1 = glGetUniformLocation(m_CombineShadowProgram, shaderstring);
 				glActiveTexture(GL_TEXTURE0 + ShadowIndex + 1);
 				glBindTexture(GL_TEXTURE_2D, m_ShadowAttachmentTexture[ShadowIndex]);
 				glUniform1i(Location1, ShadowIndex + 1);
 
-				++ShadowIndex;
+				//++ShadowIndex;
 
-			}
+			//}
 		}
 		///VAOs
 		glBindVertexArray (m_FinalRenderSurface->VertexArrayObject);

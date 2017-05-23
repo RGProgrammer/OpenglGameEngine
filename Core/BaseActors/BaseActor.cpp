@@ -39,7 +39,7 @@ Vertex3d RGP_CORE::BaseActor::getPosition(){
 };
 bool RGP_CORE::BaseActor::setOrientation(Vertex3d Dir, Vertex3d Up){
 	m_Direction = Normalize3d(Dir);
-	Vertex3d    Side = Normalize3d(CrossProduct3d(m_Up, m_Direction));
+	Vertex3d    Side = Normalize3d(CrossProduct3d(Up, m_Direction));
 	m_Up = Normalize3d(CrossProduct3d(Side, m_Direction));
 	this->UpdateTransMtx();
 	return true;
