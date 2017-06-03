@@ -9,5 +9,5 @@ RGP_CORE::SpotLight::SpotLight(Vertex3d Pos, Vertex3d Dir, Vertex3d Up):LightSou
 
 void RGP_CORE::SpotLight::UpdateLightProjectionMtx()
 {
-	FillPersPectiveMatrix(m_CutoffAngle*2.0f,1.0f , 1.0f, m_Distance*m_Distance , this->m_LightProjectionMtx);
+	FillPersPectiveMatrix(m_CutoffAngle*2.0f,1.0f , 1.0f,m_Distance*m_Distance , this->m_LightProjectionMtx);
 };

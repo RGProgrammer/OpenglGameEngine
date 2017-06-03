@@ -25,7 +25,7 @@ void RGP_CORE::Test::Start(){
 
     RGP_CORE::Model3D* testmodel1=new Model3D();
     testmodel1->setRenderer(m_Renderer);
-    if(!testmodel1->LoadModelFromFile("..//test//plane.obj"))
+    if(!testmodel1->LoadModelFromFile("..//test//Test.obj"))
         printf("error loading test Model\n");
     m_CurrentScene->AddActor(testmodel1);
 
@@ -59,12 +59,23 @@ void RGP_CORE::Test::Start(){
 	light->setPosition({ 0.0f, 0.0f, 20.0f });
 	m_CurrentScene->AddLight(light);
 	*/
+	
+	light = new SpotLight();
+	light->setPosition({ -5.0f, 10.0f, 0.0f });
+	light->setOrientation({ 0.5f, -1.0f, 0.0f }, { 1.0f, 0.5f, 0.0f });
+	m_CurrentScene->AddLight(light);
+
+	/*light = new SpotLight();
+	light->setPosition({ 5.0f, 10.0f, 0.0f });
+	light->setOrientation({ -0.5f, -1.0f, 0.0f }, { -1.0f, 0.5f, 0.0f });
+	m_CurrentScene->AddLight(light);*/
 
 	light = new SpotLight();
-	light->setPosition({ 0.0f, 10.0f, 0.0f });
+	light->setPosition({ 0.0f, 15.0f, 0.0f });
 	light->setOrientation({ 0.0f, -1.0f, 0.0f }, { 0.0f, 0.0f, 1.0f });
-
 	m_CurrentScene->AddLight(light);
+
+	
 
 	///ecerything is good
 	m_Renderer->setScene(m_CurrentScene);
@@ -100,22 +111,22 @@ void RGP_CORE::Test::Start(){
 
         state = glfwGetKey(m_Renderer->getTarget()->getglfwWindow(), GLFW_KEY_UP);
         if (state == GLFW_PRESS){
-            m_Camera->RotateViaSide(-0.005);
+            m_Camera->RotateViaSide(-0.01);
 
         }
         state = glfwGetKey(m_Renderer->getTarget()->getglfwWindow(), GLFW_KEY_DOWN);
         if (state == GLFW_PRESS){
-            m_Camera->RotateViaSide(0.005);
+            m_Camera->RotateViaSide(0.01);
 
         }
         state = glfwGetKey(m_Renderer->getTarget()->getglfwWindow(), GLFW_KEY_LEFT);
         if (state == GLFW_PRESS){
-            m_Camera->RotateViaUp(0.005);
+            m_Camera->RotateViaUp(0.01);
 
         }
         state = glfwGetKey(m_Renderer->getTarget()->getglfwWindow(), GLFW_KEY_RIGHT);
         if (state == GLFW_PRESS){
-            m_Camera->RotateViaUp(-0.005);
+            m_Camera->RotateViaUp(-0.01);
         }
         m_Renderer->RenderCurrentScene();
     }
@@ -126,9 +137,9 @@ int RGP_CORE::Test::Init(){
     if(!m_CurrentScene)
         return 0 ;
     m_Renderer=new GLRenderer();
-    if(!m_Renderer->InitRenderer({"SAMPLE",800,600,5,true,512}))
+    if(!m_Renderer->InitRenderer({"SAMPLE",512,512,5,true,512}))
         return 0 ;
-    m_Camera=new PerspCamera(M_PI_2,800.0f/600.0f,1.0f,5000.0f);
+    m_Camera=new PerspCamera(M_PI_2, 512.0f / 512.0f,1.0f,5000.0f);
 	m_Camera->setPosition({ 0.0f,7.0f,-7.0f });
 	m_Camera->setOrientation({ 0.0f, -0.5f, 0.5f }, { 0.0f, 0.5f, 0.5f });
     m_CurrentScene->setCamera(m_Camera);

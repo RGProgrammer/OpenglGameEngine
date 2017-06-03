@@ -17,6 +17,8 @@ RGP_CORE::Camera::~Camera(){
 		m_ProjectionMtx=NULL ;
 	}
 };
+_float RGP_CORE::Camera::getNearValue() { return m_Near; };
+_float RGP_CORE::Camera::getFarValue() { return m_Far; };
 _float* RGP_CORE::Camera::getViewMtx(){
 	this->UpdateViewMtx();
 	return m_ViewMatrix;
