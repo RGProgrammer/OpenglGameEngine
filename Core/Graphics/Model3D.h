@@ -62,7 +62,7 @@ namespace RGP_CORE {
 		OGLMaterial*            v_oglMaterials;
 		_u32b                   m_nbMaterials;
 		_s8b*					m_FileDirectory;
-		GLuint				    m_ShaderProgram ;
+		_u32b				    m_ShaderProgram ;
 	};
 
 };

@@ -257,9 +257,12 @@ void RGP_CORE::Model3D::Render(Camera* Selected){
         m_GLRenderer->SetShaderProgram(m_ShaderProgram);
         ///setup uniform variable
         ///Matrices
-        m_GLRenderer->SetUniformvMtx(m_GLRenderer->GetUniformLocation(m_ShaderProgram,"WorldMtx"),BaseActor::getTransMtx());
-        m_GLRenderer->SetUniformvMtx(m_GLRenderer->GetUniformLocation(m_ShaderProgram,"ViewMtx"),Selected->getViewMtx());
-        m_GLRenderer->SetUniformvMtx(m_GLRenderer->GetUniformLocation(m_ShaderProgram,"ProjMtx"),Selected->getProjectionMtx());
+		Location = m_GLRenderer->GetUniformLocation(m_ShaderProgram, "WorldMtx");
+		m_GLRenderer->SetUniformvMtx(Location,this->getTransMtx());
+		Location = m_GLRenderer->GetUniformLocation(m_ShaderProgram, "ViewMtx");
+		m_GLRenderer->SetUniformvMtx(Location,Selected->getViewMtx());
+		Location = m_GLRenderer->GetUniformLocation(m_ShaderProgram, "ProjMtx");
+		m_GLRenderer->SetUniformvMtx(Location,Selected->getProjectionMtx());
         for(_u32b i = 0 ;i<m_nbMeshes;++i){
             ///Texture
             m_GLRenderer->SetActiveTexture(0);
@@ -285,7 +288,6 @@ void RGP_CORE::Model3D::Render(Camera* Selected){
         }
         ///after rendering
         m_GLRenderer->BindVertexArray(0);
-        m_GLRenderer->SetShaderProgram(0);
         m_GLRenderer->SetActiveTexture(GL_TEXTURE0);
         m_GLRenderer->BindTexture(0);
         m_GLRenderer->SetActiveTexture(GL_TEXTURE1);

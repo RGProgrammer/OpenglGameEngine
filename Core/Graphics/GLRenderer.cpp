@@ -1,7 +1,319 @@
 #include ".//GLRenderer.h"
 
-RGP_CORE::GLRenderer::GLRenderer(RenderType Type):m_Target(NULL),m_isInitialized(false) ,
-											m_SelectedScene(NULL),
+RGP_CORE::GLShaderProgramsManager::GLShaderProgramsManager(): m_LoadedProgramsList(NULL) , m_NumPrograms(0), m_Size(0),
+															m_boundProgramID(0)
+{};
+RGP_CORE::GLShaderProgramsManager::~GLShaderProgramsManager()
+{
+	this->Destroy();
+};
+void RGP_CORE::GLShaderProgramsManager::Destroy()
+{
+	if (m_LoadedProgramsList) {
+		for (_u32b i = 0; i < m_NumPrograms; ++i) {
+			if (m_LoadedProgramsList[i].VertexShaderFileName)
+				free(m_LoadedProgramsList[i].VertexShaderFileName);
+			if (m_LoadedProgramsList[i].GeometryShaderFileName)
+				free(m_LoadedProgramsList[i].GeometryShaderFileName);
+			if (m_LoadedProgramsList[i].FragmentShaderFileName)
+				free(m_LoadedProgramsList[i].FragmentShaderFileName);
+			if (m_LoadedProgramsList[i].OneForAllFileName)
+				free(m_LoadedProgramsList[i].OneForAllFileName);
+			if(m_LoadedProgramsList[i].GLProgramID)
+				glDeleteProgram(m_LoadedProgramsList[i].GLProgramID);
+		}
+		free(m_LoadedProgramsList);
+		m_LoadedProgramsList = NULL;
+	}
+	m_NumPrograms = 0;
+	m_Size = 0;
+};
+_u32b RGP_CORE::GLShaderProgramsManager::CreateProgramFromOneFile(_s8b* Filename)
+{
+	return 0;
+};
+_u32b RGP_CORE::GLShaderProgramsManager::CreateProgramFromFiles(_s8b* VertexFile, _s8b* FrgamentFile)
+{
+	return CreateProgramFromFiles(VertexFile, NULL, FrgamentFile);
+};
+_u32b RGP_CORE::GLShaderProgramsManager::CreateProgramFromFiles(_s8b* VertexFile, _s8b* GeometryFile, _s8b* FragmentFile)
+{
+	if (VertexFile==NULL)
+		return 0;
+	_u32b ID=0;
+	if (ID = doExiste(VertexFile, GeometryFile, FragmentFile))
+		return ID;
+	if (m_Size == m_NumPrograms) {
+		ShaderProgram* tmp = (ShaderProgram*)malloc((m_Size + 1) * sizeof(ShaderProgram));
+		if (!tmp)
+			return 0;
+		for (_u32b i = 0; i < m_NumPrograms; ++i) 
+			tmp[i] = m_LoadedProgramsList[i];
+		free(m_LoadedProgramsList);
+		m_LoadedProgramsList = tmp;
+		++m_Size;
+	}
+	m_LoadedProgramsList[m_NumPrograms].OneForAllFileName = NULL;
+	m_LoadedProgramsList[m_NumPrograms].VertexShaderFileName = NULL;
+	m_LoadedProgramsList[m_NumPrograms].GeometryShaderFileName = NULL;
+	m_LoadedProgramsList[m_NumPrograms].FragmentShaderFileName = NULL;
+	m_LoadedProgramsList[m_NumPrograms].GLProgramID = 0;
+	++m_NumPrograms;
+	m_LoadedProgramsList[m_NumPrograms-1].VertexShaderFileName = (_s8b*)malloc((strlen(VertexFile) + 1) * sizeof(_s8b));
+	if (!m_LoadedProgramsList[m_NumPrograms - 1].VertexShaderFileName) {
+		return 0;
+	}
+	else {
+		strcpy(m_LoadedProgramsList[m_NumPrograms - 1].VertexShaderFileName, VertexFile);
+	}
+	if (GeometryFile) {
+		m_LoadedProgramsList[m_NumPrograms - 1].GeometryShaderFileName = (_s8b*)malloc((strlen(GeometryFile) + 1) * sizeof(_s8b));
+		if (!m_LoadedProgramsList[m_NumPrograms - 1].GeometryShaderFileName) {
+			this->DeleteProgram(m_NumPrograms - 1);
+			return 0;
+		}
+		else {
+			strcpy(m_LoadedProgramsList[m_NumPrograms - 1].GeometryShaderFileName, GeometryFile);
+		}
+	}
+	if (FragmentFile) {
+		m_LoadedProgramsList[m_NumPrograms - 1].FragmentShaderFileName = (_s8b*)malloc((strlen(FragmentFile) + 1) * sizeof(_s8b));
+		if (!m_LoadedProgramsList[m_NumPrograms - 1].FragmentShaderFileName) {
+			this->DeleteProgram(m_NumPrograms);
+			return 0;
+		}
+		else {
+			strcpy(m_LoadedProgramsList[m_NumPrograms - 1].FragmentShaderFileName, FragmentFile);
+		}
+	}
+	m_LoadedProgramsList[m_NumPrograms-1].GLProgramID = CreateGLProgram(VertexFile, GeometryFile, FragmentFile);
+	if (!m_LoadedProgramsList[m_NumPrograms - 1].GLProgramID) {
+		this->DeleteProgram(m_NumPrograms);
+		return 0;
+	}
+	return m_NumPrograms;
+};
+void  RGP_CORE::GLShaderProgramsManager::BindProgram(_u32b ID)
+{
+	if (ID != m_boundProgramID) {
+		if (ID == 0) {
+			glUseProgram(0);
+			m_boundProgramID = 0;
+			return;
+		}
+		if (ID <= m_NumPrograms) {
+			glUseProgram(m_LoadedProgramsList[ID - 1].GLProgramID);
+			m_boundProgramID = ID;
+		}
+	}
+};
+void  RGP_CORE::GLShaderProgramsManager::DeleteProgram(_u32b ID)
+{
+	if (ID > 0 && ID <= m_NumPrograms) {
+		
+		if (m_LoadedProgramsList[ID - 1].FragmentShaderFileName) {
+			free(m_LoadedProgramsList[ID - 1].FragmentShaderFileName);
+			m_LoadedProgramsList[ID - 1].FragmentShaderFileName = NULL;
+		}
+		if (m_LoadedProgramsList[ID - 1].GeometryShaderFileName) {
+			free(m_LoadedProgramsList[ID - 1].GeometryShaderFileName);
+			m_LoadedProgramsList[ID - 1].GeometryShaderFileName = NULL;
+		}
+		if (m_LoadedProgramsList[ID - 1].VertexShaderFileName) {
+			free(m_LoadedProgramsList[ID - 1].VertexShaderFileName);
+			m_LoadedProgramsList[ID - 1].VertexShaderFileName = NULL;
+		}
+		if (m_LoadedProgramsList[ID - 1].OneForAllFileName) {
+			free(m_LoadedProgramsList[ID - 1].OneForAllFileName);
+			m_LoadedProgramsList[ID - 1].OneForAllFileName = NULL;
+		}
+		if (m_LoadedProgramsList[ID - 1].GLProgramID) {
+			glDeleteProgram(m_LoadedProgramsList[ID - 1].GLProgramID);
+			m_LoadedProgramsList[ID - 1].GLProgramID = 0;
+		}
+		for (_u32b i = ID - 1; i < m_NumPrograms-1; ++i) {
+			m_LoadedProgramsList[i] = m_LoadedProgramsList[i + 1];
+		}
+		if (m_boundProgramID == ID) {
+			m_boundProgramID = 0;
+			glUseProgram(0);
+		}
+		else if (m_boundProgramID > ID)
+			--m_boundProgramID; 
+		--m_NumPrograms;
+		m_LoadedProgramsList[m_NumPrograms].FragmentShaderFileName = NULL;
+		m_LoadedProgramsList[m_NumPrograms].GeometryShaderFileName = NULL;
+		m_LoadedProgramsList[m_NumPrograms].VertexShaderFileName = NULL;
+		m_LoadedProgramsList[m_NumPrograms].OneForAllFileName = NULL;
+		m_LoadedProgramsList[m_NumPrograms].GLProgramID = 0;
+	}
+};
+_u32b RGP_CORE::GLShaderProgramsManager::LoadShaderBuffer(GLenum type, const _s8b* Buffer, int buffersize) {
+	GLuint Shader = 0;
+	if (!Buffer || !buffersize) {
+		printf("error no shader buffer ");
+		return Shader;
+	}
+
+	Shader = glCreateShader(type);
+	if (Shader) {
+		glShaderSource(Shader, 1, (const _s8b**)(&Buffer), &buffersize);
+		glCompileShader(Shader);
+		GLint compiled;
+		glGetObjectParameterivARB(Shader, GL_COMPILE_STATUS, &compiled);
+		if (!compiled) {
+			printf("error compiling shader\n");
+			printf("Source: %s \n", Buffer);
+			GLint blen = 0;
+			GLsizei slen = 0;
+
+			glGetShaderiv(Shader, GL_INFO_LOG_LENGTH, &blen);
+			if (blen > 1)
+			{
+				GLchar* compiler_log = (GLchar*)malloc(blen);
+				glGetInfoLogARB(Shader, blen, &slen, compiler_log);
+				printf("compiler_log: %s\n", compiler_log);
+				free(compiler_log);
+			}
+			glDeleteShader(Shader);
+		}
+	}
+	else {
+		printf("Cannot create shader \n");
+	}
+	return Shader;
+};
+_u32b RGP_CORE::GLShaderProgramsManager::LoadShaderFile(GLenum Type, _s8b* filename)
+{
+	GLuint Shader = 0;
+	_u32b buffersize = 0;
+	_s8b* buffer = NULL;
+	FILE* Shaderfile = NULL;
+	if (!filename)
+		return 0;
+	if (!(Shaderfile = fopen(filename, "rb"))) {
+		printf("shader file %s not found \n", filename);
+		return Shader;
+	}
+	fflush(stdin);
+	fseek(Shaderfile, 0, SEEK_END);
+	buffersize = ftell(Shaderfile);
+	if (buffersize == 0) {
+		printf("empty file\n");
+		fclose(Shaderfile);
+		return 0;
+	}
+	fseek(Shaderfile, 0, SEEK_SET);
+	buffer = (_s8b*)malloc((buffersize + 1) * sizeof(_s8b));
+	if (!buffer) {
+		fclose(Shaderfile);
+		return Shader;
+	}
+	fflush(stdin);
+	fread(buffer, buffersize, 1, Shaderfile);
+	buffer[buffersize] = '\0';
+	fclose(Shaderfile);
+	Shader = LoadShaderBuffer(Type, buffer, buffersize);
+	free(buffer);
+	return Shader;
+};
+
+GLuint RGP_CORE::GLShaderProgramsManager::CreateGLProgram(_s8b* VertexFile, _s8b* GeometryFile, _s8b* FragmentFile)
+{
+	GLuint program = 0, vs = 0, gs = 0, fs = 0;
+	GLuint error = 0;
+	vs = LoadShaderFile(GL_VERTEX_SHADER, VertexFile);
+	if (!vs) {
+		printf("error loading vertex shader\n");
+		return program;
+	}
+	if (GeometryFile) {
+		if (strlen(GeometryFile) != 0) {
+			gs = LoadShaderFile(GL_GEOMETRY_SHADER, GeometryFile);
+			if (!gs) {
+				glDeleteShader(vs);
+				return program;
+			}
+		}
+	}
+	if (FragmentFile)
+		if (strlen(FragmentFile) != 0) {
+			fs = LoadShaderFile(GL_FRAGMENT_SHADER, FragmentFile);
+			if (!fs) {
+				glDeleteShader(vs);
+				if (gs) {
+					glDeleteShader(gs);
+				}
+				return program;
+			}
+		}
+	glGetError();
+	if (program = glCreateProgram()) {
+		error = glGetError();
+		glAttachShader(program, vs);
+		if (error = glGetError()) {
+			printf("error attaching shader \n");
+		}
+		if (gs) {
+			glAttachShader(program, gs);
+			if (error = glGetError()) {
+				printf("error attaching shader \n");
+			}
+		}
+		if (fs) {
+			glAttachShader(program, fs);
+			if (error = glGetError()) {
+				printf("error attaching shader \n");
+			}
+		}
+		glLinkProgram(program);
+		error = glGetError();
+		GLint linked;
+		glGetProgramiv(program, GL_LINK_STATUS, &linked);
+		if (linked == GL_FALSE) {
+			printf("error linking shader program %d  %d \n", linked, error);
+			GLint maxLength = 0;
+			glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
+			GLchar log[1024];
+			glGetProgramInfoLog(program, maxLength, &maxLength, log);
+			log[maxLength] = '\0';
+			printf("\n%s\n", log);
+			glDeleteProgram(program);
+			program = 0;
+		}
+	}
+	else {
+		printf("cannot create shader program\n");
+	}
+	glDeleteShader(vs);
+	glDeleteShader(fs);
+	glDeleteShader(gs);
+	return program;
+};
+
+_u32b RGP_CORE::GLShaderProgramsManager::doExiste(_s8b* VertexFile, _s8b* GeometryFile, _s8b* FragmentFile)
+{
+	//IF THE SHADER PROGRM IS LOADED
+	for (_u32b i = 0; i < m_NumPrograms; i++)
+		if (strcmp(VertexFile, m_LoadedProgramsList[i].VertexShaderFileName) == 0)
+			return i + 1;
+	return 0;
+};
+RGP_CORE::GLShaderProgramsManager::ShaderProgram* 
+				RGP_CORE::GLShaderProgramsManager::getShaderProgram(_u32b programID)
+{
+	if (programID > 0 && programID <= m_NumPrograms)
+		return &m_LoadedProgramsList[programID-1];
+	return 0;
+};
+
+
+
+
+
+
+RGP_CORE::GLRenderer::GLRenderer(RenderMode Type):m_Target(NULL),m_isInitialized(false) ,
+											m_SelectedScene(NULL),m_ShaderManager(NULL),
 
 											m_NumFBOs(0),m_FBOs(NULL),m_SelectedFBO(0),
                                             m_AttachmentTextures(NULL),
@@ -70,14 +382,6 @@ void RGP_CORE::GLRenderer::Destroy(){
 		glDeleteFramebuffers(1, &m_CombinedShadowResultFBO);
 		m_CombinedShadowResultFBO = 0;
 	}
-	if (m_ShadowRenderingProgram){
-		glDeleteProgram(m_ShadowRenderingProgram);
-		m_ShadowRenderingProgram = 0;
-	}
-	if (m_CombineShadowProgram){
-		glDeleteProgram(m_CombineShadowProgram);
-		m_CombineShadowProgram = 0;
-	}
 
     if(m_FinalRenderSurface){
         if(m_FinalRenderSurface->IndexBuffer){
@@ -98,10 +402,10 @@ void RGP_CORE::GLRenderer::Destroy(){
         free(m_FinalRenderSurface);
         m_FinalRenderSurface=NULL ;
     }
-    if(m_FinalRenderProgram){
-        glDeleteProgram(m_FinalRenderProgram);
-        m_FinalRenderProgram=0 ;
-    }
+	if (m_ShaderManager) {
+		delete m_ShaderManager;
+		m_ShaderManager = NULL;
+	}
     if(m_Target){
         m_Target->Destroy();
         delete m_Target;
@@ -130,6 +434,11 @@ _bool RGP_CORE::GLRenderer::InitRenderer(gfxConfig Config){
         printf("error init GLEW\n");
         return false ;
     }
+	m_ShaderManager = new GLShaderProgramsManager();
+	if (!m_ShaderManager) {
+		printf("Fatal error\n");
+		return false;
+	}
 	m_Config = Config;
     m_NumFBOs=Config.NumBackBuffers;
      if(!CreateNeededObjects()){
@@ -211,18 +520,15 @@ _bool RGP_CORE::GLRenderer::CreateNeededObjects(){
     }
 	if (!AttachTextures())
 		return false;
-	int what;
 	
 	m_ShadowRenderingProgram = CreateGLProgramFromFile("..//Shaders//ShadowMapProgram.vs", NULL);
 	if (!m_ShadowRenderingProgram){
 		printf("error loading Shadow Mapping program");
-		scanf("%d", &what);
 		return false;
 	}
 	m_CombineShadowProgram = CreateGLProgramFromFile("..//Shaders//FinalShadow.vs", "..//Shaders//FinalShadow.fs");
 	if (!m_CombineShadowProgram){
 		printf("error loading Shadow Maps Combiner program");
-		scanf("%d", &what);
 		return false;
 	}
 	
@@ -416,11 +722,11 @@ void  RGP_CORE::GLRenderer::RenderCurrentScene(){
 };
 void	RGP_CORE::GLRenderer::LoadShadowProgram()
 {
-	glUseProgram(m_ShadowRenderingProgram);
+	m_ShaderManager->BindProgram(m_ShadowRenderingProgram);
 };
 void	RGP_CORE::GLRenderer::UnloadShadowProgram()
 {
-	glUseProgram(0);
+	m_ShaderManager->BindProgram(0);
 };
 void RGP_CORE::GLRenderer::DrawSceneColors()
 {
@@ -439,17 +745,15 @@ void RGP_CORE::GLRenderer::DrawSceneColors()
 		glEnable(GL_DEPTH_TEST);
 		///glClear attachements
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		if (glGetError()){
-			printf("WTW Clear \n ");
-		}
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		///start searching for renderable objects and rendering
 		for (_u32b i = 0; i < nbActors; ++i){
 			actor = m_SelectedScene->getActor(i);
-			if (actor->getID() & RENDERABLE)
+			if (actor->getID() & RENDERABLE) {
 				dynamic_cast<Renderable*>(actor)->Render(m_SelectedScene->getCamera());
+			}
 		}
-
+		glFinish();
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glDisable(GL_CULL_FACE);
 		glDisable(GL_DEPTH_TEST);
@@ -466,13 +770,13 @@ void RGP_CORE::GLRenderer::DrawSceneShadows()
 		_s8b shaderstring[50]="";
 		LightSource*	Source = NULL;
 		Renderable*		actor = NULL;
-		glUseProgram(m_ShadowRenderingProgram);
+		m_ShaderManager->BindProgram(m_ShadowRenderingProgram);
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
-		Location1 = glGetUniformLocation(m_ShadowRenderingProgram, "World");
-		Location2 = glGetUniformLocation(m_ShadowRenderingProgram, "View");
-		Location3 = glGetUniformLocation(m_ShadowRenderingProgram, "Projection");
+		Location1 = this->GetUniformLocation(m_ShadowRenderingProgram, "World");
+		Location2 = this->GetUniformLocation(m_ShadowRenderingProgram, "View");
+		Location3 = this->GetUniformLocation(m_ShadowRenderingProgram, "Projection");
 		//for (_u32b i = 0; i < NumActors && ShadowIndex < 25; ++i)
 		for(ShadowIndex = 0 ; ShadowIndex < m_NumShadowFBOs ; ++ShadowIndex){
 			//if (m_SelectedScene->getActor(i)->getID() & LIGHTSOURCE){
@@ -482,13 +786,14 @@ void RGP_CORE::GLRenderer::DrawSceneShadows()
 				glBindFramebuffer(GL_FRAMEBUFFER, m_ShadowFBOs[ShadowIndex]);
 				glViewport(0, 0, m_Config.ShadowResolution, m_Config.ShadowResolution);
 				glClear(GL_DEPTH_BUFFER_BIT);
-				glUniformMatrix4fv(Location2, 1, GL_FALSE, Source->getLightViewMtx());
-				glUniformMatrix4fv(Location3, 1, GL_FALSE, Source->getLightProjectionMtx());
+				
+				this->SetUniformvMtx(Location2, Source->getLightViewMtx());
+				this->SetUniformvMtx(Location3, Source->getLightProjectionMtx());
 				
 				for (_u32b j = 0; j < NumActors; ++j)
 					if (m_SelectedScene->getActor(j)->getID() & RENDERABLE){
 						actor = dynamic_cast<Renderable*>(m_SelectedScene->getActor(j));
-						glUniformMatrix4fv(Location1, 1, GL_FALSE, actor->getTransMtx());
+						this->SetUniformvMtx(Location1, actor->getTransMtx());
 						actor->CastShadow();
 					}
 
@@ -500,7 +805,7 @@ void RGP_CORE::GLRenderer::DrawSceneShadows()
 
 
 		//combine Shadow map to a single one
-		glUseProgram(m_CombineShadowProgram);
+		m_ShaderManager->BindProgram(m_CombineShadowProgram);
 		glBindFramebuffer(GL_FRAMEBUFFER, m_CombinedShadowResultFBO);
 		glClear(GL_COLOR_BUFFER_BIT);
 		glClearColor(0.0f, 0.0f, 0.0f,0.0f);
@@ -521,21 +826,21 @@ void RGP_CORE::GLRenderer::DrawSceneShadows()
 				//glBindTexture(GL_TEXTURE_2D, m_AttachmentTextures[m_SelectedFBO][DEPTH_TEXTURE]);
 				//glUniform1i(Location1, 0);
 
-			Location1 = glGetUniformLocation(m_CombineShadowProgram, "PositionMap");
+			Location1 = this->GetUniformLocation(m_CombineShadowProgram, "PositionMap");
 			glActiveTexture(GL_TEXTURE0);
 			glBindTexture(GL_TEXTURE_2D, m_AttachmentTextures[m_SelectedFBO][POSITION_TEXTURE]);
 			glUniform1i(Location1, 0);
 
 			Source = m_SelectedScene->getLight(ShadowIndex);
 
-			Location1 = glGetUniformLocation(m_CombineShadowProgram, "LightProjMatrix");
-			glUniformMatrix4fv(Location1, 1, GL_FALSE, Source->getLightProjectionMtx());
+			Location1 = this->GetUniformLocation(m_CombineShadowProgram, "LightProjMatrix");
+			this->SetUniformvMtx(Location1, Source->getLightProjectionMtx());
 
-			Location1 = glGetUniformLocation(m_CombineShadowProgram, "LightViewMtx");
-			glUniformMatrix4fv(Location1, 1, GL_FALSE, Source->getLightViewMtx());
+			Location1 = this->GetUniformLocation(m_CombineShadowProgram, "LightViewMtx");
+			this->SetUniformvMtx(Location1, Source->getLightViewMtx());
 
 
-			Location1 = glGetUniformLocation(m_CombineShadowProgram, "ShadowMap");
+			Location1 = this->GetUniformLocation(m_CombineShadowProgram, "ShadowMap");
 			glActiveTexture(GL_TEXTURE1);
 			glBindTexture(GL_TEXTURE_2D, m_ShadowAttachmentTexture[ShadowIndex]);
 			glUniform1i(Location1, 1);
@@ -550,7 +855,7 @@ void RGP_CORE::GLRenderer::DrawSceneShadows()
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glBindVertexArray(0);
 		glActiveTexture(GL_NONE);
-		glUseProgram(0);
+		m_ShaderManager->BindProgram(0);
 	}
 };
 void RGP_CORE::GLRenderer::RenderToScreen(){
@@ -563,87 +868,84 @@ void RGP_CORE::GLRenderer::RenderToScreen(){
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         glClearColor(0.5f,0.5f,0.5f,0.0f);
         ///construct and render the final result
-        glUseProgram(m_FinalRenderProgram);
+		m_ShaderManager->BindProgram(m_FinalRenderProgram);
 
         ///adding light code
         if(nbLights=m_SelectedScene->getNBLights()){
 			nbLights = (nbLights <= 25) ? nbLights : 25;
             ///init number of lights in the scene
-            location=glGetUniformLocation(m_FinalRenderProgram,"numLights");
+            location= this->GetUniformLocation(m_FinalRenderProgram,"numLights");
             glUniform1i(location,nbLights);
 
             for (_u32b i=0 ; i<nbLights;++i ){
                 Source=m_SelectedScene->getLight(i);
                 ///initializing world matrix
                 sprintf(shaderstring,"Sources[%u].WorldMtx",i);
-                location=glGetUniformLocation(m_FinalRenderProgram,shaderstring);
-                glUniformMatrix4fv(location,1,GL_FALSE,Source->getTransMtx());
+                location= this->GetUniformLocation(m_FinalRenderProgram,shaderstring);
+				this->SetUniformvMtx(location,Source->getTransMtx());
 
                 ///init Diffuse Color ;
                 sprintf(shaderstring,"Sources[%u].DiffuseColor",i);
-                location=glGetUniformLocation(m_FinalRenderProgram,shaderstring);
+                location= this->GetUniformLocation(m_FinalRenderProgram,shaderstring);
                 glUniform3fv(location,1,Source->getLightDiffuseColor());
 
                 ///init Specular Color
                 sprintf(shaderstring,"Sources[%u].SpecularColor",i);
-                location=glGetUniformLocation(m_FinalRenderProgram,shaderstring);
+                location= this->GetUniformLocation(m_FinalRenderProgram,shaderstring);
                 glUniform3fv(location,1,Source->getLightSpecularColor());
 
                 ///init Attinuation
                 sprintf(shaderstring,"Sources[%u].Distance",i);
-                location=glGetUniformLocation(m_FinalRenderProgram,shaderstring);
+                location= this->GetUniformLocation(m_FinalRenderProgram,shaderstring);
                 glUniform1f(location,Source->getLightDistance());
 
                 ///init CutoffAngle
                 sprintf(shaderstring,"Sources[%u].CutoffAngle",i);
-                location=glGetUniformLocation(m_FinalRenderProgram,shaderstring);
+                location= this->GetUniformLocation(m_FinalRenderProgram,shaderstring);
                 glUniform1f(location,Source->getLightCutoffAngle());
 
                 ///init Shiness
                 sprintf(shaderstring,"Sources[%u].Shininess",i);
-                location=glGetUniformLocation(m_FinalRenderProgram,shaderstring);
+                location= this->GetUniformLocation(m_FinalRenderProgram,shaderstring);
                 glUniform1f(location,Source->getLightShiness());
 
             }
         }else {
-            location=glGetUniformLocation(m_FinalRenderProgram,"numLights");
+            location= this->GetUniformLocation(m_FinalRenderProgram,"numLights");
             glUniform1i(location,0);
         }
         ///other uniforms
-        location=glGetUniformLocation(m_FinalRenderProgram,"Diffuse");
+        location= this->GetUniformLocation(m_FinalRenderProgram,"Diffuse");
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D,m_AttachmentTextures[m_SelectedFBO][DIFFUSE_TEXTURE]);
         glUniform1i(location,0);
 
-        location=glGetUniformLocation(m_FinalRenderProgram,"Specular");
+        location= this->GetUniformLocation(m_FinalRenderProgram,"Specular");
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D,m_AttachmentTextures[m_SelectedFBO][SPECULAR_TEXTURE]);
         glUniform1i(location,1);
 
-        location=glGetUniformLocation(m_FinalRenderProgram,"Shadow");
+        location= this->GetUniformLocation(m_FinalRenderProgram,"Shadow");
         glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D,m_CombinedShadowResultTexture);
         glUniform1i(location,2);
 
-        location=glGetUniformLocation(m_FinalRenderProgram,"Normal");
+        location= this->GetUniformLocation(m_FinalRenderProgram,"Normal");
         glActiveTexture(GL_TEXTURE3);
         glBindTexture(GL_TEXTURE_2D,m_AttachmentTextures[m_SelectedFBO][NORMAL_TEXTURE]);
         glUniform1i(location,3);
 
-        location=glGetUniformLocation(m_FinalRenderProgram,"Depth");
+        location= this->GetUniformLocation(m_FinalRenderProgram,"Depth");
         glActiveTexture(GL_TEXTURE4);
         glBindTexture(GL_TEXTURE_2D,m_AttachmentTextures[m_SelectedFBO][DEPTH_TEXTURE]);
         glUniform1i(location,4);
 
-		location = glGetUniformLocation(m_FinalRenderProgram, "CameraViewMtx");
-		glUniformMatrix4fv(location, 1, GL_FALSE, m_SelectedScene->getCamera()->getViewMtx());
-        location=glGetUniformLocation(m_FinalRenderProgram,"CameraProjMtx");
-        glUniformMatrix4fv(location,1,GL_FALSE,m_SelectedScene->getCamera()->getProjectionMtx());
-		location = glGetUniformLocation(m_FinalRenderProgram, "DepthRange");
-		glUniform2f(location,m_SelectedScene->getCamera()->getNearValue(), m_SelectedScene->getCamera()->getFarValue());
+		location = this->GetUniformLocation(m_FinalRenderProgram, "CameraViewMtx");
+		this->SetUniformvMtx(location, m_SelectedScene->getCamera()->getViewMtx());
 
+        location= this->GetUniformLocation(m_FinalRenderProgram,"CameraProjMtx");
+		this->SetUniformvMtx(location,m_SelectedScene->getCamera()->getProjectionMtx());
         
-
         ///
         ///VAOs
         glBindVertexArray(m_FinalRenderSurface->VertexArrayObject);
@@ -651,7 +953,7 @@ void RGP_CORE::GLRenderer::RenderToScreen(){
 
 
         glBindVertexArray(0);
-        glUseProgram(0);
+		m_ShaderManager->BindProgram(0);
         glBindBuffer(GL_ARRAY_BUFFER,0);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
 
@@ -749,112 +1051,33 @@ _bool RGP_CORE::GLRenderer::BindTexture(_u32b textureID){
         return false ;
     return true ;
 };
+
+
 ///ShaderProgramManagement
-GLuint   RGP_CORE::GLRenderer::CreateGLProgramFromBuffer(const _s8b* VertexSource,const _s8b* FragmentSource){
-    GLuint program=0,vs=0,fs=0;
-	GLint error;
-    vs=LoadShaderBuffer(GL_VERTEX_SHADER,VertexSource,strlen(VertexSource));
-	if (!vs){
-		return program;
-	}
-	if (strlen(FragmentSource) != 0){
-		fs = LoadShaderBuffer(GL_FRAGMENT_SHADER, FragmentSource, strlen(FragmentSource));
-		if (!fs){
-			glDeleteShader(vs);
-			return program;
-		}
-	}
-	if (program = glCreateProgram()){
-		error = glGetError();
-		glAttachShader(program, vs);
-		if (error = glGetError()){
-			printf("error attaching Vertex shader \n");
-		}
-		if (fs){
-			glAttachShader(program, fs);
-			if (error = glGetError()){
-				printf("error attaching fragment shader \n");
-			}
-		}
-		glLinkProgram(program);
-		if (error = glGetError()){
-			printf("error linking error code %d \n", error);
-		}
-		GLint linked;
-		glGetProgramiv(program, GL_LINK_STATUS, &linked);
-		if (linked == 0){
-			printf("error linking shader program %d  %d \n", linked, error);
-			GLint maxLength = 0;
-			glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
-			GLchar log[1024];
-			glGetProgramInfoLog(program, maxLength, &maxLength, log);
-			log[maxLength] = '\0';
-			printf("\n%s\n", log);
-			glDeleteProgram(program);
-			program = 0;
-		}
-	}
-	else{
-		printf("cannot create shader program\n");
-	}
-	glDeleteShader(vs);
-	glDeleteShader(fs);
-	return program;
+
+_u32b   RGP_CORE::GLRenderer::CreateGLProgramFromFile(_s8b* VertexFile, _s8b* FragmentFile){
+	return CreateGLProgramFromFile(VertexFile, NULL, FragmentFile);
 };
-GLuint   RGP_CORE::GLRenderer::CreateGLProgramFromFile(const _s8b* VertexFile,const _s8b* FragmentFile){
-    GLuint program=0,vs=0,fs=0;
-	GLuint error=0;
-    vs=LoadShaderFile(GL_VERTEX_SHADER,VertexFile);
-    if(!vs)
-        return program ;
-	if(FragmentFile)
-		if (strlen(FragmentFile) != 0){
-			fs = LoadShaderFile(GL_FRAGMENT_SHADER, FragmentFile);
-			if (!fs){
-				glDeleteShader(vs);
-				return program;
-			}
-		}
-	glGetError();
-    if(program=glCreateProgram()){
-		error=glGetError();
-        glAttachShader(program,vs);
-		if (error=glGetError()){
-			printf("error attaching shader \n");
-		}
-		if (fs){
-			glAttachShader(program, fs);
-			if (error = glGetError()){
-				printf("error attaching shader \n");
-			}
-		}
-		glLinkProgram(program);
-		error=glGetError();
-        GLint linked;
-        glGetProgramiv(program, GL_LINK_STATUS, &linked);
-        if(linked==GL_FALSE){
-            printf("error linking shader program %d  %d \n",linked, error);
-			GLint maxLength = 0;
-			glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
-			GLchar log[1024];
-			glGetProgramInfoLog(program, maxLength, &maxLength, log);
-			log[maxLength] = '\0';
-			printf("\n%s\n", log);
-			glDeleteProgram(program);
-            program=0 ;
-        }
-    }else{
-        printf("cannot create shader program\n");
-    }
-    glDeleteShader(vs);
-    glDeleteShader(fs);
-    return program;
+_u32b  RGP_CORE::GLRenderer::CreateGLProgramFromFile( _s8b* VertexFile,  _s8b* GeometryFile,  _s8b* FragmentFile)
+{
+	if (m_ShaderManager) {
+		return m_ShaderManager->CreateProgramFromFiles(VertexFile, GeometryFile, FragmentFile);
+	}
+	return 0;
 };
 void    RGP_CORE::GLRenderer::DeleteGLProgram(_u32b ProgramID){
-    glDeleteProgram(ProgramID);
+		m_ShaderManager->DeleteProgram(ProgramID);
 };
-_s32b   RGP_CORE::GLRenderer::GetUniformLocation(_u32b program ,_s8b*   Name){
-    return glGetUniformLocation(program,Name);
+_s32b   RGP_CORE::GLRenderer::GetUniformLocation(_u32b programID ,_s8b*  Name){
+	GLShaderProgramsManager::ShaderProgram* program = NULL;
+	program = m_ShaderManager->getShaderProgram(programID);
+	GLint location;
+	if (program) {
+		location= glGetUniformLocation(program->GLProgramID, Name);
+//		printf("%s location %d \n",Name, location);
+		return location;
+	}
+	return -1;
 };
 _bool   SetUniformF(_s32b Location,_float data ){
      glUniform1f(Location,data);
@@ -900,76 +1123,8 @@ _bool   RGP_CORE::GLRenderer::DisableVertexAttribArray(_u32b index){
         return false ;
     return true ;
 };
-void    RGP_CORE::GLRenderer::SetShaderProgram(GLuint program){
-    glUseProgram(program);
+void    RGP_CORE::GLRenderer::SetShaderProgram(_u32b programID){
+	m_ShaderManager->BindProgram(programID);
 };
-GLuint RGP_CORE::GLRenderer::LoadShaderFile(GLenum type,const _s8b* filename){
-    GLuint Shader=0 ;
-    _u32b buffersize=0;
-    _s8b* buffer=NULL;
-    FILE* Shaderfile=NULL ;
-	if (!filename)
-		return 0;
-    if(!(Shaderfile=fopen(filename,"rb"))){
-        printf("shader file %s not found \n",filename);
-        return Shader;
-    }
-    fflush(stdin);
-    fseek(Shaderfile,0,SEEK_END);
-    buffersize=ftell(Shaderfile);
-    if(buffersize==0){
-        fclose(Shaderfile);
-        return 0;
-    }
-    fseek(Shaderfile,0,SEEK_SET);
-    buffer=(_s8b*)malloc((buffersize+1)*sizeof(_s8b));
-    if(!buffer){
-        fclose(Shaderfile);
-        return Shader;
-    }
-    fflush(stdin);
-    fread(buffer,buffersize,1,Shaderfile);
-	buffer[buffersize] = '\0';
-    fclose(Shaderfile);
-    Shader=LoadShaderBuffer(type,buffer,buffersize);
-    free(buffer);
-    return Shader ;
 
-};
- GLuint RGP_CORE::GLRenderer::LoadShaderBuffer(GLenum type,const _s8b* Buffer,int buffersize){
-     GLuint Shader=0;
-	 if (!Buffer || !buffersize){
-		 printf("error no shader buffer ");
-		 return Shader;
-	 }
-
-    Shader=glCreateShader(type);
-	glGetError();
-    if(Shader){
-        glShaderSource(Shader,1,(const _s8b**)(&Buffer),&buffersize);
-		if (glGetError())
-			printf("error shader source\n");
-        glCompileShader(Shader);
-        GLint compiled;
-        glGetObjectParameterivARB(Shader, GL_COMPILE_STATUS, &compiled);
-        if (!compiled){
-            printf("error compiling shader\n");
-            printf("Source: %s \n",Buffer);
-            GLint blen = 0;
-            GLsizei slen = 0;
-
-            glGetShaderiv(Shader, GL_INFO_LOG_LENGTH , &blen);
-            if (blen > 1)
-            {
-                GLchar* compiler_log = (GLchar*)malloc(blen);
-                glGetInfoLogARB(Shader, blen, &slen, compiler_log);
-                printf("compiler_log: %s\n", compiler_log);
-                free (compiler_log);
-            }
-            glDeleteShader(Shader);
-        }
-    }else{
-        printf("Cannot create shader \n");
-    }
-    return Shader;
- };
+ 
