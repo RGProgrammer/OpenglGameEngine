@@ -179,7 +179,8 @@ _s16b RGP_CORE::Model3D::LoadModelFromFile(char* filename){
 		printf("error loading shader program\n");
 		return 0;
 	}
-    InitVAOs();
+	if (!InitVAOs())
+		return 0;
     return 1;
 };
 

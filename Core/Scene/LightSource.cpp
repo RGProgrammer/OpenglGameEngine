@@ -8,7 +8,6 @@ RGP_CORE::LightSource::LightSource() : BaseActor(),
 	m_DiffuseColor[0]  = 1.0f ; m_DiffuseColor[1]  = 1.0f; m_DiffuseColor[2]  = 1.0f;
 	m_SpecularColor[0] = 1.0f ; m_SpecularColor[1] = 1.0f; m_SpecularColor[2] = 1.0f;
 	m_AmbientColor[0]  = 0.2f ; m_AmbientColor[1]  = 0.2f; m_AmbientColor[2]  = 0.2f;
-	m_LightViewMtx = (_float*)malloc(16 * sizeof(_float));
 	m_LightProjectionMtx = (_float*)malloc(16 * sizeof(_float));
 };
 
@@ -20,7 +19,6 @@ RGP_CORE::LightSource::LightSource(Vertex3d Pos): BaseActor(Pos),
 	m_DiffuseColor[0] = 1.0f; m_DiffuseColor[1] = 1.0f; m_DiffuseColor[2] = 1.0f;
 	m_SpecularColor[0] = 1.0f; m_SpecularColor[1] = 1.0f; m_SpecularColor[2] = 1.0f;
 	m_AmbientColor[0] = 0.2f; m_AmbientColor[1] = 0.2f; m_AmbientColor[2] = 0.2f;
-	m_LightViewMtx = (_float*)malloc(16 * sizeof(_float));
 	m_LightProjectionMtx = (_float*)malloc(16 * sizeof(_float));
 };
 
@@ -32,7 +30,6 @@ RGP_CORE::LightSource::LightSource(Vertex3d Pos,Vertex3d Dir,Vertex3d Up): BaseA
 	m_DiffuseColor[0] = 1.0f; m_DiffuseColor[1] = 1.0f; m_DiffuseColor[2] = 1.0f;
 	m_SpecularColor[0] = 1.0f; m_SpecularColor[1] = 1.0f; m_SpecularColor[2] = 1.0f;
 	m_AmbientColor[0] = 0.2f; m_AmbientColor[1] = 0.2f; m_AmbientColor[2] = 0.2f;
-	m_LightViewMtx = (_float*)malloc(16 * sizeof(_float));
 	m_LightProjectionMtx = (_float*)malloc(16 * sizeof(_float));
 };
 
@@ -123,7 +120,7 @@ _float*	RGP_CORE::LightSource::getLightProjectionMtx(){
 	UpdateLightProjectionMtx();
 	return m_LightProjectionMtx; };
 
-void RGP_CORE::LightSource::UpdateLightViewMtx()
-{
-	FillViewMatrix(m_Position, m_Direction, m_Up, m_LightViewMtx);
-};
+//void RGP_CORE::LightSource::UpdateLightViewMtx()
+//{
+//	FillViewMatrix(m_Position, m_Direction, m_Up, m_LightViewMtx);
+//};

@@ -826,12 +826,15 @@ void RGP_CORE::GLRenderer::DrawSceneShadows()
 				//glBindTexture(GL_TEXTURE_2D, m_AttachmentTextures[m_SelectedFBO][DEPTH_TEXTURE]);
 				//glUniform1i(Location1, 0);
 
-			Location1 = this->GetUniformLocation(m_CombineShadowProgram, "PositionMap");
-			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, m_AttachmentTextures[m_SelectedFBO][POSITION_TEXTURE]);
-			glUniform1i(Location1, 0);
-
 			Source = m_SelectedScene->getLight(ShadowIndex);
+
+			Location1 = this->GetUniformLocation(m_CombineShadowProgram, "lighttype");
+			if (Source->getLightDistance() < 0.0f)//Directionnal light
+				glUniform1i(Location1, 1);
+			else if (Source->getLightCutoffAngle()<0.0f)// Point light
+				glUniform1i(Location1, 2);
+			else                              //Spot light
+				glUniform1i(Location1, 3);
 
 			Location1 = this->GetUniformLocation(m_CombineShadowProgram, "LightProjMatrix");
 			this->SetUniformvMtx(Location1, Source->getLightProjectionMtx());
@@ -839,11 +842,16 @@ void RGP_CORE::GLRenderer::DrawSceneShadows()
 			Location1 = this->GetUniformLocation(m_CombineShadowProgram, "LightViewMtx");
 			this->SetUniformvMtx(Location1, Source->getLightViewMtx());
 
+			Location1 = this->GetUniformLocation(m_CombineShadowProgram, "PositionMap");
+			glActiveTexture(GL_TEXTURE0);
+			glBindTexture(GL_TEXTURE_2D, m_AttachmentTextures[m_SelectedFBO][POSITION_TEXTURE]);
+			glUniform1i(Location1, 0);
 
 			Location1 = this->GetUniformLocation(m_CombineShadowProgram, "ShadowMap");
 			glActiveTexture(GL_TEXTURE1);
 			glBindTexture(GL_TEXTURE_2D, m_ShadowAttachmentTexture[ShadowIndex]);
 			glUniform1i(Location1, 1);
+
 
 			///VAOs
 			glBindVertexArray(m_FinalRenderSurface->VertexArrayObject);

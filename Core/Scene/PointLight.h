@@ -10,6 +10,8 @@ namespace RGP_CORE {
         PointLight(Vertex3d Pos);
         PointLight(Vertex3d Pos, Vertex3d Dir, Vertex3d Up);
     private :
+		void UpdateLightViewMtx();
+		void UpdateLightProjectionMtx();
 
     };
 }

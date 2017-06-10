@@ -1,7 +1,10 @@
 #version 410 
 
-uniform sampler2D PositionMap ;
+#define DIRECTIONNAL 1
+#define POINT 2
+#define SPOT 3
 
+uniform sampler2D PositionMap ;
 uniform int lighttype ;
 uniform mat4 LightProjMatrix ;
 uniform mat4 LightViewMtx ;
@@ -39,16 +42,27 @@ vec3 color ;
 void main (){
 	
 	vec4 ViewSpaceCoord ;
+	vec4 ProjectionCoord=vec4(0.0);
 	vec4 ShadowMapTexCoord=vec4(0.0);
 	//WSFragCoord0=EyetoWorldSpace(ViewSpaceFragCoord(CameraDepthMap,texcoord0,CameraProMtx),CameraViewMtx);
 	WSFragCoord0=texture2D(PositionMap,texcoord0) ;
 	color=vec3(0.5);
-	ShadowMapTexCoord=LightProjMatrix*LightViewMtx*WSFragCoord0 ;
-	ShadowMapTexCoord/=ShadowMapTexCoord.w ;
-	ShadowMapTexCoord=ShadowMapTexCoord*0.5+0.5;
-	if((ShadowMapTexCoord.x>=0.0 && ShadowMapTexCoord.x<=1.0) &&(ShadowMapTexCoord.y>=0.0 && ShadowMapTexCoord.y<=1.0))
-	if((ShadowMapTexCoord.z)-0.001 <= unpack(texture2D(ShadowMap,ShadowMapTexCoord.xy))){
-		color=vec3(1.0);
+	ProjectionCoord=LightProjMatrix*LightViewMtx*WSFragCoord0 ;
+	ProjectionCoord/=ProjectionCoord.w ;
+	ShadowMapTexCoord=ProjectionCoord*0.5+0.5;
+	
+	if((ShadowMapTexCoord.x>=0.0 && ShadowMapTexCoord.x<=1.0) &&(ShadowMapTexCoord.y>=0.0 && ShadowMapTexCoord.y<=1.0)){
+		if(SPOT==lighttype){
+			if(length(ProjectionCoord.xy)<=1.0)
+				if((ShadowMapTexCoord.z)-0.001 <= unpack(texture2D(ShadowMap,ShadowMapTexCoord.xy))){
+					color=vec3(1.0);
+				}
+		}
+		else {
+			if((ShadowMapTexCoord.z)-0.001 <= unpack(texture2D(ShadowMap,ShadowMapTexCoord.xy))){
+				color=vec3(1.0);
+			}
+		}
 	}
 	gl_FragColor=vec4(color,1.0);
 
