@@ -4,14 +4,14 @@
 #include ".//LightSource.h"
 
 namespace RGP_CORE {
-    class PointLight: public LightSource {
+    class PointLight: public virtual LightSource {
     public:
         PointLight();
         PointLight(Vertex3d Pos);
         PointLight(Vertex3d Pos, Vertex3d Dir, Vertex3d Up);
-    private :
-		void UpdateLightViewMtx();
-		void UpdateLightProjectionMtx();
+    protected :
+		void	UpdateLightViewMtx();
+		void	UpdateLightProjectionMtx(Camera* Selected);
 
     };
 }

@@ -163,9 +163,20 @@ inline void FillPersPectiveMatrix(_float FOV, _float Aspect , _float Near, _floa
 	Dest[14] = -(2.0f * Far * Near) / (Far - Near);
 
 }
-inline void FillOrthographicsMatrix(float left,float right, float top,float bottom,float Near,float Far)
+inline void FillOrthographicsMatrix(_float left, _float right, _float top, _float bottom, _float Near, _float Far, _float* Dest)
 {
 
+
+	Dest[0] = 2.0f / (right - left);
+	Dest[5] = 2.0f / (top - bottom);
+	Dest[3]= -(right + left) / (right - left);
+	Dest[7]= -(top + bottom) / (top - bottom);
+	Dest[10]=-1.0f / (Far - Near);
+	Dest[11] = - Near / (Far - Near);
+
+	Dest[1] = Dest[2] =  Dest[4] =  Dest[6] =  Dest[8] =0.0f ;
+	Dest[9] =  Dest[12] = Dest[13] =  Dest[14] =0.0f ; 
+	Dest[15] = 1.0f ;
 }
 #endif // PFE_MATH_H_
 

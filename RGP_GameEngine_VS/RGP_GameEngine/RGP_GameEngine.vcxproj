@@ -42,6 +42,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(SolutionDir)$(Configuration)\..\..\bin</OutDir>
     <TargetName>$(ProjectName)_VS_Release</TargetName>
+    <IncludePath>../../tools/bullet;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(SolutionDir)$(Configuration)\..\..\bin</OutDir>
@@ -53,26 +54,29 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>../../tools/glew/lib/Release/Win32/glew32s.lib;../../tools/assimp/lib/assimp.lib;../../tools/glfw/VClibs/glfw3dll.lib;../../tools/openal/libs/Win32/OpenAL32.lib;../../tools/SOIL/lib/SOIL.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>../../tools/glew/lib/Release/Win32/glew32s.lib;../../tools/assimp/lib/assimp.lib;../../tools/glfw/VClibs/glfw3dll.lib;../../tools/openal/libs/Win32/OpenAL32.lib;../../tools/SOIL/lib/SOIL.lib;../../tools/bullet/lib/MD_Build/BulletSoftBody.lib;../../tools/bullet/lib/MD_Build/BulletDynamics.lib;../../tools/bullet/lib/MD_Build/BulletCollision.lib;../../tools/bullet/lib/MD_Build/LinearMath.lib;../../tools/bullet/lib/MD_Build/Bullet3Common.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <Optimization>MaxSpeed</Optimization>
+      <Optimization>Disabled</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>../../tools/glew/lib/Release/Win32/glew32s.lib;../../tools/assimp/lib/assimp.lib;../../tools/glfw/VClibs/glfw3dll.lib;../../tools/openal/libs/Win32/OpenAL32.lib;../../tools/SOIL/lib/SOIL.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>../../tools/glew/lib/Release/Win32/glew32s.lib;../../tools/assimp/lib/assimp.lib;../../tools/glfw/VClibs/glfw3dll.lib;../../tools/openal/libs/Win32/OpenAL32.lib;../../tools/SOIL/lib/SOIL.lib;../../tools/bullet/lib/MT_Build/BulletSoftBody.lib;../../tools/bullet/lib/MT_Build/BulletDynamics.lib;../../tools/bullet/lib/MT_Build/BulletCollision.lib;../../tools/bullet/lib/MT_Build/LinearMath.lib;../../tools/bullet/lib/MT_Build/Bullet3Common.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -94,6 +98,7 @@
     <ClCompile Include="..\..\Core\Scene\SpotLight.cpp" />
     <ClCompile Include="..\..\Core\Sound\SoundEngine.cpp" />
     <ClCompile Include="..\..\test\main.cpp" />
+    <ClCompile Include="..\..\test\PhysicalExample.cpp" />
     <ClCompile Include="..\..\test\Test.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -119,6 +124,7 @@
     <ClInclude Include="..\..\Core\Scene\PointLight.h" />
     <ClInclude Include="..\..\Core\Scene\SpotLight.h" />
     <ClInclude Include="..\..\Core\Sound\SoundEngine.h" />
+    <ClInclude Include="..\..\test\PhysicalExample.h" />
     <ClInclude Include="..\..\test\Test.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

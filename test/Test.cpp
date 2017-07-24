@@ -1,6 +1,6 @@
 #include "Test.h"
 
-RGP_CORE::Test::Test():m_Renderer(NULL),m_CurrentScene(NULL),m_Camera(NULL){
+RGP_CORE::Test::Test():m_Renderer(NULL),m_CurrentScene(NULL),m_Camera(NULL),m_Physics(NULL){
 };
 RGP_CORE::Test::~Test(){
     this->Destroy() ;
@@ -20,33 +20,37 @@ void RGP_CORE::Test::Destroy(){
         delete m_Renderer ;
         m_Renderer=NULL;
     }
+	if (m_Physics) {
+		delete m_Physics;
+		m_Physics = NULL;
+	}
 };
 void RGP_CORE::Test::Start(){
 
-    RGP_CORE::Model3D* testmodel1=new Model3D();
-    testmodel1->setRenderer(m_Renderer);
-    if(!testmodel1->LoadModelFromFile("..//test//Test.obj"))
-        printf("error loading test Model\n");
-    m_CurrentScene->AddActor(testmodel1);
+	RGP_CORE::Model3D* testmodel1 = NULL;
+	LightSource* light = NULL;
+	PModel*	PM = NULL;
+
 
 	testmodel1 = new Model3D();
 	testmodel1->setRenderer(m_Renderer);
-	if (!testmodel1->LoadModelFromFile("..//test//object.obj"))
+	if (!testmodel1->LoadModelFromFile("..//test//test2.obj"))
 		printf("error loading test Model\n");
 	m_CurrentScene->AddActor(testmodel1);
+	
+    
+	
 
+	//light=new DirectionnalLight();
+	//light->setOrientation({-0.5f,-0.5f,0.0f}, {-0.5f,0.5f,0.0f});
+	//m_CurrentScene->AddLight(light);
 
-	LightSource* light = NULL;
-
-	/*light=new DirectionnalLight();
-	light->setOrientation({0.0f,0.0f,1.0f},{0.0f,1.0f,0.0f});
+	
+	/*light= new PointLight();
+	light->setPosition({ 0.0f, 0.0f, 0.0f });
+	light->setLightDiffuseColor(0.0f, 1.0f, 0.0f);
 	m_CurrentScene->AddLight(light);*/
-
-	/*
-	light= new PointLight();
-	light->setPosition({ 0.0f, -20.0f, 0.0f });
-	m_CurrentScene->AddLight(light);
-
+/*
 	light= new PointLight();
 	light->setPosition({ 20.0f, 0.0f, 0.0f });
 	m_CurrentScene->AddLight(light);
@@ -57,25 +61,25 @@ void RGP_CORE::Test::Start(){
 
 	light= new PointLight();
 	light->setPosition({ 0.0f, 0.0f, 20.0f });
-	m_CurrentScene->AddLight(light);
-	*/
-
+	m_CurrentScene->AddLight(light);*/
+	
+	
 	light = new SpotLight();
 	light->setPosition({ -5.0f, 10.0f, 0.0f });
 	light->setOrientation({ 0.5f, -1.0f, 0.0f }, { 1.0f, 0.5f, 0.0f });
 	m_CurrentScene->AddLight(light);
 
-	/*light = new SpotLight();
+	light = new SpotLight();
 	light->setPosition({ 5.0f, 10.0f, 0.0f });
 	light->setOrientation({ -0.5f, -1.0f, 0.0f }, { -1.0f, 0.5f, 0.0f });
-	m_CurrentScene->AddLight(light);*/
+	m_CurrentScene->AddLight(light);
 
 	light = new SpotLight();
 	light->setPosition({ 0.0f, 15.0f, 0.0f });
 	light->setOrientation({ 0.0f, -1.0f, 0.0f }, { 0.0f, 0.0f, 1.0f });
 	m_CurrentScene->AddLight(light);
 
-
+	
 
 	///ecerything is good
 	m_Renderer->setScene(m_CurrentScene);
@@ -91,7 +95,7 @@ void RGP_CORE::Test::Start(){
         state = glfwGetKey(m_Renderer->getTarget()->getglfwWindow(), GLFW_KEY_W);
         if (state == GLFW_PRESS){
             m_Camera->Translate(ScaleVertex3d(m_Camera->getDirection(),2.0));
-
+			
         }
         state = glfwGetKey(m_Renderer->getTarget()->getglfwWindow(), GLFW_KEY_S);
         if (state == GLFW_PRESS){
@@ -128,21 +132,55 @@ void RGP_CORE::Test::Start(){
         if (state == GLFW_PRESS){
             m_Camera->RotateViaUp(-0.01);
         }
+		state = glfwGetKey(m_Renderer->getTarget()->getglfwWindow(), GLFW_KEY_B);
+		if (state == GLFW_PRESS) {
+			PM = PModel::CreateCube(m_Renderer,AddVertex3d(m_Camera->getPosition(), ScaleVertex3d(m_Camera->getDirection(), 5.0f)), {0.0f,0.0f,1.0f}, {0.0f,1.0f,0.0f});
+			if (PM) {
+				PM->setRenderer(m_Renderer);
+				m_CurrentScene->AddActor(PM);
+				printf("Cube Created\n");
+				m_Physics->reRegisterPhysicalActors();
+			}
+		}
+		state = glfwGetKey(m_Renderer->getTarget()->getglfwWindow(), GLFW_KEY_N);
+		if (state == GLFW_PRESS) {
+			PM = PModel::CreateSphere(m_Renderer,AddVertex3d(m_Camera->getPosition(), ScaleVertex3d(m_Camera->getDirection(), 5.0f)),  {0.0f,0.0f,1.0f}, {0.0f,1.0f,0.0f});
+			if (PM) {
+				PM->setRenderer(m_Renderer);
+				m_CurrentScene->AddActor(PM);
+				printf("sphere Created\n");
+				m_Physics->reRegisterPhysicalActors();
+			}
+		}
+		m_Physics->Update(0.05f);
+		for (_u32b i = 0; i < m_CurrentScene->getNBActors(); ++i) {
+			if (m_CurrentScene->getActor(i)->getID() & DYNAMIC) {
+				printf("yes there is dynamic objects\n");
+				Dynamic* object = dynamic_cast<Dynamic*>(m_CurrentScene->getActor(i));
+				object->Update(0.05f);
+			}
+		}
         m_Renderer->RenderCurrentScene();
     }
 };
 int RGP_CORE::Test::Init(){
-
+	int i;
     m_CurrentScene=new GameScene ();
     if(!m_CurrentScene)
         return 0 ;
     m_Renderer=new GLRenderer();
-    if(!m_Renderer->InitRenderer({"SAMPLE",800,600,5,true,512}))
-        return 0 ;
-    m_Camera=new PerspCamera(M_PI_2, 800.0f / 600.0f,1.0f,5000.0f);
+	if (!m_Renderer->InitRenderer({ "SAMPLE",800,600,5,true,512 })) {
+		return 0;
+	}
+	m_Physics = new PhysicsEngine();
+	if (!m_Physics)
+		return 0;
+	if (!m_Physics->Init(m_CurrentScene))
+		return 0;
+    m_Camera=new PerspCamera(M_PI_2, 800.0f / 600.0f,0.1f,5000.0f);
 	m_Camera->setPosition({ 0.0f,7.0f,-7.0f });
 	m_Camera->setOrientation({ 0.0f, -0.5f, 0.5f }, { 0.0f, 0.5f, 0.5f });
     m_CurrentScene->setCamera(m_Camera);
-
+    
 	return 1 ;
 };

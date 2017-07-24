@@ -10,10 +10,6 @@
 
 
 namespace RGP_CORE {
-	//forward Declaration
-	class Collider ;
-	typedef struct CollisionData CollisionData ;
-
 	//Physical type(for physics engine)
 	class Physical : public virtual Dynamic{
 	protected:
@@ -23,19 +19,25 @@ namespace RGP_CORE {
 	public:
 		virtual ~Physical();
 		virtual void 				Destroy();
-		virtual void 				React(CollisionData Data)=0;
+		//virtual void 				React()=0;
 		virtual void				Update(_float DeltaTime);
 		virtual void 				ApplyTranslationForce(Vertex3d Force);
 		virtual void 				ApplyRotationForce(Vertex3d Force);
-		virtual _u16b				AddCollider(Collider* collider);
+		virtual _u16b				AddCollider(btCollisionShape* collider, const btTransform& transfom);
 		virtual _u16b				getNbColliders();
-		const Collider*				getColliderByIndex(_u16b Index);
+		btCollisionShape*			getColliderByIndex(_u16b Index);
+		btRigidBody*				getRigidBody();
+		btSoftBody*					getSoftBody();
+		void						setPosition(Vertex3d Pos);
+		_bool						setOrientation(Vertex3d Dir, Vertex3d Up);
 
 	protected:
-		_u16b							m_nbColliders;
-		Collider**						m_Colliders ;
-		Vertex3d						m_AppliedTranslationForce ;
-		Vertex3d						m_AppliedRotationForce;
+		_u16b							m_nbCollisionShapes;
+		btCollisionShape**				m_CollisionShapes;
+		btCompoundShape*				m_Collider;
+		btRigidBody*					m_Rigidbody;
+		
+		btSoftBody*						m_SoftBody;
 		Vertex3d						m_Velocity ;
 		_float  						m_Mass ;
 	};

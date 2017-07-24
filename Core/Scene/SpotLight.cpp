@@ -22,7 +22,7 @@ void  RGP_CORE::SpotLight::UpdateLightViewMtx()
 	FillViewMatrix(m_Position, m_Direction, m_Up, m_LightViewMtx);
 };
 
-void RGP_CORE::SpotLight::UpdateLightProjectionMtx()
+void RGP_CORE::SpotLight::UpdateLightProjectionMtx(Camera* Selected)
 {
 	FillPersPectiveMatrix(m_CutoffAngle*2.0f,1.0f , 1.0f,m_Distance*m_Distance , this->m_LightProjectionMtx);
 };

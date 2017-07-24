@@ -79,7 +79,6 @@ void main(){
 						HalfV=normalize(LightDir-FragCoord);
 						FinalSpecular=pow(dot(NormalColor,HalfV),Sources[i].Shininess)*specularColor.rgb*Sources[i].SpecularColor;
 						FinalColor+=FinalDiffuse+FinalSpecular ;
-						FinalColor*=ShadowValue ;
 					}
 				}else{
 					LightEyeSpacePos=(CameraViewMtx*Sources[i].WorldMtx[3]).xyz;
@@ -92,10 +91,9 @@ void main(){
 						Intensity=max(dot(NormalColor,LightDir),0.0);
 						if(Intensity > 0.0){
 							FinalDiffuse=Intensity*DiffuseColor.rgb*Sources[i].DiffuseColor;
-							HalfV=normalize(LightDir-normalize(-FragCoord));
+							HalfV=normalize(LightDir+normalize(-FragCoord));
 							FinalSpecular=pow(dot(NormalColor,HalfV),Sources[i].Shininess)*specularColor.rgb*Sources[i].SpecularColor;
 							FinalColor+= Attinuation*(FinalDiffuse+FinalSpecular) ;
-							FinalColor*=ShadowValue ;
 						}
 
 					}else{// is a SpotLight
@@ -107,12 +105,12 @@ void main(){
 								HalfV=normalize(LightDir+normalize(-FragCoord));
 								FinalSpecular=pow(dot(NormalColor,HalfV),Sources[i].Shininess)*specularColor.rgb*Sources[i].SpecularColor;
 								FinalColor+= Attinuation*(FinalDiffuse+FinalSpecular) ;
-								FinalColor*=ShadowValue ;
 							}
 						}
 					}
 				}
 			}
+			FinalColor*=ShadowValue ;
 		}else{
 			FinalColor=normalize(DiffuseColor.rgb+specularColor.rgb);
 		}

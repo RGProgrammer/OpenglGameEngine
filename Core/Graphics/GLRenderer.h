@@ -105,7 +105,8 @@ namespace RGP_CORE{
             DIFFUSE_TEXTURE=1,
             SPECULAR_TEXTURE=2,///+roughness in alpha channel
             NORMAL_TEXTURE=3,
-			POSITION_TEXTURE=4
+			MATERIAL_TEXTURE=4,
+			POSITION_TEXTURE=5
 
         };
 	public:

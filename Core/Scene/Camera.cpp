@@ -103,6 +103,6 @@ _float RGP_CORE::OrthoCamera::getBottomValue(){ return m_Bottom ;};
 _float RGP_CORE::OrthoCamera::getTopValue(){ return m_Top ; };
 void RGP_CORE::OrthoCamera::UpdateProjectionMtx()
 {
-	FillOrthographicsMatrix(m_Left, m_Right, m_Top, m_Bottom, m_Near, m_Far);
+	FillOrthographicsMatrix(m_Left, m_Right, m_Top, m_Bottom, m_Near, m_Far,m_ProjectionMtx);
 };
 

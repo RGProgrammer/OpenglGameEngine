@@ -11,7 +11,8 @@ namespace RGP_CORE {
         DirectionnalLight(Vertex3d Pos);
         DirectionnalLight(Vertex3d Pos, Vertex3d Dir, Vertex3d Up);
 	protected:
-		void UpdateLightProjectionMtx();
+		void UpdateLightViewMtx();
+		void UpdateLightProjectionMtx(Camera* Selected);
     };
 };
 

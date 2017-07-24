@@ -339,6 +339,7 @@ RGP_CORE::GLRenderer::GLRenderer(RenderMode Type):m_Target(NULL),m_isInitialized
 	DrawBuff[1] = GL_COLOR_ATTACHMENT1;
 	DrawBuff[2] = GL_COLOR_ATTACHMENT2;
 	DrawBuff[3] = GL_COLOR_ATTACHMENT3;
+	DrawBuff[4] = GL_COLOR_ATTACHMENT4;
 
 };
 RGP_CORE::GLRenderer::~GLRenderer(){
@@ -545,6 +546,8 @@ _bool RGP_CORE::GLRenderer::CreateNeededObjects(){
 		m_Target->getHeight(),
 		0, GL_RGBA, GL_FLOAT, 0);
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, m_CombinedShadowResultTexture, 0);
+	glClear(GL_COLOR_BUFFER_BIT);
+	glClearColor(1.0, 1.0, 1.0, 0.0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glBindTexture(GL_TEXTURE_2D, 0);
 	
@@ -560,11 +563,12 @@ _bool RGP_CORE::GLRenderer::AttachTextures(){
             printf("error binding framebuffer = %u error %d\n",m_FBOs[i],error);
             continue ;
         }
-        glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT0,GL_TEXTURE_2D,m_AttachmentTextures[i][DIFFUSE_TEXTURE],0);
-        glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT1,GL_TEXTURE_2D,m_AttachmentTextures[i][SPECULAR_TEXTURE],0);
-        glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT2,GL_TEXTURE_2D,m_AttachmentTextures[i][NORMAL_TEXTURE],0);
-		glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, m_AttachmentTextures[i][POSITION_TEXTURE], 0);
-        glFramebufferTexture2D(GL_FRAMEBUFFER,GL_DEPTH_ATTACHMENT,GL_TEXTURE_2D,m_AttachmentTextures[i][DEPTH_TEXTURE],0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_AttachmentTextures[i][DIFFUSE_TEXTURE], 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, m_AttachmentTextures[i][SPECULAR_TEXTURE], 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, m_AttachmentTextures[i][NORMAL_TEXTURE], 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, m_AttachmentTextures[i][MATERIAL_TEXTURE], 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER,GL_COLOR_ATTACHMENT4, GL_TEXTURE_2D, m_AttachmentTextures[i][POSITION_TEXTURE], 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_AttachmentTextures[i][DEPTH_TEXTURE], 0);
         error=glCheckFramebufferStatus(GL_FRAMEBUFFER);
         if(GL_FRAMEBUFFER_COMPLETE != error){
             printf("frameBuffer attacehment error code %x\n",error);
@@ -642,14 +646,22 @@ RGP_CORE::RenderMode  RGP_CORE::GLRenderer::getRenderMode(){ return m_Mode ;};
 RGP_CORE::Window*   RGP_CORE::GLRenderer::getTarget(){ return m_Target ;};
 void  RGP_CORE::GLRenderer::setScene(GameScene*   Scene){ 
 	m_SelectedScene= Scene ;
+	_u32b NumShadowmaps = 0;
+	GLuint* tmp = NULL;
+	LightSource* Source = NULL;
 	if (m_SelectedScene){
-		GLuint* tmp = NULL;
+		NumShadowmaps= m_SelectedScene->getNBLights();
+		
 		int error;
 		_u32b numLights = m_SelectedScene->getNBLights();
-		if (numLights > 25)
-			numLights = 25;
-		if (numLights > m_ShadowVectorSize){
-			tmp = (GLuint*)malloc(numLights*sizeof(GLuint));//first we need new FBos
+		for (_u32b i = 0; i < numLights; ++i) {
+			Source=m_SelectedScene->getLight(i);
+			if (Source->getLightCutoffAngle() < 0.0)
+				NumShadowmaps += 5;
+		}
+
+		if (NumShadowmaps > m_ShadowVectorSize){
+			tmp = (GLuint*)malloc(NumShadowmaps *sizeof(GLuint));//first we need new FBos
 			if (!tmp)
 				return;
 			for (_u32b i = 0; i < m_NumShadowFBOs; ++i)
@@ -657,7 +669,7 @@ void  RGP_CORE::GLRenderer::setScene(GameScene*   Scene){
 			free(m_ShadowFBOs);
 			m_ShadowFBOs = tmp;
 
-			tmp = (GLuint*)malloc(numLights*sizeof(GLuint));//next Attachent texture for eac fbo
+			tmp = (GLuint*)malloc(NumShadowmaps *sizeof(GLuint));//next Attachent texture for eac fbo
 			if (!tmp)
 				return;
 			for (_u32b i = 0; i < m_NumShadowFBOs; ++i)
@@ -666,10 +678,10 @@ void  RGP_CORE::GLRenderer::setScene(GameScene*   Scene){
 			m_ShadowAttachmentTexture = tmp;
 
 			//generate and attach
-			glGenFramebuffers(numLights - m_NumShadowFBOs, &m_ShadowFBOs[m_NumShadowFBOs]);
-			glGenTextures(numLights - m_NumShadowFBOs, &m_ShadowAttachmentTexture[m_NumShadowFBOs]);
+			glGenFramebuffers(NumShadowmaps - m_NumShadowFBOs, &m_ShadowFBOs[m_NumShadowFBOs]);
+			glGenTextures(NumShadowmaps - m_NumShadowFBOs, &m_ShadowAttachmentTexture[m_NumShadowFBOs]);
 			
-			for (_u32b i = m_NumShadowFBOs; i < numLights; ++i){
+			for (_u32b i = m_NumShadowFBOs; i < NumShadowmaps; ++i){
 				glBindFramebuffer(GL_FRAMEBUFFER, m_ShadowFBOs[i]);
 				glBindTexture(GL_TEXTURE_2D, m_ShadowAttachmentTexture[i]);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -690,9 +702,9 @@ void  RGP_CORE::GLRenderer::setScene(GameScene*   Scene){
 			}
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-			m_ShadowVectorSize = numLights;
+			m_ShadowVectorSize = NumShadowmaps;
 		}
-		m_NumShadowFBOs = numLights;
+		m_NumShadowFBOs = NumShadowmaps;
 	}
 	else{
 		m_NumShadowFBOs = 0;
@@ -739,7 +751,7 @@ void RGP_CORE::GLRenderer::DrawSceneColors()
 		///first step render to current FBO
 		glBindFramebuffer(GL_FRAMEBUFFER, m_FBOs[m_SelectedFBO]);
 		glViewport(0, 0, m_Target->getWidth(), m_Target->getHeight());
-		glDrawBuffers(4, DrawBuff);
+		glDrawBuffers(5, DrawBuff);
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
 		glEnable(GL_DEPTH_TEST);
@@ -765,11 +777,12 @@ void RGP_CORE::GLRenderer::DrawSceneShadows()
 	
 	if (m_SelectedScene && m_Config.EnableShadows){
 		_u32b NumActors = m_SelectedScene->getNBActors();
-		_u32b ShadowIndex = 0;
+		_u32b ShadowIndex = 0, numLights=m_SelectedScene->getNBLights();
 		_s32b Location1 = -1,Location2=-1, Location3=-1;
 		_s8b shaderstring[50]="";
 		LightSource*	Source = NULL;
 		Renderable*		actor = NULL;
+		Camera*			Selected = m_SelectedScene->getCamera();
 		m_ShaderManager->BindProgram(m_ShadowRenderingProgram);
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_CULL_FACE);
@@ -777,24 +790,41 @@ void RGP_CORE::GLRenderer::DrawSceneShadows()
 		Location1 = this->GetUniformLocation(m_ShadowRenderingProgram, "World");
 		Location2 = this->GetUniformLocation(m_ShadowRenderingProgram, "View");
 		Location3 = this->GetUniformLocation(m_ShadowRenderingProgram, "Projection");
-		//for (_u32b i = 0; i < NumActors && ShadowIndex < 25; ++i)
-		for(ShadowIndex = 0 ; ShadowIndex < m_NumShadowFBOs ; ++ShadowIndex){
+		//for (_u32b i = 0; i < NumActors ; ++i)
+		for(_u32b Index = 0 ; Index < numLights; ++Index){
 			//if (m_SelectedScene->getActor(i)->getID() & LIGHTSOURCE){
 				//Source = dynamic_cast<LightSource*>(m_SelectedScene->getActor(ShadowIndex));
 				Source = m_SelectedScene->getLight(ShadowIndex);
-				//Multi4x4Mtx(Source->getLightProjectionMtx(), Source->getLightViewMtx(), VPMatrix);
-				glBindFramebuffer(GL_FRAMEBUFFER, m_ShadowFBOs[ShadowIndex]);
-				glViewport(0, 0, m_Config.ShadowResolution, m_Config.ShadowResolution);
-				glClear(GL_DEPTH_BUFFER_BIT);
-				
-				this->SetUniformvMtx(Location2, Source->getLightViewMtx());
-				this->SetUniformvMtx(Location3, Source->getLightProjectionMtx());
-				
-				for (_u32b j = 0; j < NumActors; ++j)
-					if (m_SelectedScene->getActor(j)->getID() & RENDERABLE){
-						actor = dynamic_cast<Renderable*>(m_SelectedScene->getActor(j));
-						this->SetUniformvMtx(Location1, actor->getTransMtx());
-						actor->CastShadow();
+				//Multi4x4Mtx(Source->getLightProjectionMtx(), Source->getLightViewMtx(Selected), VPMatrix);
+					glBindFramebuffer(GL_FRAMEBUFFER, m_ShadowFBOs[ShadowIndex]);
+					glViewport(0, 0, m_Config.ShadowResolution, m_Config.ShadowResolution);
+					glClear(GL_DEPTH_BUFFER_BIT);
+
+					this->SetUniformvMtx(Location2, Source->getLightViewMtx());
+					this->SetUniformvMtx(Location3, Source->getLightProjectionMtx(Selected));
+
+					for (_u32b j = 0; j < NumActors; ++j)
+						if (m_SelectedScene->getActor(j)->getID() & RENDERABLE) {
+							actor = dynamic_cast<Renderable*>(m_SelectedScene->getActor(j));
+							this->SetUniformvMtx(Location1, actor->getTransMtx());
+							actor->CastShadow();
+					}
+					++ShadowIndex;
+					if (Source->getLightCutoffAngle() < 0.0) {
+						for (_u8b k = 1; k <6; ++k) {
+							glBindFramebuffer(GL_FRAMEBUFFER, m_ShadowFBOs[ShadowIndex]);
+							glViewport(0, 0, m_Config.ShadowResolution, m_Config.ShadowResolution);
+							glClear(GL_DEPTH_BUFFER_BIT);
+
+							this->SetUniformvMtx(Location2, Source->getLightViewMtx()+k*16);
+							for (_u32b j = 0; j < NumActors; ++j)
+								if (m_SelectedScene->getActor(j)->getID() & RENDERABLE) {
+									actor = dynamic_cast<Renderable*>(m_SelectedScene->getActor(j));
+									this->SetUniformvMtx(Location1, actor->getTransMtx());
+									actor->CastShadow();
+								}
+							++ShadowIndex;
+						}
 					}
 
 			//	++ShadowIndex;
@@ -812,8 +842,13 @@ void RGP_CORE::GLRenderer::DrawSceneShadows()
 		glViewport(0, 0, m_Target->getWidth(), m_Target->getHeight());
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_ONE, GL_ONE);
+		ShadowIndex = 0;
+		Location1 = this->GetUniformLocation(m_CombineShadowProgram, "PositionMap");
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, m_AttachmentTextures[m_SelectedFBO][POSITION_TEXTURE]);
+		glUniform1i(Location1, 0);
 
-		for (ShadowIndex = 0; ShadowIndex < m_NumShadowFBOs; ++ShadowIndex) {
+		for (_u32b Index = 0; Index < numLights; ++Index) {
 			//uniforms
 				//Location1=glGetUniformLocation(m_CombineShadowProgram,"CameraProMtx");
 				//glUniformMatrix4fv(Location1, 1, GL_FALSE, m_SelectedScene->getCamera()->getProjectionMtx());
@@ -826,7 +861,7 @@ void RGP_CORE::GLRenderer::DrawSceneShadows()
 				//glBindTexture(GL_TEXTURE_2D, m_AttachmentTextures[m_SelectedFBO][DEPTH_TEXTURE]);
 				//glUniform1i(Location1, 0);
 
-			Source = m_SelectedScene->getLight(ShadowIndex);
+			Source = m_SelectedScene->getLight(Index);
 
 			Location1 = this->GetUniformLocation(m_CombineShadowProgram, "lighttype");
 			if (Source->getLightDistance() < 0.0f)//Directionnal light
@@ -837,16 +872,12 @@ void RGP_CORE::GLRenderer::DrawSceneShadows()
 				glUniform1i(Location1, 3);
 
 			Location1 = this->GetUniformLocation(m_CombineShadowProgram, "LightProjMatrix");
-			this->SetUniformvMtx(Location1, Source->getLightProjectionMtx());
+			this->SetUniformvMtx(Location1, Source->getLightProjectionMtx(Selected));
 
 			Location1 = this->GetUniformLocation(m_CombineShadowProgram, "LightViewMtx");
 			this->SetUniformvMtx(Location1, Source->getLightViewMtx());
 
-			Location1 = this->GetUniformLocation(m_CombineShadowProgram, "PositionMap");
-			glActiveTexture(GL_TEXTURE0);
-			glBindTexture(GL_TEXTURE_2D, m_AttachmentTextures[m_SelectedFBO][POSITION_TEXTURE]);
-			glUniform1i(Location1, 0);
-
+			
 			Location1 = this->GetUniformLocation(m_CombineShadowProgram, "ShadowMap");
 			glActiveTexture(GL_TEXTURE1);
 			glBindTexture(GL_TEXTURE_2D, m_ShadowAttachmentTexture[ShadowIndex]);
@@ -856,6 +887,23 @@ void RGP_CORE::GLRenderer::DrawSceneShadows()
 			///VAOs
 			glBindVertexArray(m_FinalRenderSurface->VertexArrayObject);
 			glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+			++ShadowIndex;
+			if (Source->getLightCutoffAngle() < 0.0) {
+				for (_u8b k = 1; k < 6; ++k) {
+					Location1 = this->GetUniformLocation(m_CombineShadowProgram, "LightViewMtx");
+					this->SetUniformvMtx(Location1, Source->getLightViewMtx() + k * 16);
+
+					Location1 = this->GetUniformLocation(m_CombineShadowProgram, "ShadowMap");
+					glActiveTexture(GL_TEXTURE1);
+					glBindTexture(GL_TEXTURE_2D, m_ShadowAttachmentTexture[ShadowIndex]);
+					glUniform1i(Location1, 1);
+
+					///VAOs
+					glBindVertexArray(m_FinalRenderSurface->VertexArrayObject);
+					glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+					++ShadowIndex;
+				}
+			}
 		}
 
 		//end
@@ -880,7 +928,6 @@ void RGP_CORE::GLRenderer::RenderToScreen(){
 
         ///adding light code
         if(nbLights=m_SelectedScene->getNBLights()){
-			nbLights = (nbLights <= 25) ? nbLights : 25;
             ///init number of lights in the scene
             location= this->GetUniformLocation(m_FinalRenderProgram,"numLights");
             glUniform1i(location,nbLights);

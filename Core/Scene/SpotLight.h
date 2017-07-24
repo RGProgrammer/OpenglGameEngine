@@ -11,7 +11,7 @@ namespace RGP_CORE {
         SpotLight(Vertex3d Pos, Vertex3d Dir, Vertex3d Up);
 	protected:
 		void	UpdateLightViewMtx();
-		void	UpdateLightProjectionMtx();
+		void	UpdateLightProjectionMtx(Camera* Selected);
     };
 }
 

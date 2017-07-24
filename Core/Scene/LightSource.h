@@ -2,6 +2,7 @@
 #define _RGP_LIGHTSOURCE_TYPE_H_
 
 #include "..//BaseActors//BaseActor.h"
+#include "Camera.h"
 
 #define LIGHTSOURCE         0x00000008
 
@@ -17,13 +18,10 @@ namespace RGP_CORE {
 		virtual void Destroy();
         void setLightDiffuseColor(_float red, _float green, _float blue);
         void setLightDiffuseColor(Vertex3d color);
-        void setLightDiffuseColor(_u8b red, _u8b green, _u8b blue);
         void setLightSpecularColor(_float red, _float green, _float blue);
         void setLightSpecularColor(Vertex3d color);
-        void setLightSpecularColor(_u8b red, _u8b green, _u8b blue);
         void setLightAmbientColor(_float red, _float green, _float blue);
         void setLightAmbientColor(Vertex3d color);
-        void setLightAmbientColor(_u8b red, _u8b green, _u8b blue);
         void setLightDistance(_float Distance);
         void setLightStrength(_float Strength);
 
@@ -36,10 +34,10 @@ namespace RGP_CORE {
         _float   getLightShiness();
 
 		_float*	getLightViewMtx();
-		_float*	getLightProjectionMtx();
+		_float*	getLightProjectionMtx(Camera*	selected);
     protected:
-		virtual void	UpdateLightViewMtx() =0;
-		virtual void	UpdateLightProjectionMtx()= 0;
+		virtual void	UpdateLightViewMtx() = 0;
+		virtual void	UpdateLightProjectionMtx(Camera*	Selected)= 0;
         _float				m_DiffuseColor[3] ;
         _float				m_SpecularColor[3] ;
         _float				m_AmbientColor[3] ;
