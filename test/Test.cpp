@@ -30,59 +30,25 @@ void RGP_CORE::Test::Start(){
 	RGP_CORE::Model3D* testmodel1 = NULL;
 	LightSource* light = NULL;
 	PModel*	PM = NULL;
-
-
-	testmodel1 = new Model3D();
-	testmodel1->setRenderer(m_Renderer);
-	if (!testmodel1->LoadModelFromFile("..//test//test2.obj"))
-		printf("error loading test Model\n");
-	m_CurrentScene->AddActor(testmodel1);
 	
-    
-	
+ 
 
-	//light=new DirectionnalLight();
-	//light->setOrientation({-0.5f,-0.5f,0.0f}, {-0.5f,0.5f,0.0f});
-	//m_CurrentScene->AddLight(light);
-
-	
-	/*light= new PointLight();
-	light->setPosition({ 0.0f, 0.0f, 0.0f });
-	light->setLightDiffuseColor(0.0f, 1.0f, 0.0f);
-	m_CurrentScene->AddLight(light);*/
-/*
-	light= new PointLight();
-	light->setPosition({ 20.0f, 0.0f, 0.0f });
+	light=new DirectionnalLight();
+	light->setOrientation({0.0f,-1.0f,0.0f}, {0.0f,0.0f,1.0f});
 	m_CurrentScene->AddLight(light);
 
-	light= new PointLight();
-	light->setPosition({ -20.0f, 0.0f, 0.0f });
-	m_CurrentScene->AddLight(light);
-
-	light= new PointLight();
-	light->setPosition({ 0.0f, 0.0f, 20.0f });
-	m_CurrentScene->AddLight(light);*/
+	PM = PModel::CreateGround(m_Renderer,{ 0.0f,-1.0f,0.0f });
+	m_CurrentScene->AddActor(PM);
 	
+	PM = PModel::CreateCube(m_Renderer, { -8.0f,10.0f,0.0f }, {0.0f,0.0f,1.0f},{0.0f,1.0f,0.0f} );
+	m_CurrentScene->AddActor(PM);
+
+	PM = PModel::CreateSphere(m_Renderer, { 8.0f,10.0f,0.0f }, { 0.0f,0.0f,1.0f }, { 0.0f,1.0f,0.0f });
+	m_CurrentScene->AddActor(PM);
 	
-	light = new SpotLight();
-	light->setPosition({ -5.0f, 10.0f, 0.0f });
-	light->setOrientation({ 0.5f, -1.0f, 0.0f }, { 1.0f, 0.5f, 0.0f });
-	m_CurrentScene->AddLight(light);
-
-	light = new SpotLight();
-	light->setPosition({ 5.0f, 10.0f, 0.0f });
-	light->setOrientation({ -0.5f, -1.0f, 0.0f }, { -1.0f, 0.5f, 0.0f });
-	m_CurrentScene->AddLight(light);
-
-	light = new SpotLight();
-	light->setPosition({ 0.0f, 15.0f, 0.0f });
-	light->setOrientation({ 0.0f, -1.0f, 0.0f }, { 0.0f, 0.0f, 1.0f });
-	m_CurrentScene->AddLight(light);
-
-	
-
 	///ecerything is good
 	m_Renderer->setScene(m_CurrentScene);
+	m_Physics->setScene(m_CurrentScene);
 
 
     while(true){
@@ -152,12 +118,11 @@ void RGP_CORE::Test::Start(){
 				m_Physics->reRegisterPhysicalActors();
 			}
 		}
-		m_Physics->Update(0.05f);
+		m_Physics->Update(1.0f/60.0f);
 		for (_u32b i = 0; i < m_CurrentScene->getNBActors(); ++i) {
 			if (m_CurrentScene->getActor(i)->getID() & DYNAMIC) {
-				printf("yes there is dynamic objects\n");
 				Dynamic* object = dynamic_cast<Dynamic*>(m_CurrentScene->getActor(i));
-				object->Update(0.05f);
+				object->Update(1.0f / 60.0f);
 			}
 		}
         m_Renderer->RenderCurrentScene();

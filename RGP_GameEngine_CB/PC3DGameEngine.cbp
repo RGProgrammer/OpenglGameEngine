@@ -13,6 +13,7 @@
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-g" />
+					<Add directory="../tools/bullet" />
 				</Compiler>
 				<Linker>
 					<Add library="../tools/glew/lib/Release/Win32/glew32s.lib" />
@@ -22,6 +23,17 @@
 					<Add library="../tools/glfw/lib-mingw/libglfw3dll.a" />
 					<Add library="../tools/gl/libs/libopengl32.a" />
 					<Add library="../tools/gl/libs/libgdi32.a" />
+					<Add library="../tools/bullet/lib/cb_win/libBulletSoftBody.a" />
+					<Add library="../tools/bullet/lib/cb_win/libBullet3Geometry.a" />
+					<Add library="../tools/bullet/lib/cb_win/libBulletInverseDynamics.a" />
+					<Add library="../tools/bullet/lib/cb_win/libBulletInverseDynamicsUtils.a" />
+					<Add library="../tools/bullet/lib/cb_win/libBussIK.a" />
+					<Add library="../tools/bullet/lib/cb_win/libBullet3Dynamics.a" />
+					<Add library="../tools/bullet/lib/cb_win/libBulletDynamics.a" />
+					<Add library="../tools/bullet/lib/cb_win/libBullet3Collision.a" />
+					<Add library="../tools/bullet/lib/cb_win/libBulletCollision.a" />
+					<Add library="../tools/bullet/lib/cb_win/libLinearMath.a" />
+					<Add library="../tools/bullet/lib/cb_win/libBullet3Common.a" />
 				</Linker>
 			</Target>
 			<Target title="Release">
@@ -31,6 +43,7 @@
 				<Option compiler="gcc" />
 				<Compiler>
 					<Add option="-O2" />
+					<Add directory="../tools/bullet" />
 				</Compiler>
 				<Linker>
 					<Add option="-s" />
@@ -84,6 +97,8 @@
 		<Unit filename="../Core/Scene/PointLight.h" />
 		<Unit filename="../Core/Scene/SpotLight.cpp" />
 		<Unit filename="../Core/Scene/SpotLight.h" />
+		<Unit filename="../test/PhysicalExample.cpp" />
+		<Unit filename="../test/PhysicalExample.h" />
 		<Unit filename="../test/Test.cpp" />
 		<Unit filename="../test/Test.h" />
 		<Unit filename="../test/main.cpp" />

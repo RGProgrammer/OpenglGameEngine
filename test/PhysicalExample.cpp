@@ -5,7 +5,7 @@ using namespace RGP_CORE;
 PModel*	PModel::CreateCube(GLRenderer* renderer,Vertex3d Pos, Vertex3d Dir, Vertex3d Up)
 {
 	PModel* Object = NULL;
-	Object = new PModel(Pos,Dir,Up);
+	Object = new PModel();
 	if (!Object) {
 		printf("allocatio error \n");
 		return NULL;
@@ -16,22 +16,29 @@ PModel*	PModel::CreateCube(GLRenderer* renderer,Vertex3d Pos, Vertex3d Dir, Vert
 		delete Object;
 		return NULL;
 	}
-	Object->setPosition(Pos);
-	Object->setOrientation(Dir, Up);
+	Object->BaseActor::setPosition(Pos);
+	Object->BaseActor::setOrientation(Dir, Up);
+	//
+	Object->m_Mass = 2.0f;
 	btCollisionShape* shape=NULL ;
 	btTransform localTransfom;
-	//more code here
-	btVector3 haftextent(2.0, 2.0, 2.0);
+	btVector3 haftextent(2.0, 2.0, 2.0),LocalInertia(0.0,0.0,0.0);
+	
 	shape = new btBoxShape(haftextent);
-	localTransfom.setIdentity();
-	//
-	Object->AddCollider(shape, localTransfom);
+	localTransfom.setFromOpenGLMatrix(Object->getTransMtx());
+	shape->calculateLocalInertia(Object->m_Mass,LocalInertia);
+	Object->m_Collider = shape;
+
+	btMotionState* motionstate = new btDefaultMotionState(localTransfom);
+
+	btRigidBody::btRigidBodyConstructionInfo info(Object->m_Mass, motionstate, Object->m_Collider, LocalInertia);
+	Object->m_Rigidbody = new btRigidBody(info);
 	return Object;
 };
 PModel*	PModel::CreateSphere(GLRenderer* renderer, Vertex3d Pos, Vertex3d Dir, Vertex3d Up)
 {
 	PModel* Object = NULL;
-	Object = new PModel(Pos, Dir, Up);
+	Object = new PModel();
 	if (!Object) {
 		printf("allocatio error \n");
 		return NULL;
@@ -42,37 +49,72 @@ PModel*	PModel::CreateSphere(GLRenderer* renderer, Vertex3d Pos, Vertex3d Dir, V
 		delete Object;
 		return NULL;
 	}
-	Object->setPosition(Pos);
-	Object->setOrientation(Dir, Up);
+	Object->BaseActor::setPosition(Pos);
+	Object->BaseActor::setOrientation(Dir, Up);
+	//
+	Object->m_Mass = 2.0f;
 	btCollisionShape* shape = NULL;
 	btTransform localTransfom;
-	//more code here
+	btVector3  LocalInertia(0.0, 0.0, 0.0);
+	
 	shape = new btSphereShape(2.0);
-	localTransfom.setIdentity();
-	//
-	Object->AddCollider(shape, localTransfom);
+	localTransfom.setFromOpenGLMatrix(Object->getTransMtx());
+	shape->calculateLocalInertia(Object->m_Mass, LocalInertia);
+	Object->m_Collider = shape;
+
+	btMotionState* motionstate = new btDefaultMotionState(localTransfom);
+
+	btRigidBody::btRigidBodyConstructionInfo info(Object->m_Mass, motionstate, Object->m_Collider, LocalInertia);
+	Object->m_Rigidbody = new btRigidBody(info);
+
+	Object->setPosition(Pos);
 	return Object;
 };
-/*PModel*	PModel::CreateCapsule()
+PModel*	PModel::CreateGround(GLRenderer* renderer, Vertex3d Pos)
 {
 	PModel* Object = NULL;
 	Object = new PModel();
-	if (!Object)
+	if (!Object) {
+		printf("allocatio error \n");
 		return NULL;
-	Object->LoadModelFromFile("..//test//Samples//Capsule.obj");
+	}
+	Object->setRenderer(renderer);
+	if (!Object->LoadModelFromFile("..//test//Samples//Ground.obj")) {
+		printf("error loading Ground\n");
+		delete Object;
+		return NULL;
+	}
+	Object->BaseActor::setPosition(Pos);
+	//
+	Object->m_Mass = 0.0f;
 	btCollisionShape* shape = NULL;
 	btTransform localTransfom;
-	//more code here
-	shape = new btCapsuleShape;
-	localTransfom.setIdentity();
-	//
-	Object->AddCollider(shape, localTransfom);
+	btVector3 haftextent(15.0, 1.0, 15.0), LocalInertia(0.0, 0.0, 0.0);
+	
+	shape = new btBoxShape(haftextent);
+	if (!shape)
+		printf("error creating RootCollision shape\n");
+	localTransfom.setFromOpenGLMatrix(Object->getTransMtx());
+	shape->calculateLocalInertia(Object->m_Mass, LocalInertia);
+	Object->m_Collider = shape;
+	btMotionState* motionstate = new btDefaultMotionState(localTransfom);
+	if (!motionstate)
+		printf("error creating motion state\n");
+	btRigidBody::btRigidBodyConstructionInfo info(Object->m_Mass, motionstate, Object->m_Collider, LocalInertia);
+	Object->m_Rigidbody = NULL;
+	Object->m_Rigidbody = new btRigidBody(info);
+	if (!Object->m_Rigidbody) {
+		printf("Cannot create rigidbody \n");
+		delete Object;
+		Object = NULL;
+	}
+	
 	return Object;
-};*/
 
-PModel::PModel(Vertex3d Pos, Vertex3d Dir, Vertex3d Up) : Model3D(), Physical(Pos,Dir,Up)
+};
+
+PModel::PModel() : Model3D(), Physical()
 {
-	printf("type ID : %u\n", m_ID);
 };
 PModel::~PModel()
 {

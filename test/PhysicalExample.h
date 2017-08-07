@@ -9,14 +9,12 @@ class PModel : virtual public Model3D, virtual public Physical {
 public :
 	static PModel*	CreateCube(GLRenderer* renderer, Vertex3d Pos, Vertex3d Dir, Vertex3d Up );
 	static PModel*	CreateSphere(GLRenderer* renderer, Vertex3d Pos, Vertex3d Dir, Vertex3d Up);
-	//static PModel*	CreateCapsule();
+	static PModel*	CreateGround(GLRenderer* renderer,Vertex3d Pos);
 private :
-	PModel(Vertex3d Pos, Vertex3d Dir, Vertex3d Up);;
+	PModel();
 public :
 	~PModel();
 	void Destroy();
-
-
 };
 
 #endif

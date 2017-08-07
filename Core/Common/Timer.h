@@ -39,7 +39,7 @@ namespace RGP_CORE {
 #else
 		_LUINT			last_time;
 		_LUINT			current_time;
-		_double			frequency;
+		_float			frequency;
 #endif
     };
 };

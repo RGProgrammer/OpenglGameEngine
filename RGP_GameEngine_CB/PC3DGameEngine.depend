@@ -283,3 +283,380 @@
 	<stdlib.h>
 	<stdio.h>
 
+1495545757 source:d:\rami\projects\pc projects\openglgameengine\core\baseactors\baseactor.cpp
+	"BaseActor.h"
+
+1500492596 d:\rami\projects\pc projects\openglgameengine\core\baseactors\baseactor.h
+	"..//Common//BasePrimitiveTypes.h"
+	"..//Common//Math.h"
+	<stdlib.h>
+	<stdio.h>
+
+1494541933 d:\rami\projects\pc projects\openglgameengine\core\\common\\baseprimitivetypes.h
+
+1498053818 d:\rami\projects\pc projects\openglgameengine\core\\common\\math.h
+	"BasePrimitiveTypes.h"
+	<math.h>
+
+1494541933 source:d:\rami\projects\pc projects\openglgameengine\core\baseactors\dynamic.cpp
+	".//Dynamic.h"
+
+1494541933 d:\rami\projects\pc projects\openglgameengine\core\baseactors\\dynamic.h
+	".//BaseActor.h"
+
+1500492596 d:\rami\projects\pc projects\openglgameengine\core\baseactors\\\baseactor.h
+	"..//Common//BasePrimitiveTypes.h"
+	"..//Common//Math.h"
+	<stdlib.h>
+	<stdio.h>
+
+1501520718 source:d:\rami\projects\pc projects\openglgameengine\core\baseactors\physical.cpp
+	".//Physical.h"
+
+1501234148 d:\rami\projects\pc projects\openglgameengine\core\baseactors\\physical.h
+	".//Dynamic.h"
+	"..//Physics//PhysicsEngine.h"
+
+1494541933 d:\rami\projects\pc projects\openglgameengine\core\baseactors\\\dynamic.h
+	".//BaseActor.h"
+
+1500492596 d:\rami\projects\pc projects\openglgameengine\core\baseactors\\\\baseactor.h
+	"..//Common//BasePrimitiveTypes.h"
+	"..//Common//Math.h"
+	<stdlib.h>
+	<stdio.h>
+
+1494541933 source:d:\rami\projects\pc projects\openglgameengine\core\baseactors\renderable.cpp
+	".//Renderable.h"
+
+1494541933 d:\rami\projects\pc projects\openglgameengine\core\baseactors\\renderable.h
+	".//BaseActor.h"
+	"..//Graphics//glHeaders.h"
+	"..//Graphics//GLRenderer.h"
+	"..//Scene//Camera.h"
+
+1494541933 source:d:\rami\projects\pc projects\openglgameengine\core\common\stringop.cpp
+	"StringOP.h"
+
+1496957075 d:\rami\projects\pc projects\openglgameengine\core\common\stringop.h
+	".//BasePrimitiveTypes.h"
+	<stdlib.h>
+	<stdio.h>
+	<string.h>
+
+1494541933 d:\rami\projects\pc projects\openglgameengine\core\common\\baseprimitivetypes.h
+
+1494541933 source:d:\rami\projects\pc projects\openglgameengine\core\common\timer.cpp
+	"Timer.h"
+
+1494541933 d:\rami\projects\pc projects\openglgameengine\core\common\timer.h
+	<sys/time.h>
+	<time.h>
+	<Windows.h>
+	"..//Common//BasePrimitiveTypes.h"
+
+1498054067 source:d:\rami\projects\pc projects\openglgameengine\core\graphics\glrenderer.cpp
+	".//GLRenderer.h"
+
+1497643933 d:\rami\projects\pc projects\openglgameengine\core\graphics\\glrenderer.h
+	"..//Common//BasePrimitiveTypes.h"
+	"..//Common//StringOP.h"
+	"..//BaseActors//Renderable.h"
+	"..//Scene//GameScene.h"
+	".//Window.h"
+	<string.h>
+
+1494541933 d:\rami\projects\pc projects\openglgameengine\core\graphics\\\window.h
+	"..//Common//BasePrimitiveTypes.h"
+	"glHeaders.h"
+
+1494541933 d:\rami\projects\pc projects\openglgameengine\core\graphics\\\glheaders.h
+	"..//..//tools//glew//glew.h"
+	"..//..//tools//glfw//glfw3.h"
+
+1497025784 source:d:\rami\projects\pc projects\openglgameengine\core\graphics\model3d.cpp
+	".//Model3D.h"
+
+1500234858 d:\rami\projects\pc projects\openglgameengine\core\graphics\\model3d.h
+	"..//..//tools//SOIL//SOIL.h"
+	"..//..//tools//assimp//scene.h"
+	"..//..//tools//assimp//cimport.h"
+	"..//..//tools//assimp//postprocess.h"
+	"..//Common//StringOP.h"
+	"..//BaseActors//Renderable.h"
+	".//GLRenderer.h"
+
+1497643933 d:\rami\projects\pc projects\openglgameengine\core\graphics\\\glrenderer.h
+	"..//Common//BasePrimitiveTypes.h"
+	"..//Common//StringOP.h"
+	"..//BaseActors//Renderable.h"
+	"..//Scene//GameScene.h"
+	".//Window.h"
+	<string.h>
+
+1494541933 d:\rami\projects\pc projects\openglgameengine\core\graphics\\\\window.h
+	"..//Common//BasePrimitiveTypes.h"
+	"glHeaders.h"
+
+1494541933 d:\rami\projects\pc projects\openglgameengine\core\graphics\\\\glheaders.h
+	"..//..//tools//glew//glew.h"
+	"..//..//tools//glfw//glfw3.h"
+
+1494541933 source:d:\rami\projects\pc projects\openglgameengine\core\graphics\window.cpp
+	"Window.h"
+
+1494541933 d:\rami\projects\pc projects\openglgameengine\core\graphics\window.h
+	"..//Common//BasePrimitiveTypes.h"
+	"glHeaders.h"
+
+1494541933 d:\rami\projects\pc projects\openglgameengine\core\graphics\glheaders.h
+	"..//..//tools//glew//glew.h"
+	"..//..//tools//glfw//glfw3.h"
+
+1501320420 source:d:\rami\projects\pc projects\openglgameengine\core\physics\physicsengine.cpp
+	"PhysicsEngine.h"
+
+1501522464 d:\rami\projects\pc projects\openglgameengine\core\physics\physicsengine.h
+	"..//Scene//GameScene.h"
+	"..//..//tools//bullet//BulletDynamics/Featherstone/btMultiBodyDynamicsWorld.h"
+	"..//..//tools//bullet//BulletDynamics/Featherstone/btMultiBodyConstraintSolver.h"
+	"..//..//tools//bullet//BulletDynamics/Featherstone/btMultiBodyPoint2Point.h"
+	"..//..//tools//bullet//BulletDynamics/Featherstone/btMultiBodyLinkCollider.h"
+	"..//..//tools//bullet//btBulletDynamicsCommon.h"
+	"..//..//tools//bullet//btBulletCollisionCommon.h"
+	"..//..//tools//bullet//LinearMath//btTransform.h"
+	"..//..//tools//bullet//LinearMath//btTransformUtil.h"
+	"..//..//tools//bullet//BulletSoftBody//btSoftBody.h"
+	"..//BaseActors//Physical.h"
+
+1494541933 d:\rami\projects\pc projects\openglgameengine\core\\scene\\gamescene.h
+	"..//Common//BasePrimitiveTypes.h"
+	".//LightSource.h"
+	".//Camera.h"
+
+1498053976 d:\rami\projects\pc projects\openglgameengine\core\\scene\\\lightsource.h
+	"..//BaseActors//BaseActor.h"
+	"Camera.h"
+
+1494541933 d:\rami\projects\pc projects\openglgameengine\core\\scene\\\camera.h
+	"..//Common//Math.h"
+	"..//BaseActors//BaseActor.h"
+	<stdlib.h>
+
+1501234148 d:\rami\projects\pc projects\openglgameengine\core\\baseactors\\physical.h
+	".//Dynamic.h"
+	"..//Physics//PhysicsEngine.h"
+
+1494541933 d:\rami\projects\pc projects\openglgameengine\core\\baseactors\\\dynamic.h
+	".//BaseActor.h"
+
+1500492596 d:\rami\projects\pc projects\openglgameengine\core\\baseactors\\\\baseactor.h
+	"..//Common//BasePrimitiveTypes.h"
+	"..//Common//Math.h"
+	<stdlib.h>
+	<stdio.h>
+
+1498054017 source:d:\rami\projects\pc projects\openglgameengine\core\scene\camera.cpp
+	"Camera.h"
+	<stdio.h>
+
+1494541933 d:\rami\projects\pc projects\openglgameengine\core\scene\camera.h
+	"..//Common//Math.h"
+	"..//BaseActors//BaseActor.h"
+	<stdlib.h>
+
+1500492596 d:\rami\projects\pc projects\openglgameengine\core\\baseactors\\baseactor.h
+	"..//Common//BasePrimitiveTypes.h"
+	"..//Common//Math.h"
+	<stdlib.h>
+	<stdio.h>
+
+1498906976 source:d:\rami\projects\pc projects\openglgameengine\core\scene\directionnallight.cpp
+	".//DirectionnalLight.h"
+
+1498051384 d:\rami\projects\pc projects\openglgameengine\core\scene\\directionnallight.h
+	".//LightSource.h"
+
+1498053976 d:\rami\projects\pc projects\openglgameengine\core\scene\\\lightsource.h
+	"..//BaseActors//BaseActor.h"
+	"Camera.h"
+
+1494541933 d:\rami\projects\pc projects\openglgameengine\core\scene\\\camera.h
+	"..//Common//Math.h"
+	"..//BaseActors//BaseActor.h"
+	<stdlib.h>
+
+1494541933 source:d:\rami\projects\pc projects\openglgameengine\core\scene\gamescene.cpp
+	"GameScene.h"
+
+1494541933 d:\rami\projects\pc projects\openglgameengine\core\scene\gamescene.h
+	"..//Common//BasePrimitiveTypes.h"
+	".//LightSource.h"
+	".//Camera.h"
+
+1498053976 d:\rami\projects\pc projects\openglgameengine\core\scene\\lightsource.h
+	"..//BaseActors//BaseActor.h"
+	"Camera.h"
+
+1494541933 d:\rami\projects\pc projects\openglgameengine\core\scene\\camera.h
+	"..//Common//Math.h"
+	"..//BaseActors//BaseActor.h"
+	<stdlib.h>
+
+1498053988 source:d:\rami\projects\pc projects\openglgameengine\core\scene\lightsource.cpp
+	".//LightSource.h"
+
+1498051312 source:d:\rami\projects\pc projects\openglgameengine\core\scene\pointlight.cpp
+	".//PointLight.h"
+
+1498051472 d:\rami\projects\pc projects\openglgameengine\core\scene\\pointlight.h
+	".//LightSource.h"
+
+1498051331 source:d:\rami\projects\pc projects\openglgameengine\core\scene\spotlight.cpp
+	".//SpotLight.h"
+
+1498051464 d:\rami\projects\pc projects\openglgameengine\core\scene\\spotlight.h
+	".//LightSource.h"
+
+1494541933 source:d:\rami\projects\pc projects\openglgameengine\test\main.cpp
+	"Test.h"
+
+1500388214 d:\rami\projects\pc projects\openglgameengine\test\test.h
+	"../Core/Graphics/Window.h"
+	"../Core/Graphics/GLRenderer.h"
+	"..//Core//Physics//PhysicsEngine.h"
+	"../Core/Graphics/Model3D.h"
+	"../Core/Scene/GameScene.h"
+	"../Core/Scene/DirectionnalLight.h"
+	"../Core/Scene/PointLight.h"
+	"../Core/Scene/SpotLight.h"
+	"PhysicalExample.h"
+
+1497643933 d:\rami\projects\pc projects\openglgameengine\core\graphics\glrenderer.h
+	"..//Common//BasePrimitiveTypes.h"
+	"..//Common//StringOP.h"
+	"..//BaseActors//Renderable.h"
+	"..//Scene//GameScene.h"
+	".//Window.h"
+	<string.h>
+
+1496957075 d:\rami\projects\pc projects\openglgameengine\core\\common\\stringop.h
+	".//BasePrimitiveTypes.h"
+	<stdlib.h>
+	<stdio.h>
+	<string.h>
+
+1494541933 d:\rami\projects\pc projects\openglgameengine\core\\common\\\baseprimitivetypes.h
+
+1494541933 d:\rami\projects\pc projects\openglgameengine\core\\baseactors\\renderable.h
+	".//BaseActor.h"
+	"..//Graphics//glHeaders.h"
+	"..//Graphics//GLRenderer.h"
+	"..//Scene//Camera.h"
+
+1500492596 d:\rami\projects\pc projects\openglgameengine\core\\baseactors\\\baseactor.h
+	"..//Common//BasePrimitiveTypes.h"
+	"..//Common//Math.h"
+	<stdlib.h>
+	<stdio.h>
+
+1494541933 d:\rami\projects\pc projects\openglgameengine\core\graphics\\window.h
+	"..//Common//BasePrimitiveTypes.h"
+	"glHeaders.h"
+
+1494541933 d:\rami\projects\pc projects\openglgameengine\core\graphics\\glheaders.h
+	"..//..//tools//glew//glew.h"
+	"..//..//tools//glfw//glfw3.h"
+
+1501522464 d:\rami\projects\pc projects\openglgameengine\\core\\physics\\physicsengine.h
+	"..//Scene//GameScene.h"
+	"..//..//tools//bullet//BulletDynamics/Featherstone/btMultiBodyDynamicsWorld.h"
+	"..//..//tools//bullet//BulletDynamics/Featherstone/btMultiBodyConstraintSolver.h"
+	"..//..//tools//bullet//BulletDynamics/Featherstone/btMultiBodyPoint2Point.h"
+	"..//..//tools//bullet//BulletDynamics/Featherstone/btMultiBodyLinkCollider.h"
+	"..//..//tools//bullet//btBulletDynamicsCommon.h"
+	"..//..//tools//bullet//btBulletCollisionCommon.h"
+	"..//..//tools//bullet//LinearMath//btTransform.h"
+	"..//..//tools//bullet//LinearMath//btTransformUtil.h"
+	"..//..//tools//bullet//BulletSoftBody//btSoftBody.h"
+	"..//BaseActors//Physical.h"
+
+1500234858 d:\rami\projects\pc projects\openglgameengine\core\graphics\model3d.h
+	"..//..//tools//SOIL//SOIL.h"
+	"..//..//tools//assimp//scene.h"
+	"..//..//tools//assimp//cimport.h"
+	"..//..//tools//assimp//postprocess.h"
+	"..//Common//StringOP.h"
+	"..//BaseActors//Renderable.h"
+	".//GLRenderer.h"
+
+1498051384 d:\rami\projects\pc projects\openglgameengine\core\scene\directionnallight.h
+	".//LightSource.h"
+
+1498051472 d:\rami\projects\pc projects\openglgameengine\core\scene\pointlight.h
+	".//LightSource.h"
+
+1498051464 d:\rami\projects\pc projects\openglgameengine\core\scene\spotlight.h
+	".//LightSource.h"
+
+1501234953 d:\rami\projects\pc projects\openglgameengine\test\physicalexample.h
+	"..//Core//Graphics//Model3D.h"
+	"..//Core//BaseActors/Physical.h"
+
+1500234858 d:\rami\projects\pc projects\openglgameengine\\core\\graphics\\model3d.h
+	"..//..//tools//SOIL//SOIL.h"
+	"..//..//tools//assimp//scene.h"
+	"..//..//tools//assimp//cimport.h"
+	"..//..//tools//assimp//postprocess.h"
+	"..//Common//StringOP.h"
+	"..//BaseActors//Renderable.h"
+	".//GLRenderer.h"
+
+1497643933 d:\rami\projects\pc projects\openglgameengine\\core\\graphics\\\glrenderer.h
+	"..//Common//BasePrimitiveTypes.h"
+	"..//Common//StringOP.h"
+	"..//BaseActors//Renderable.h"
+	"..//Scene//GameScene.h"
+	".//Window.h"
+	<string.h>
+
+1494541933 d:\rami\projects\pc projects\openglgameengine\\core\\graphics\\\\window.h
+	"..//Common//BasePrimitiveTypes.h"
+	"glHeaders.h"
+
+1494541933 d:\rami\projects\pc projects\openglgameengine\\core\\graphics\\\\glheaders.h
+	"..//..//tools//glew//glew.h"
+	"..//..//tools//glfw//glfw3.h"
+
+1501234148 d:\rami\projects\pc projects\openglgameengine\\core\\baseactors\physical.h
+	".//Dynamic.h"
+	"..//Physics//PhysicsEngine.h"
+
+1494541933 d:\rami\projects\pc projects\openglgameengine\\core\\baseactors\\dynamic.h
+	".//BaseActor.h"
+
+1500492596 d:\rami\projects\pc projects\openglgameengine\\core\\baseactors\\\baseactor.h
+	"..//Common//BasePrimitiveTypes.h"
+	"..//Common//Math.h"
+	<stdlib.h>
+	<stdio.h>
+
+1501522464 d:\rami\projects\pc projects\openglgameengine\\core\\\physics\\physicsengine.h
+	"..//Scene//GameScene.h"
+	"..//..//tools//bullet//BulletDynamics/Featherstone/btMultiBodyDynamicsWorld.h"
+	"..//..//tools//bullet//BulletDynamics/Featherstone/btMultiBodyConstraintSolver.h"
+	"..//..//tools//bullet//BulletDynamics/Featherstone/btMultiBodyPoint2Point.h"
+	"..//..//tools//bullet//BulletDynamics/Featherstone/btMultiBodyLinkCollider.h"
+	"..//..//tools//bullet//btBulletDynamicsCommon.h"
+	"..//..//tools//bullet//btBulletCollisionCommon.h"
+	"..//..//tools//bullet//LinearMath//btTransform.h"
+	"..//..//tools//bullet//LinearMath//btTransformUtil.h"
+	"..//..//tools//bullet//BulletSoftBody//btSoftBody.h"
+	"..//BaseActors//Physical.h"
+
+1501521286 source:d:\rami\projects\pc projects\openglgameengine\test\physicalexample.cpp
+	"PhysicalExample.h"
+
+1501240586 source:d:\rami\projects\pc projects\openglgameengine\test\test.cpp
+	"Test.h"
+

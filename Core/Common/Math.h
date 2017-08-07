@@ -9,6 +9,7 @@
 
 #include "BasePrimitiveTypes.h"
 #include <math.h>
+
 #ifndef M_PI
     #define M_PI		3.14159265358979323846
 #endif
@@ -84,7 +85,7 @@ inline Vertex3d SubsVertex3d(Vertex3d Ver1,Vertex3d Ver2){
 	Result.z = Ver1.z - Ver2.z;
 	return Result;
 };
-inline Vertex3d Rotate3d(Vertex3d Ver,Vertex3d Pers,_double ang ){
+inline Vertex3d Rotate3d(Vertex3d Ver,Vertex3d Pers,_float  ang ){
     Vertex3d Result ;
 	Pers = Normalize3d(Pers);
 	_float MC = 1.0f - cos(ang), S = sin(ang), C = cos(ang);

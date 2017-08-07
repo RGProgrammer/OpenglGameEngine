@@ -110,10 +110,10 @@ void main(){
 					}
 				}
 			}
-			FinalColor*=ShadowValue ;
 		}else{
 			FinalColor=normalize(DiffuseColor.rgb+specularColor.rgb);
 		}
+		FinalColor*=ShadowValue ;
 	
 	gl_FragColor=vec4(FinalColor,1.0);
 }

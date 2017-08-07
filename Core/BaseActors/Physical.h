@@ -27,17 +27,17 @@ namespace RGP_CORE {
 		virtual _u16b				getNbColliders();
 		btCollisionShape*			getColliderByIndex(_u16b Index);
 		btRigidBody*				getRigidBody();
-		btSoftBody*					getSoftBody();
+		//btSoftBody*					getSoftBody();
 		void						setPosition(Vertex3d Pos);
 		_bool						setOrientation(Vertex3d Dir, Vertex3d Up);
 
 	protected:
 		_u16b							m_nbCollisionShapes;
 		btCollisionShape**				m_CollisionShapes;
-		btCompoundShape*				m_Collider;
+		btCollisionShape*				m_Collider;
 		btRigidBody*					m_Rigidbody;
 		
-		btSoftBody*						m_SoftBody;
+		//btSoftBody*						m_SoftBody;
 		Vertex3d						m_Velocity ;
 		_float  						m_Mass ;
 	};
