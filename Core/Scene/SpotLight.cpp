@@ -2,19 +2,19 @@
 RGP_CORE::SpotLight::SpotLight():LightSource()
 {
 	m_LightViewMtx = (_float*)malloc(16 * sizeof(_float));
-	m_CutoffAngle=0.5f;
+	m_CutoffAngle=0.7f;
 };
 RGP_CORE::SpotLight::SpotLight(Vertex3d Pos):LightSource(Pos)
 
 {
 	m_LightViewMtx = (_float*)malloc(16 * sizeof(_float));
-	m_CutoffAngle = 0.5f;
+	m_CutoffAngle = 0.7f;
 };
 RGP_CORE::SpotLight::SpotLight(Vertex3d Pos, Vertex3d Dir, Vertex3d Up):LightSource(Pos,Dir,Up)
 
 {
 	m_LightViewMtx = (_float*)malloc(16 * sizeof(_float));
-	m_CutoffAngle = 0.5f;
+	m_CutoffAngle = 0.7f;
 };
 
 void  RGP_CORE::SpotLight::UpdateLightViewMtx()

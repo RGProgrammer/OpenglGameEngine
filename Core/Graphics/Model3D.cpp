@@ -393,9 +393,9 @@ _u16b RGP_CORE::Model3D::CopyNormals(const aiVector3D*   buffer,_u32b nbVertices
             return 0;
         v_Meshes[m_nbMeshes-1].nbNormals=nbVertices ;
         for(_u32b i=0 ; i<nbVertices;i++){
-            v_Meshes[m_nbMeshes-1].NormalBuffer[i*3  ]=buffer[i].x+0.0f;
-            v_Meshes[m_nbMeshes-1].NormalBuffer[i*3+1]=buffer[i].y+0.0f;
-            v_Meshes[m_nbMeshes-1].NormalBuffer[i*3+2]=buffer[i].z+0.0f ;
+            v_Meshes[m_nbMeshes-1].NormalBuffer[i*3  ]=buffer[i].x;
+            v_Meshes[m_nbMeshes-1].NormalBuffer[i*3+1]=buffer[i].y;
+            v_Meshes[m_nbMeshes-1].NormalBuffer[i*3+2]=buffer[i].z;
         }
         return 1 ;
     }
@@ -429,12 +429,12 @@ _u16b RGP_CORE::Model3D::CopyFaces(const aiFace* Faces, _u32b nbFaces){
             return 0;
         v_Meshes[m_nbMeshes-1].nbFaces=nbFaces ;
         for(_u32b i=0 ; i<nbFaces;i++){
-            /*v_Meshes[m_nbMeshes-1].IndexBuffer[i*3  ]=Faces[i].mIndices[0];
+            v_Meshes[m_nbMeshes-1].IndexBuffer[i*3  ]=Faces[i].mIndices[2];
             v_Meshes[m_nbMeshes-1].IndexBuffer[i*3+1]=Faces[i].mIndices[1];
-            v_Meshes[m_nbMeshes-1].IndexBuffer[i*3+2]=Faces[i].mIndices[2];*/
-            v_Meshes[m_nbMeshes-1].IndexBuffer[i*3  ]=Faces[i].mIndices[0];
-            v_Meshes[m_nbMeshes-1].IndexBuffer[i*3+1]=Faces[i].mIndices[2];
-            v_Meshes[m_nbMeshes-1].IndexBuffer[i*3+2]=Faces[i].mIndices[1];
+            v_Meshes[m_nbMeshes-1].IndexBuffer[i*3+2]=Faces[i].mIndices[0];
+            //v_Meshes[m_nbMeshes-1].IndexBuffer[i*3  ]=Faces[i].mIndices[0];
+            //v_Meshes[m_nbMeshes-1].IndexBuffer[i*3+1]=Faces[i].mIndices[2];
+            //v_Meshes[m_nbMeshes-1].IndexBuffer[i*3+2]=Faces[i].mIndices[1];
         }
         return 1 ;
     }

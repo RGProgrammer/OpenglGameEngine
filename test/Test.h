@@ -8,8 +8,9 @@
 #include "../Core/Scene/DirectionnalLight.h"
 #include "../Core/Scene/PointLight.h"
 #include "../Core/Scene/SpotLight.h"
+#include "../Core/Common/Timer.h"
 #include "PhysicalExample.h"
-
+#include <exception>
 
 namespace RGP_CORE {
     class Test {
@@ -24,6 +25,7 @@ namespace RGP_CORE {
         GameScene*          m_CurrentScene ;
         PerspCamera*        m_Camera ;
 		PhysicsEngine*		m_Physics;
+		Timer*				m_Timer;
     };
 };
 #endif // _RGP_TEST_SAMPLE_H_

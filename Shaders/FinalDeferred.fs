@@ -103,6 +103,7 @@ void main(){
 							if(Intensity > 0.0){
 								FinalDiffuse=Intensity*DiffuseColor.rgb*Sources[i].DiffuseColor;
 								HalfV=normalize(LightDir+normalize(-FragCoord));
+								//HalfV=normalize(LightDir-FragCoord);
 								FinalSpecular=pow(dot(NormalColor,HalfV),Sources[i].Shininess)*specularColor.rgb*Sources[i].SpecularColor;
 								FinalColor+= Attinuation*(FinalDiffuse+FinalSpecular) ;
 							}
@@ -110,10 +111,11 @@ void main(){
 					}
 				}
 			}
+			FinalColor*=ShadowValue ;
 		}else{
 			FinalColor=normalize(DiffuseColor.rgb+specularColor.rgb);
 		}
-		FinalColor*=ShadowValue ;
+		
 	
 	gl_FragColor=vec4(FinalColor,1.0);
 }

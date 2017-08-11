@@ -1,6 +1,7 @@
 #include "Test.h"
 
-RGP_CORE::Test::Test():m_Renderer(NULL),m_CurrentScene(NULL),m_Camera(NULL),m_Physics(NULL){
+RGP_CORE::Test::Test():m_Renderer(NULL),m_CurrentScene(NULL),m_Camera(NULL),m_Physics(NULL),m_Timer(NULL)
+{
 };
 RGP_CORE::Test::~Test(){
     this->Destroy() ;
@@ -24,18 +25,29 @@ void RGP_CORE::Test::Destroy(){
 		delete m_Physics;
 		m_Physics = NULL;
 	}
+	if (m_Timer) {
+		delete m_Timer;
+		m_Timer = NULL;
+	}
 };
-void RGP_CORE::Test::Start(){
+void RGP_CORE::Test::Start() {
 
 	RGP_CORE::Model3D* testmodel1 = NULL;
 	LightSource* light = NULL;
 	PModel*	PM = NULL;
-	
- 
 
-	light=new DirectionnalLight();
+
+
+	/*light=new DirectionnalLight();
 	light->setOrientation({0.0f,-1.0f,0.0f}, {0.0f,0.0f,1.0f});
-	m_CurrentScene->AddLight(light);
+	m_CurrentScene->AddLight(light);*/
+	for (int k = 0; k < 4; ++k) {
+		light = new SpotLight();
+		light->setPosition({ 0.0f,10.0f,0.0f- k*8.0f });
+		light->setOrientation({ 0.0,-1.0f,1.0f }, { 0.0f,0.0f,1.0f });
+		m_CurrentScene->AddLight(light);
+	}
+
 
 	PM = PModel::CreateGround(m_Renderer,{ 0.0f,-1.0f,0.0f });
 	m_CurrentScene->AddActor(PM);
@@ -50,7 +62,7 @@ void RGP_CORE::Test::Start(){
 	m_Renderer->setScene(m_CurrentScene);
 	m_Physics->setScene(m_CurrentScene);
 
-
+	m_Timer->Reset();
     while(true){
         int state;
         glfwPollEvents();
@@ -118,7 +130,7 @@ void RGP_CORE::Test::Start(){
 				m_Physics->reRegisterPhysicalActors();
 			}
 		}
-		m_Physics->Update(1.0f/60.0f);
+		m_Physics->Update(m_Timer->getDeltaTime());
 		for (_u32b i = 0; i < m_CurrentScene->getNBActors(); ++i) {
 			if (m_CurrentScene->getActor(i)->getID() & DYNAMIC) {
 				Dynamic* object = dynamic_cast<Dynamic*>(m_CurrentScene->getActor(i));
@@ -146,6 +158,10 @@ int RGP_CORE::Test::Init(){
 	m_Camera->setPosition({ 0.0f,7.0f,-7.0f });
 	m_Camera->setOrientation({ 0.0f, -0.5f, 0.5f }, { 0.0f, 0.5f, 0.5f });
     m_CurrentScene->setCamera(m_Camera);
-    
+	
+	m_Timer = new Timer();
+	if (!m_Timer)
+			printf("Cannot create timer \n");
+
 	return 1 ;
 };

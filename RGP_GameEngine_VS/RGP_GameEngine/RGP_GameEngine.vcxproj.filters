@@ -12,7 +12,7 @@
     <Filter Include="tools">
       <UniqueIdentifier>{00f06792-c859-4b51-84ca-62e58e53c0e2}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Fichiers de ressources\Fichiers d%27en-tête">
+    <Filter Include="Fichiers d%27en-tête">
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
@@ -81,76 +81,76 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Core\Sound\SoundEngine.h">
-      <Filter>Fichiers de ressources\Fichiers d%27en-tête</Filter>
+      <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Core\Scene\Camera.h">
-      <Filter>Fichiers de ressources\Fichiers d%27en-tête</Filter>
+      <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Core\Scene\DirectionnalLight.h">
-      <Filter>Fichiers de ressources\Fichiers d%27en-tête</Filter>
+      <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Core\Scene\GameScene.h">
-      <Filter>Fichiers de ressources\Fichiers d%27en-tête</Filter>
+      <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Core\Scene\LightSource.h">
-      <Filter>Fichiers de ressources\Fichiers d%27en-tête</Filter>
+      <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Core\Scene\PointLight.h">
-      <Filter>Fichiers de ressources\Fichiers d%27en-tête</Filter>
+      <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Core\Scene\SpotLight.h">
-      <Filter>Fichiers de ressources\Fichiers d%27en-tête</Filter>
+      <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Core\Physics\ParticleSystem.h">
-      <Filter>Fichiers de ressources\Fichiers d%27en-tête</Filter>
+      <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Core\Physics\PhysicsEngine.h">
-      <Filter>Fichiers de ressources\Fichiers d%27en-tête</Filter>
+      <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Core\Graphics\glHeaders.h">
-      <Filter>Fichiers de ressources\Fichiers d%27en-tête</Filter>
+      <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Core\Graphics\GLRenderer.h">
-      <Filter>Fichiers de ressources\Fichiers d%27en-tête</Filter>
+      <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Core\Graphics\Model3D.h">
-      <Filter>Fichiers de ressources\Fichiers d%27en-tête</Filter>
+      <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Core\Graphics\Window.h">
-      <Filter>Fichiers de ressources\Fichiers d%27en-tête</Filter>
+      <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Core\Common\BasePrimitiveTypes.h">
-      <Filter>Fichiers de ressources\Fichiers d%27en-tête</Filter>
+      <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Core\Common\Math.h">
-      <Filter>Fichiers de ressources\Fichiers d%27en-tête</Filter>
+      <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Core\Common\StringOP.h">
-      <Filter>Fichiers de ressources\Fichiers d%27en-tête</Filter>
+      <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Core\Common\Thread.h">
-      <Filter>Fichiers de ressources\Fichiers d%27en-tête</Filter>
+      <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Core\Common\Timer.h">
-      <Filter>Fichiers de ressources\Fichiers d%27en-tête</Filter>
+      <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Core\BaseActors\BaseActor.h">
-      <Filter>Fichiers de ressources\Fichiers d%27en-tête</Filter>
+      <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Core\BaseActors\Dynamic.h">
-      <Filter>Fichiers de ressources\Fichiers d%27en-tête</Filter>
+      <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Core\BaseActors\Physical.h">
-      <Filter>Fichiers de ressources\Fichiers d%27en-tête</Filter>
+      <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Core\BaseActors\Renderable.h">
-      <Filter>Fichiers de ressources\Fichiers d%27en-tête</Filter>
+      <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="..\..\test\Test.h">
-      <Filter>Fichiers de ressources\Fichiers d%27en-tête</Filter>
+      <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="..\..\test\PhysicalExample.h">
-      <Filter>Fichiers de ressources\Fichiers d%27en-tête</Filter>
+      <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

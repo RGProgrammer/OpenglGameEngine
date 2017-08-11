@@ -1,7 +1,7 @@
 #ifndef TTB_PRIMITIVE_BASE_TYPES_H_
 #define TTB_PRIMITIVE_BASE_TYPES_H_
 
-#include "LinearMath//btScalar.h"
+#include "..//..//tools//bullet3//LinearMath//btScalar.h"
 
 typedef unsigned    char 			_u8b;
 typedef             char	  		_s8b;

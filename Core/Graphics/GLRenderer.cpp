@@ -755,6 +755,7 @@ void RGP_CORE::GLRenderer::DrawSceneColors()
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
 		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_SMOOTH);
 		///glClear attachements
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -769,6 +770,7 @@ void RGP_CORE::GLRenderer::DrawSceneColors()
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glDisable(GL_CULL_FACE);
 		glDisable(GL_DEPTH_TEST);
+		glDisable(GL_SMOOTH);
 		
 	}
 };
@@ -1078,8 +1080,8 @@ _bool RGP_CORE::GLRenderer::GenTextures(_u32b numTextures,GLuint*    target){
         glBindTexture(GL_TEXTURE_2D,target[i]);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glTexParameteri ( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-        glTexParameteri ( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );
+        glTexParameteri ( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+        glTexParameteri ( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     }
     glBindTexture(GL_TEXTURE_2D,0);
     return true ;
