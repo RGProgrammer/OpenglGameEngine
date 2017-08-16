@@ -143,8 +143,8 @@ _s16b RGP_CORE::Model3D::LoadModelFromFile(char* filename){
 	if(!m_GLRenderer)
         return 0 ;
 	const aiScene* Scene=aiImportFile(filename,aiProcess_Triangulate |
-                                                 aiProcess_GenUVCoords | aiProcess_PreTransformVertices|
-                                                 aiProcess_RemoveRedundantMaterials /*| aiProcess_FlipUVs*/ );
+                                                 aiProcess_PreTransformVertices|
+                                                 aiProcess_RemoveRedundantMaterials | aiProcess_MakeLeftHanded);
 	//if failed
 	if(!Scene){
         printf("error loading file\n");
@@ -429,12 +429,9 @@ _u16b RGP_CORE::Model3D::CopyFaces(const aiFace* Faces, _u32b nbFaces){
             return 0;
         v_Meshes[m_nbMeshes-1].nbFaces=nbFaces ;
         for(_u32b i=0 ; i<nbFaces;i++){
-            v_Meshes[m_nbMeshes-1].IndexBuffer[i*3  ]=Faces[i].mIndices[2];
+            v_Meshes[m_nbMeshes-1].IndexBuffer[i*3  ]=Faces[i].mIndices[0];
             v_Meshes[m_nbMeshes-1].IndexBuffer[i*3+1]=Faces[i].mIndices[1];
-            v_Meshes[m_nbMeshes-1].IndexBuffer[i*3+2]=Faces[i].mIndices[0];
-            //v_Meshes[m_nbMeshes-1].IndexBuffer[i*3  ]=Faces[i].mIndices[0];
-            //v_Meshes[m_nbMeshes-1].IndexBuffer[i*3+1]=Faces[i].mIndices[2];
-            //v_Meshes[m_nbMeshes-1].IndexBuffer[i*3+2]=Faces[i].mIndices[1];
+            v_Meshes[m_nbMeshes-1].IndexBuffer[i*3+2]=Faces[i].mIndices[2];
         }
         return 1 ;
     }

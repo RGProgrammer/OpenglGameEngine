@@ -47,23 +47,8 @@ void RGP_CORE::Physical::Destroy(){
 	m_Mass=0.0f;
 }
 void RGP_CORE::Physical::Update(_float DeltaTime){
-	btTransform transmtx;
-	btScalar	ogMtx[16];
-	btMotionState* motionstate = NULL;
-	motionstate = m_Rigidbody->getMotionState();
-	if (motionstate) {
-		motionstate->getWorldTransform(transmtx);
-		transmtx.getOpenGLMatrix(ogMtx);
-		BaseActor::setPosition({ ogMtx[12],ogMtx[13],ogMtx[14] });
-		BaseActor::setOrientation({ ogMtx[8],ogMtx[9],ogMtx[10] }, { ogMtx[4],ogMtx[5],ogMtx[6] });
-	}
-	else {
-		transmtx=m_Rigidbody->getWorldTransform();
-		transmtx.getOpenGLMatrix(ogMtx);
-		BaseActor::setPosition({ ogMtx[12],ogMtx[13],ogMtx[14] });
-		BaseActor::setOrientation({ ogMtx[8],ogMtx[9],ogMtx[10] }, { ogMtx[4],ogMtx[5],ogMtx[6] });
-	}
 	
+	this->SyncActor();
 };
 void RGP_CORE::Physical::ApplyTranslationForce(Vertex3d Force){
 	//m_AppliedTranslationForce=Force ;
@@ -108,23 +93,15 @@ btRigidBody*	RGP_CORE::Physical::getRigidBody()
 //};
 void	RGP_CORE::Physical::setPosition(Vertex3d Pos)
 {
-	btTransform transform;
+	
 	BaseActor::setPosition(Pos);
-	transform.setFromOpenGLMatrix(this->getTransMtx());
-	if (m_Rigidbody->getMotionState())
-		m_Rigidbody->getMotionState()->setWorldTransform(transform);
-	else
-		m_Rigidbody->setWorldTransform(transform);
+	this->SyncPhysics();
+	
 };
 _bool	RGP_CORE::Physical::setOrientation(Vertex3d Dir, Vertex3d Up)
 {
-	btTransform transform;
 	if (BaseActor::setOrientation(Dir, Up)) {
-		transform.setFromOpenGLMatrix(this->getTransMtx());
-		if (m_Rigidbody->getMotionState())
-			m_Rigidbody->getMotionState()->setWorldTransform(transform);
-		else
-			m_Rigidbody->setWorldTransform(transform);
+		this->SyncPhysics();
 		return true;
 	}
 	return false;
@@ -132,34 +109,47 @@ _bool	RGP_CORE::Physical::setOrientation(Vertex3d Dir, Vertex3d Up)
 
 void RGP_CORE::Physical::RotateViaDirection(_float Angle)
 {
-	btTransform transform;
 	BaseActor::RotateViaDirection(Angle);
-	transform.setFromOpenGLMatrix(this->getTransMtx());
-	if (m_Rigidbody->getMotionState())
-		m_Rigidbody->getMotionState()->setWorldTransform(transform);
-	else
-		m_Rigidbody->setWorldTransform(transform);
-
+	this->SyncPhysics();
 };
 void RGP_CORE::Physical::RotateViaUp(_float Angle) 
 {
-	btTransform transform;
 	BaseActor::RotateViaUp(Angle);
-	transform.setFromOpenGLMatrix(this->getTransMtx());
-	if (m_Rigidbody->getMotionState())
-		m_Rigidbody->getMotionState()->setWorldTransform(transform);
-	else
-		m_Rigidbody->setWorldTransform(transform);
+	this->SyncPhysics();
 
 };
 void RGP_CORE::Physical::RotateViaSide(_float Angle)
 {
-	btTransform transform;
 	BaseActor::RotateViaSide(Angle);
+	this->SyncPhysics();
+};
+
+void RGP_CORE::Physical::SyncActor()
+{
+	btTransform transmtx;
+	btScalar	ogMtx[16];
+	btMotionState* motionstate = NULL;
+	motionstate = m_Rigidbody->getMotionState();
+	if (motionstate) {
+		motionstate->getWorldTransform(transmtx);
+		transmtx.getOpenGLMatrix(ogMtx);
+		BaseActor::setPosition({ ogMtx[12],ogMtx[13],ogMtx[14] });
+		BaseActor::setOrientation({ ogMtx[8],ogMtx[9],ogMtx[10] }, { ogMtx[4],ogMtx[5],ogMtx[6] });
+	}
+	else {
+		transmtx = m_Rigidbody->getWorldTransform();
+		transmtx.getOpenGLMatrix(ogMtx);
+		BaseActor::setPosition({ ogMtx[12],ogMtx[13],ogMtx[14] });
+		BaseActor::setOrientation({ ogMtx[8],ogMtx[9],ogMtx[10] }, { ogMtx[4],ogMtx[5],ogMtx[6] });
+	}
+};
+
+void RGP_CORE::Physical::SyncPhysics()
+{
+	btTransform transform;
 	transform.setFromOpenGLMatrix(this->getTransMtx());
 	if (m_Rigidbody->getMotionState())
 		m_Rigidbody->getMotionState()->setWorldTransform(transform);
 	else
 		m_Rigidbody->setWorldTransform(transform);
-
 };

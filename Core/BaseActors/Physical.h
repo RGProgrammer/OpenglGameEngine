@@ -34,6 +34,9 @@ namespace RGP_CORE {
 		void RotateViaUp(_float Angle);
 		void RotateViaSide(_float Angle);
 
+		void SyncActor();//update actor coordinates by physics 
+		void SyncPhysics();//update physics by aactor coordinates
+
 	protected:
 		_u16b							m_nbCollisionShapes;
 		btCollisionShape**				m_CollisionShapes;
