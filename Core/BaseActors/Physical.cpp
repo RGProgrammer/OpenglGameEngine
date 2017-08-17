@@ -5,18 +5,56 @@ RGP_CORE::Physical::Physical():Dynamic(),m_nbCollisionShapes(NULL),m_CollisionSh
 m_Rigidbody(NULL), m_Velocity({0.0f,0.0f,0.0f}), m_Mass(20.0f)//, m_SoftBody(NULL)
 {
 	m_ID |= PHYSICAL ;
+	btVector3 localInertia= btVector3(0.0,0.0,0.0);
+	btTransform transform;
+	btMotionState* motionstate = NULL;
+	
+	m_Collider = new btCompoundShape();
+	m_Collider->calculateLocalInertia(m_Mass, localInertia);
+	transform.setFromOpenGLMatrix(this->getTransMtx());
+
+	motionstate = new btDefaultMotionState(transform);
+
+	btRigidBody::btRigidBodyConstructionInfo info(m_Mass, motionstate, m_Collider, localInertia);
+
+	m_Rigidbody = new btRigidBody(info);
 	
 };
 RGP_CORE::Physical::Physical(Vertex3d Pos):Dynamic(Pos), m_nbCollisionShapes(NULL), m_CollisionShapes(NULL), m_Collider(NULL),
 m_Rigidbody(NULL), m_Velocity({ 0.0f,0.0f,0.0f }), m_Mass(20.0f)//, m_SoftBody(NULL)
 {
 	m_ID |= PHYSICAL ;
-	
+	btVector3 localInertia = btVector3(0.0, 0.0, 0.0);
+	btTransform transform;
+	btMotionState* motionstate = NULL;
+
+	m_Collider = new btCompoundShape();
+	m_Collider->calculateLocalInertia(m_Mass, localInertia);
+	transform.setFromOpenGLMatrix(this->getTransMtx());
+
+	motionstate = new btDefaultMotionState(transform);
+
+	btRigidBody::btRigidBodyConstructionInfo info(m_Mass, motionstate, m_Collider, localInertia);
+
+	m_Rigidbody = new btRigidBody(info);
 };
 RGP_CORE::Physical::Physical(Vertex3d Pos, Vertex3d Dir, Vertex3d Up):Dynamic(Pos,Dir,Up), m_nbCollisionShapes(NULL), m_CollisionShapes(NULL), m_Collider(NULL),
 m_Rigidbody(NULL), m_Velocity({ 0.0f,0.0f,0.0f }), m_Mass(20.0f)//, m_SoftBody(NULL)
 {
 	m_ID |= PHYSICAL ;
+	btVector3 localInertia = btVector3(0.0, 0.0, 0.0);
+	btTransform transform;
+	btMotionState* motionstate = NULL;
+
+	m_Collider = new btCompoundShape();
+	m_Collider->calculateLocalInertia(m_Mass, localInertia);
+	transform.setFromOpenGLMatrix(this->getTransMtx());
+
+	motionstate = new btDefaultMotionState(transform);
+
+	btRigidBody::btRigidBodyConstructionInfo info(m_Mass, motionstate, m_Collider, localInertia);
+
+	m_Rigidbody = new btRigidBody(info);
 };
 RGP_CORE::Physical::~Physical(){
 	this->Destroy();
@@ -59,6 +97,7 @@ void RGP_CORE::Physical::ApplyRotationForce(Vertex3d Force){
 };
 _u16b RGP_CORE::Physical::AddCollider(btCollisionShape* collider,const btTransform& transform){
 	if(collider && m_Collider->getShapeType()==COMPOUND_SHAPE_PROXYTYPE){
+		btVector3 inertia;
 		btCollisionShape** temp=(btCollisionShape**)malloc((m_nbCollisionShapes+1)*sizeof(btCollisionShape*));
 		if(!temp)
 			return 0 ;
@@ -68,6 +107,9 @@ _u16b RGP_CORE::Physical::AddCollider(btCollisionShape* collider,const btTransfo
 		++m_nbCollisionShapes;
 		//add the new shape to the compound colliderobject
 		dynamic_cast<btCompoundShape*>(m_Collider)->addChildShape(transform, collider);
+		printf("Collision shape added\n");
+		m_Collider->calculateLocalInertia(this->m_Mass, inertia);
+		m_Rigidbody->setMassProps(m_Mass, inertia);
 		return 1 ;
 	}else
 		return 0 ;
@@ -150,6 +192,5 @@ void RGP_CORE::Physical::SyncPhysics()
 	transform.setFromOpenGLMatrix(this->getTransMtx());
 	if (m_Rigidbody->getMotionState())
 		m_Rigidbody->getMotionState()->setWorldTransform(transform);
-	else
-		m_Rigidbody->setWorldTransform(transform);
+	m_Rigidbody->setWorldTransform(transform);
 };

@@ -41,10 +41,10 @@ void RGP_CORE::Test::Start() {
 	/*light=new DirectionnalLight();
 	light->setOrientation({0.0f,-1.0f,0.0f}, {0.0f,0.0f,1.0f});
 	m_CurrentScene->AddLight(light);*/
-	for (int k = 0; k < 4; ++k) {
+	for (int k = -2; k < 2; ++k) {
 		light = new SpotLight();
-		light->setPosition({ 0.0f,10.0f,0.0f- k*8.0f });
-		light->setOrientation({ 0.0,-1.0f,1.0f }, { 0.0f,0.0f,1.0f });
+		light->setPosition({ 0.0f,20.0f,0.0f- k*8.0f });
+		light->setOrientation({ 0.0,-1.0f,0.0f }, { 0.0f,0.0f,1.0f });
 		m_CurrentScene->AddLight(light);
 	}
 
@@ -52,7 +52,7 @@ void RGP_CORE::Test::Start() {
 	PM = PModel::CreateGround(m_Renderer,{ 0.0f,-1.0f,0.0f });
 	m_CurrentScene->AddActor(PM);
 	
-	PM = PModel::CreateCube(m_Renderer, { -8.0f,10.0f,0.0f }, {0.0f,0.0f,1.0f},{0.0f,1.0f,0.0f} );
+	PM = PModel::CreateCube(m_Renderer, { 0.0f,10.0f,0.0f }, {0.0f,0.0f,1.0f},{0.0f,1.0f,0.0f} );
 	m_CurrentScene->AddActor(PM);
 
 	PM = PModel::CreateSphere(m_Renderer, { 8.0f,10.0f,0.0f }, { 0.0f,0.0f,1.0f }, { 0.0f,1.0f,0.0f });

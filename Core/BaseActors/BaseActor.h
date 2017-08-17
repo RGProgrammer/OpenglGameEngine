@@ -24,12 +24,12 @@ namespace RGP_CORE {
 		virtual ~BaseActor   ();
 		virtual void Destroy ();
 		_u32b getID          ();
-		virtual void setPosition     (Vertex3d Pos);
-		Vertex3d getPosition ();
-		virtual bool setOrientation  (Vertex3d Dir, Vertex3d Up);
+		Vertex3d getPosition();
 		Vertex3d getDirection();
 		Vertex3d getUp       ();
 		Vertex3d getSide     ();
+		virtual void setPosition(Vertex3d Pos);
+		virtual bool setOrientation(Vertex3d Dir, Vertex3d Up);
 		virtual void RotateViaDirection (_float Angle);
 		virtual void RotateViaUp        (_float Angle);
 		virtual void RotateViaSide      (_float Angle);
