@@ -9,7 +9,10 @@
 #include "../Core/Scene/PointLight.h"
 #include "../Core/Scene/SpotLight.h"
 #include "../Core/Common/Timer.h"
+
+
 #include "PhysicalExample.h"
+#include "ParticaleSystemExample.h"
 #include <exception>
 
 namespace RGP_CORE {

@@ -76,7 +76,7 @@ void main(){
 					Intensity=max(dot(NormalColor,LightDir),0.0);
 					if(Intensity>0.0){
 						FinalDiffuse=Intensity*(DiffuseColor.rgb*Sources[i].DiffuseColor);
-						HalfV=normalize(LightDir-FragCoord);
+						HalfV=normalize(LightDir+normalize(-FragCoord));
 						FinalSpecular=pow(dot(NormalColor,HalfV),Sources[i].Shininess)*specularColor.rgb*Sources[i].SpecularColor;
 						FinalColor+=FinalDiffuse+FinalSpecular ;
 					}

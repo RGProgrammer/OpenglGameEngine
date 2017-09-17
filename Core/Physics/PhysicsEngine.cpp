@@ -13,7 +13,6 @@ void RGP_CORE::PhysicsEngine::Destroy()
 	
 	if (m_DynamicWorld) {
 
-		printf("deleting dynamic world \n ");
 		//deleting
 		delete m_DynamicWorld;
 		m_DynamicWorld = NULL;

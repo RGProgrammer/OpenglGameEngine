@@ -1,8 +1,8 @@
 #include ".//Physical.h"
 
 
-RGP_CORE::Physical::Physical():Dynamic(),m_nbCollisionShapes(NULL),m_CollisionShapes(NULL), m_Collider(NULL),
-m_Rigidbody(NULL), m_Velocity({0.0f,0.0f,0.0f}), m_Mass(20.0f)//, m_SoftBody(NULL)
+RGP_CORE::Physical::Physical(_float mass):Dynamic(),m_nbCollisionShapes(NULL),m_CollisionShapes(NULL), m_Collider(NULL),
+m_Rigidbody(NULL), m_Velocity({0.0f,0.0f,0.0f}), m_Mass(mass)//, m_SoftBody(NULL)
 {
 	m_ID |= PHYSICAL ;
 	btVector3 localInertia= btVector3(0.0,0.0,0.0);
@@ -20,8 +20,8 @@ m_Rigidbody(NULL), m_Velocity({0.0f,0.0f,0.0f}), m_Mass(20.0f)//, m_SoftBody(NUL
 	m_Rigidbody = new btRigidBody(info);
 	
 };
-RGP_CORE::Physical::Physical(Vertex3d Pos):Dynamic(Pos), m_nbCollisionShapes(NULL), m_CollisionShapes(NULL), m_Collider(NULL),
-m_Rigidbody(NULL), m_Velocity({ 0.0f,0.0f,0.0f }), m_Mass(20.0f)//, m_SoftBody(NULL)
+RGP_CORE::Physical::Physical(Vertex3d Pos, _float mass):Dynamic(Pos), m_nbCollisionShapes(NULL), m_CollisionShapes(NULL), m_Collider(NULL),
+m_Rigidbody(NULL), m_Velocity({ 0.0f,0.0f,0.0f }), m_Mass(mass)//, m_SoftBody(NULL)
 {
 	m_ID |= PHYSICAL ;
 	btVector3 localInertia = btVector3(0.0, 0.0, 0.0);
@@ -38,8 +38,8 @@ m_Rigidbody(NULL), m_Velocity({ 0.0f,0.0f,0.0f }), m_Mass(20.0f)//, m_SoftBody(N
 
 	m_Rigidbody = new btRigidBody(info);
 };
-RGP_CORE::Physical::Physical(Vertex3d Pos, Vertex3d Dir, Vertex3d Up):Dynamic(Pos,Dir,Up), m_nbCollisionShapes(NULL), m_CollisionShapes(NULL), m_Collider(NULL),
-m_Rigidbody(NULL), m_Velocity({ 0.0f,0.0f,0.0f }), m_Mass(20.0f)//, m_SoftBody(NULL)
+RGP_CORE::Physical::Physical(Vertex3d Pos, Vertex3d Dir, Vertex3d Up, _float mass):Dynamic(Pos,Dir,Up), m_nbCollisionShapes(NULL), m_CollisionShapes(NULL), m_Collider(NULL),
+m_Rigidbody(NULL), m_Velocity({ 0.0f,0.0f,0.0f }), m_Mass(mass)//, m_SoftBody(NULL)
 {
 	m_ID |= PHYSICAL ;
 	btVector3 localInertia = btVector3(0.0, 0.0, 0.0);
@@ -85,7 +85,6 @@ void RGP_CORE::Physical::Destroy(){
 	m_Mass=0.0f;
 }
 void RGP_CORE::Physical::Update(_float DeltaTime){
-	
 	this->SyncActor();
 };
 void RGP_CORE::Physical::ApplyTranslationForce(Vertex3d Force){
@@ -107,7 +106,6 @@ _u16b RGP_CORE::Physical::AddCollider(btCollisionShape* collider,const btTransfo
 		++m_nbCollisionShapes;
 		//add the new shape to the compound colliderobject
 		dynamic_cast<btCompoundShape*>(m_Collider)->addChildShape(transform, collider);
-		printf("Collision shape added\n");
 		m_Collider->calculateLocalInertia(this->m_Mass, inertia);
 		m_Rigidbody->setMassProps(m_Mass, inertia);
 		return 1 ;
@@ -123,6 +121,19 @@ btCollisionShape*	RGP_CORE::Physical::getColliderByIndex(_u16b Index){
 	}
 	else
 		return NULL ;
+};
+void	RGP_CORE::Physical::setMass(_float mass)
+{
+	if (mass >= 0.0) {
+		btVector3 inertia;
+		m_Mass = mass;
+		m_Collider->calculateLocalInertia(this->m_Mass, inertia);
+		m_Rigidbody->setMassProps(m_Mass, inertia);
+	}
+};
+_float	RGP_CORE::Physical::getMass()
+{
+	return m_Mass;
 };
 
 btRigidBody*	RGP_CORE::Physical::getRigidBody()
@@ -193,4 +204,14 @@ void RGP_CORE::Physical::SyncPhysics()
 	if (m_Rigidbody->getMotionState())
 		m_Rigidbody->getMotionState()->setWorldTransform(transform);
 	m_Rigidbody->setWorldTransform(transform);
+};
+
+void			RGP_CORE::Physical::setCurrentVolecity(Vertex3d velocity)
+{
+	m_Rigidbody->setLinearVelocity(btVector3(velocity.x, velocity.y, velocity.z));
+};
+Vertex3d		RGP_CORE::Physical::getCurrentVolecity()
+{
+	btVector3 ver = m_Rigidbody->getLinearVelocity();
+	return { ver.getX(),ver.getY(),ver.getZ() };
 };

@@ -8,6 +8,7 @@ int main(void){
         delete testprogram ;
         testprogram=0;
         printf("error initializing test\n");
+		
         return 0 ;
     }
     testprogram->Start();

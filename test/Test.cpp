@@ -36,27 +36,35 @@ void RGP_CORE::Test::Start() {
 	LightSource* light = NULL;
 	PModel*	PM = NULL;
 
-
-
-	/*light=new DirectionnalLight();
-	light->setOrientation({0.0f,-1.0f,0.0f}, {0.0f,0.0f,1.0f});
-	m_CurrentScene->AddLight(light);*/
+	/*
 	for (int k = -2; k < 2; ++k) {
 		light = new SpotLight();
 		light->setPosition({ 0.0f,20.0f,0.0f- k*8.0f });
 		light->setOrientation({ 0.0,-1.0f,0.0f }, { 0.0f,0.0f,1.0f });
 		m_CurrentScene->AddLight(light);
-	}
+	}*/
+	light = new DirectionnalLight();
+	light->setLightSpecularColor({ (_float)0.2,(_float)0.2,(_float)0.2 });
+	light->setOrientation({ (_float)0.0,(_float)-1.0,(_float)0.0 }, { (_float)0.0,(_float)0.0,(_float)1.0 });
+	m_CurrentScene->AddLight(light);
 
 
-	PM = PModel::CreateGround(m_Renderer,{ 0.0f,-1.0f,0.0f });
+	PM = PModel::CreateGround(m_Renderer,{ 0.0f,-4.0f,0.0f });
 	m_CurrentScene->AddActor(PM);
 	
-	PM = PModel::CreateCube(m_Renderer, { 0.0f,10.0f,0.0f }, {0.0f,0.0f,1.0f},{0.0f,1.0f,0.0f} );
-	m_CurrentScene->AddActor(PM);
+	//PM = PModel::CreateCube(m_Renderer, { 0.0f,10.0f,0.0f }, {0.0f,0.0f,1.0f},{0.0f,1.0f,0.0f} );
+	//m_CurrentScene->AddActor(PM);
 
-	PM = PModel::CreateSphere(m_Renderer, { 8.0f,10.0f,0.0f }, { 0.0f,0.0f,1.0f }, { 0.0f,1.0f,0.0f });
-	m_CurrentScene->AddActor(PM);
+	//PM = PModel::CreateSphere(m_Renderer, { 8.0f,10.0f,0.0f }, { 0.0f,0.0f,1.0f }, { 0.0f,1.0f,0.0f });
+	//m_CurrentScene->AddActor(PM);
+	ExampleParticale* sample = new ExampleParticale();
+	sample->setRenderer(m_Renderer);
+	sample->Init();
+
+	ExampleEmitter*	emitter = new ExampleEmitter();
+	emitter->Init(m_Physics ,sample);
+	emitter->setScene(m_CurrentScene);
+	m_CurrentScene->AddActor(emitter);
 	
 	///ecerything is good
 	m_Renderer->setScene(m_CurrentScene);
