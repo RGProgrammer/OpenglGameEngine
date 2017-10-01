@@ -1,2 +1,3 @@
 # OpenglGameEngine
-Don't touch it yet. Currently trying to implement Shadows and then implement SSDO
+i'm solo game developer who's current trying to build his own game engine.
+
