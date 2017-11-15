@@ -43,6 +43,7 @@ void RGP_CORE::Test::Start() {
 		light->setOrientation({ 0.0,-1.0f,0.0f }, { 0.0f,0.0f,1.0f });
 		m_CurrentScene->AddLight(light);
 	}*/
+	
 	light = new DirectionnalLight();
 	light->setLightSpecularColor({ (_float)0.2,(_float)0.2,(_float)0.2 });
 	light->setOrientation({ (_float)0.0,(_float)-1.0,(_float)0.0 }, { (_float)0.0,(_float)0.0,(_float)1.0 });
@@ -51,12 +52,13 @@ void RGP_CORE::Test::Start() {
 
 	PM = PModel::CreateGround(m_Renderer,{ 0.0f,-4.0f,0.0f });
 	m_CurrentScene->AddActor(PM);
-	
-	//PM = PModel::CreateCube(m_Renderer, { 0.0f,10.0f,0.0f }, {0.0f,0.0f,1.0f},{0.0f,1.0f,0.0f} );
-	//m_CurrentScene->AddActor(PM);
+	/*
+	PM = PModel::CreateCube(m_Renderer, { 0.0f,10.0f,0.0f }, {0.0f,0.0f,1.0f},{0.0f,1.0f,0.0f} );
+	m_CurrentScene->AddActor(PM);
 
-	//PM = PModel::CreateSphere(m_Renderer, { 8.0f,10.0f,0.0f }, { 0.0f,0.0f,1.0f }, { 0.0f,1.0f,0.0f });
-	//m_CurrentScene->AddActor(PM);
+	PM = PModel::CreateSphere(m_Renderer, { 8.0f,10.0f,0.0f }, { 0.0f,0.0f,1.0f }, { 0.0f,1.0f,0.0f });
+	m_CurrentScene->AddActor(PM);*/
+	
 	ExampleParticale* sample = new ExampleParticale();
 	sample->setRenderer(m_Renderer);
 	sample->Init();
@@ -65,6 +67,10 @@ void RGP_CORE::Test::Start() {
 	emitter->Init(m_Physics ,sample);
 	emitter->setScene(m_CurrentScene);
 	m_CurrentScene->AddActor(emitter);
+
+	/*testmodel1 = new Model3D();
+	testmodel1->setRenderer(m_Renderer);
+	testmodel1->LoadModelFromFile("..//test//classroom//classroom.blend");*/
 	
 	///ecerything is good
 	m_Renderer->setScene(m_CurrentScene);
@@ -154,7 +160,7 @@ int RGP_CORE::Test::Init(){
     if(!m_CurrentScene)
         return 0 ;
     m_Renderer=new GLRenderer();
-	if (!m_Renderer->InitRenderer({ "SAMPLE",800,600,5,true,512 })) {
+	if (!m_Renderer->InitRenderer({ "SAMPLE",800,600,5,true ,512,false })) {
 		return 0;
 	}
 	m_Physics = new PhysicsEngine();

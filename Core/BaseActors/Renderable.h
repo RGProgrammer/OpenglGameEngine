@@ -30,6 +30,7 @@ class Renderable: public virtual BaseActor {
 		void	setRenderer(GLRenderer* renderer);
 		void	setVisible(_bool visible=true);
 		_bool	isVisible();
+		virtual _bool isEnvMap() = 0;
 		
     protected:
         GLRenderer*             m_GLRenderer ;

@@ -23,6 +23,7 @@ namespace RGP_CORE {
 		virtual void					Destroy();
 		virtual void					Render(Camera* Selected)=0;
 		virtual Particale*				CreateClone() = 0;
+		_bool							isEnvMap() { return false; };
 	};
 
 	

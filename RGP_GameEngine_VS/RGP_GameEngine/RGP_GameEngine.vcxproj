@@ -95,6 +95,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Core\AdvancedActors\BaseParticaleSystem.cpp" />
+    <ClCompile Include="..\..\Core\AdvancedActors\EnvMapProbe.cpp" />
     <ClCompile Include="..\..\Core\AdvancedActors\PhysicalModel.cpp" />
     <ClCompile Include="..\..\Core\BaseActors\BaseActor.cpp" />
     <ClCompile Include="..\..\Core\BaseActors\Dynamic.cpp" />
@@ -116,6 +117,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Core\AdvancedActors\BaseParticaleSystem.h" />
+    <ClInclude Include="..\..\Core\AdvancedActors\EnvMapProbe.h" />
     <ClInclude Include="..\..\Core\AdvancedActors\PhysicalModel.h" />
     <ClInclude Include="..\..\Core\BaseActors\BaseActor.h" />
     <ClInclude Include="..\..\Core\BaseActors\Dynamic.h" />

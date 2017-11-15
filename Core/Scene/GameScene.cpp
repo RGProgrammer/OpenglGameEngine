@@ -2,7 +2,7 @@
 
 
 RGP_CORE::GameScene::GameScene(): Size(10) ,m_NBActors(0) ,v_Actors(NULL) ,m_NBLights(0),m_LightSources(NULL),
-                            m_Camera(NULL) ,m_Gravity({0.0f,0.0f,0.0f})//,m_PlayerRef(NULL)
+							m_NBEnvMap(0),m_EnvMaps(NULL),m_Camera(NULL) ,m_Gravity({0.0f,0.0f,0.0f})//,m_PlayerRef(NULL)
 {
 };
 RGP_CORE::GameScene::~GameScene() {
@@ -56,6 +56,16 @@ void RGP_CORE::GameScene::FreeVector(){
         m_LightSources=NULL ;
         m_NBLights=0 ;
     }
+
+	if (m_EnvMaps) {
+		for (_u32b i = 0; i<m_NBEnvMap; ++i) {
+			m_EnvMaps[i]->Destroy();
+			delete (m_EnvMaps[i]);
+		}
+		free(m_EnvMaps);
+		m_EnvMaps = NULL;
+		m_NBEnvMap = 0;
+	}
 };
 void RGP_CORE::GameScene::Destroy() {
     this->FreeVector();

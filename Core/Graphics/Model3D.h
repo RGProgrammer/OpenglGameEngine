@@ -40,6 +40,7 @@ namespace RGP_CORE {
 		virtual _s16b   InitVAOs();
 		virtual void 	Render(Camera* Selected);
 		virtual void	CastShadow();
+		_bool			isEnvMap() { return false; };
 	protected:
 		_u16b ProcessNode(aiNode* Node,const aiScene* Scene);/// currently this function copy only a static model
         _u16b AddMesh(const char* Name,_u16b MaterialID);

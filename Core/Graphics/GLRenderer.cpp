@@ -692,7 +692,7 @@ void  RGP_CORE::GLRenderer::setScene(GameScene*   Scene){
 					m_Config.ShadowResolution,
 					m_Config.ShadowResolution,
 					0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
-				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_ShadowAttachmentTexture[i], 0);
+				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_ShadowAttachmentTexture[i],0);
 				glDrawBuffer(GL_NONE);
 				glReadBuffer(GL_NONE);
 				error = glCheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -714,12 +714,16 @@ void  RGP_CORE::GLRenderer::setScene(GameScene*   Scene){
 
 void  RGP_CORE::GLRenderer::RenderCurrentScene(){
 
+	
+	this->UpdateEnvironmentMaps();
+	
+	
 	//RENDER SCENE Colors to the SelectedFBO
-	this->DrawSceneColors();
-
+	this->DrawSceneColors(m_FBOs[m_SelectedFBO]);
+	
 	//if should draw shadows
 	if (m_Config.EnableShadows==true){
-		this->DrawSceneShadows();
+		this->DrawSceneShadows(m_CombinedShadowResultFBO);
 	}
     
 	///combine results and render to the screen ;
@@ -740,7 +744,7 @@ void	RGP_CORE::GLRenderer::UnloadShadowProgram()
 {
 	m_ShaderManager->BindProgram(0);
 };
-void RGP_CORE::GLRenderer::DrawSceneColors()
+void RGP_CORE::GLRenderer::DrawSceneColors(_u32b FBO)
 {
 	_u32b nbActors = 0;
 	BaseActor*  actor = NULL;
@@ -749,9 +753,10 @@ void RGP_CORE::GLRenderer::DrawSceneColors()
 	if (m_SelectedScene){
 		nbActors = m_SelectedScene->getNBActors();
 		///first step render to current FBO
-		glBindFramebuffer(GL_FRAMEBUFFER, m_FBOs[m_SelectedFBO]);
+		glBindFramebuffer(GL_FRAMEBUFFER, FBO);
 		glViewport(0, 0, m_Target->getWidth(), m_Target->getHeight());
 		glDrawBuffers(5, DrawBuff);
+		
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
 		glEnable(GL_DEPTH_TEST);
@@ -766,7 +771,7 @@ void RGP_CORE::GLRenderer::DrawSceneColors()
 				dynamic_cast<Renderable*>(actor)->Render(m_SelectedScene->getCamera());
 			}
 		}
-		glFinish();
+		//glFinish();
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glDisable(GL_CULL_FACE);
 		glDisable(GL_DEPTH_TEST);
@@ -774,7 +779,7 @@ void RGP_CORE::GLRenderer::DrawSceneColors()
 		
 	}
 };
-void RGP_CORE::GLRenderer::DrawSceneShadows()
+void RGP_CORE::GLRenderer::DrawSceneShadows(_u32b FBO)
 {
 	
 	if (m_SelectedScene && m_Config.EnableShadows){
@@ -838,7 +843,7 @@ void RGP_CORE::GLRenderer::DrawSceneShadows()
 
 		//combine Shadow map to a single one
 		m_ShaderManager->BindProgram(m_CombineShadowProgram);
-		glBindFramebuffer(GL_FRAMEBUFFER, m_CombinedShadowResultFBO);
+		glBindFramebuffer(GL_FRAMEBUFFER, FBO);
 		glClear(GL_COLOR_BUFFER_BIT);
 		glClearColor(0.0f, 0.0f, 0.0f,0.0f);
 		glViewport(0, 0, m_Target->getWidth(), m_Target->getHeight());
@@ -851,17 +856,6 @@ void RGP_CORE::GLRenderer::DrawSceneShadows()
 		glUniform1i(Location1, 0);
 
 		for (_u32b Index = 0; Index < numLights; ++Index) {
-			//uniforms
-				//Location1=glGetUniformLocation(m_CombineShadowProgram,"CameraProMtx");
-				//glUniformMatrix4fv(Location1, 1, GL_FALSE, m_SelectedScene->getCamera()->getProjectionMtx());
-
-				//Location1 = glGetUniformLocation(m_CombineShadowProgram, "CameraViewMtx");
-				//glUniformMatrix4fv(Location1, 1, GL_FALSE, m_SelectedScene->getCamera()->getViewMtx());
-
-				//Location1 = glGetUniformLocation(m_CombineShadowProgram, "CameraDepthMap");
-				//glActiveTexture(GL_TEXTURE0);
-				//glBindTexture(GL_TEXTURE_2D, m_AttachmentTextures[m_SelectedFBO][DEPTH_TEXTURE]);
-				//glUniform1i(Location1, 0);
 
 			Source = m_SelectedScene->getLight(Index);
 
@@ -1015,7 +1009,14 @@ void RGP_CORE::GLRenderer::RenderToScreen(){
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
 
         glfwSwapBuffers(m_Target->getglfwWindow());
+
 };
+
+void	RGP_CORE::GLRenderer::UpdateEnvironmentMaps()
+{
+
+};
+
 _bool RGP_CORE::GLRenderer::GenBuffers(_u32b numBuffers,GLuint*    target){
     if(!target)
         return false ;
@@ -1069,7 +1070,7 @@ void RGP_CORE::GLRenderer::DrawElements(GLenum mode,_u32b Count,GLenum Type,void
     glDrawElements(mode,Count,Type,Offset);
 };
 ///Textures
-_bool RGP_CORE::GLRenderer::GenTextures(_u32b numTextures,GLuint*    target){
+_bool RGP_CORE::GLRenderer::GenTextures2D(_u32b numTextures,GLuint*    target){
     if(!target)
         return false ;
     glGenTextures(numTextures,target);
@@ -1086,6 +1087,22 @@ _bool RGP_CORE::GLRenderer::GenTextures(_u32b numTextures,GLuint*    target){
     glBindTexture(GL_TEXTURE_2D,0);
     return true ;
 };
+_bool RGP_CORE::GLRenderer::GenTexturesCube(_u32b numTextures, GLuint*    target)
+{
+	if (!target)
+		return false;
+	glGenTextures(numTextures, target);
+	if (glGetError()) {
+		return false;
+	}
+	for (_u32b i = 0; i< numTextures; ++i) {
+		glBindTexture(GL_TEXTURE_CUBE_MAP, target[i]);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	}
+	glBindTexture(GL_TEXTURE_2D, 0);
+	return true;
+};
 void  RGP_CORE::GLRenderer::DeleteTextures(_u32b numTextures,GLuint*    target){
     if(!target)
         return ;
@@ -1093,13 +1110,28 @@ void  RGP_CORE::GLRenderer::DeleteTextures(_u32b numTextures,GLuint*    target){
     for(_u32b i=0 ;i<numTextures;++i)
         target[i]=0;
 };
-void  RGP_CORE::GLRenderer::SetImageData(RGP_CORE::Image* ImageSource){
+void  RGP_CORE::GLRenderer::SetImageData2D(RGP_CORE::Image* ImageSource){
     glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA8,
                  ImageSource->Width,ImageSource->Height,
                  0,GL_RGBA,GL_UNSIGNED_BYTE,ImageSource->Pixels);
 
 };
-void  RGP_CORE::GLRenderer::SetActiveTexture(_u16b index){
+void  RGP_CORE::GLRenderer::SetImageDataCube(RGP_CORE::Image* right , RGP_CORE::Image* left, RGP_CORE::Image* front,
+													RGP_CORE::Image* back, RGP_CORE::Image* top, RGP_CORE::Image* bottom) 
+{
+		
+};
+void  RGP_CORE::GLRenderer::SetImageDataCube(_s32b Width, _s32b Height) 
+{
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X  , 0, GL_RGBA32F, m_Target->getWidth(), m_Target->getHeight(), 0, GL_RGBA, GL_FLOAT, 0);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+1, 0, GL_RGBA32F, m_Target->getWidth(), m_Target->getHeight(), 0, GL_RGBA, GL_FLOAT, 0);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+2, 0, GL_RGBA32F, m_Target->getWidth(), m_Target->getHeight(), 0, GL_RGBA, GL_FLOAT, 0);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+3, 0, GL_RGBA32F, m_Target->getWidth(), m_Target->getHeight(), 0, GL_RGBA, GL_FLOAT, 0);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+4, 0, GL_RGBA32F, m_Target->getWidth(), m_Target->getHeight(), 0, GL_RGBA, GL_FLOAT, 0);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+5, 0, GL_RGBA32F, m_Target->getWidth(), m_Target->getHeight(), 0, GL_RGBA, GL_FLOAT, 0);
+};
+void  RGP_CORE::GLRenderer::SetActiveTexture(_u16b index)
+{
     glActiveTexture(GL_TEXTURE0+index);
 };
 _bool RGP_CORE::GLRenderer::BindTexture(_u32b textureID){
@@ -1107,6 +1139,42 @@ _bool RGP_CORE::GLRenderer::BindTexture(_u32b textureID){
     if(glGetError())
         return false ;
     return true ;
+};
+
+_bool RGP_CORE::GLRenderer::GenFrameBuffers(_u32b numFrameBuffers, GLuint* target)
+{
+	if (!target)
+		return false;
+	int error =glGetError();
+	glGenFramebuffers(numFrameBuffers, target);
+	if (error = glGetError()) {
+		
+		return false;
+	}
+	return true;
+};
+void RGP_CORE::GLRenderer::DeleteFrameBuffers(_u32b numFrameBuffers, GLuint* target)
+{
+	if (target) {
+		glDeleteFramebuffers(numFrameBuffers, target);
+	}
+};
+_bool RGP_CORE::GLRenderer::BindFrameBuffer(_u32b BufferID)
+{
+	int error = glGetError();
+	glBindFramebuffer(GL_FRAMEBUFFER, BufferID);
+	if (error = glGetError()) {
+		
+		return false;
+	}
+	return true;
+};
+_bool RGP_CORE::GLRenderer::AttachTexturetoFrameBuffer(GLenum AttachementID, GLenum TextureTarget, _u32b TextureID, _s32b Level)
+{
+	glFramebufferTexture2D(GL_FRAMEBUFFER, AttachementID, TextureTarget, TextureID, Level);
+	//try this  
+	//glFrameBufferTexture3D
+	return true;
 };
 
 
@@ -1136,7 +1204,7 @@ _s32b   RGP_CORE::GLRenderer::GetUniformLocation(_u32b programID ,_s8b*  Name){
 	}
 	return -1;
 };
-_bool   SetUniformF(_s32b Location,_float data ){
+_bool   RGP_CORE::GLRenderer::SetUniformF(_s32b Location,_float data ){
      glUniform1f(Location,data);
      return true ;
 };

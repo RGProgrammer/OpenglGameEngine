@@ -58,6 +58,7 @@ namespace RGP_CORE{
         _u16b       NumBackBuffers;///max 5
 		_bool		EnableShadows;
 		_s32b		ShadowResolution;
+		_bool		useEnvironmentMaps;
 
     } gfxConfig;
 
@@ -96,6 +97,8 @@ namespace RGP_CORE{
 	
 	};
 
+	class GameScene;
+
     class GLRenderer{
     private:
 		GLenum DrawBuff[6];
@@ -119,8 +122,12 @@ namespace RGP_CORE{
         Window*     getTarget();
         void	setScene(GameScene*   Scene);
         void	RenderCurrentScene();
+		void	RenderToScreen();
+		void	DrawSceneColors(_u32b FBO);
+		void	DrawSceneShadows(_u32b FBO);
 		void	LoadShadowProgram();
 		void	UnloadShadowProgram();
+		void	UpdateEnvironmentMaps();
         ///buffers manager
         ///VBOs
         _bool GenBuffers(_u32b numBuffers,GLuint*    target);
@@ -135,12 +142,23 @@ namespace RGP_CORE{
         ///VBO and VAO
         void DrawElements(GLenum mode,_u32b Count,GLenum type,void* Offset);
         ///Textures
-        _bool GenTextures(_u32b numTexture,GLuint*    target);
+        _bool GenTextures2D(_u32b numTexture,GLuint*    target);
+		_bool GenTexturesCube(_u32b numTexture, GLuint* target);
         void  DeleteTextures(_u32b numTexture,GLuint*    target);
-        void  SetImageData(Image* ImageSource );
+        void  SetImageData2D(Image* ImageSource );
+		void  SetImageDataCube(Image* right, Image* left, Image* front,
+								Image* back, Image* top, Image* bottom);
+		void  SetImageDataCube(_s32b Width, _s32b Height);
         void  SetActiveTexture(_u16b index);///starts from GL_TEXTURE0
         _bool BindTexture(_u32b textureID);
-
+		
+		///FBOs
+		_bool GenFrameBuffers(_u32b numFrameBuffers, GLuint* target);
+		void DeleteFrameBuffers(_u32b numFrameBuffers, GLuint* target);
+		_bool BindFrameBuffer(_u32b BufferID);
+		_bool AttachTexturetoFrameBuffer(GLenum AttachementID ,GLenum TextureTarget,_u32b GLTextureID, _s32b Level=0);
+		void  setDrawBuffers(GLenum* bufferenum, _s32b numBuffers);
+		void  setReadBuffers(GLenum* bufferenum, _s32b numBuffers);
         ///ShaderProgramManagement
         _u32b  CreateGLProgramFromFile( _s8b* VertexFile, _s8b* FragmentFile=NULL);
 		_u32b  CreateGLProgramFromFile( _s8b* VertexFile, _s8b* GeometryFile,  _s8b* FragmentFile);
@@ -159,9 +177,8 @@ namespace RGP_CORE{
         _bool CreateNeededObjects();//FBOs and Textures
         _bool AttachTextures();
         _bool InitFinalPhase();
-		void DrawSceneColors();
-		void DrawSceneShadows();
-        void RenderToScreen();
+		
+        
 
     private :
         Window*						m_Target ;

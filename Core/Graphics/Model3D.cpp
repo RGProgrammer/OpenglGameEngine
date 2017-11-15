@@ -142,9 +142,9 @@ void RGP_CORE::Model3D::Destroy(){
 _s16b RGP_CORE::Model3D::LoadModelFromFile(char* filename){
 	if(!m_GLRenderer)
         return 0 ;
-	const aiScene* Scene=aiImportFile(filename,aiProcess_Triangulate |
-                                                 aiProcess_PreTransformVertices|
-                                                 aiProcess_RemoveRedundantMaterials | aiProcess_MakeLeftHanded);
+	const aiScene* Scene = aiImportFile(filename, aiProcess_Triangulate | aiProcess_MakeLeftHanded |
+                                                 aiProcess_PreTransformVertices |
+                                                 aiProcess_RemoveRedundantMaterials);
 	//if failed
 	if(!Scene){
         printf("error loading file\n");
@@ -601,21 +601,21 @@ _u16b RGP_CORE::Model3D::GenerateOGLMaterials(){
         v_oglMaterials[i].SpecularMap=0;
         v_oglMaterials[i].DiffuseMap=0;
 		if(v_Materials[i].DiffuseMap && v_Materials[i].DiffuseMap->Pixels){
-                            m_GLRenderer->GenTextures(1,&(this->v_oglMaterials[i].DiffuseMap));
+                            m_GLRenderer->GenTextures2D(1,&(this->v_oglMaterials[i].DiffuseMap));
                             m_GLRenderer->BindTexture(v_oglMaterials[i].DiffuseMap);
-                            m_GLRenderer->SetImageData(v_Materials[i].DiffuseMap);
+                            m_GLRenderer->SetImageData2D(v_Materials[i].DiffuseMap);
                             m_GLRenderer->BindTexture(0);
         }
 		if( v_Materials[i].SpecularMap && v_Materials[i].SpecularMap->Pixels){
-                            m_GLRenderer->GenTextures(1,&(v_oglMaterials[i].SpecularMap));
+                            m_GLRenderer->GenTextures2D(1,&(v_oglMaterials[i].SpecularMap));
                             m_GLRenderer->BindTexture(v_oglMaterials[i].SpecularMap);
-                            m_GLRenderer->SetImageData(v_Materials[i].SpecularMap);
+                            m_GLRenderer->SetImageData2D(v_Materials[i].SpecularMap);
                             m_GLRenderer->BindTexture(0);
         }
 		if( v_Materials[i].NormalsMap && v_Materials[i].NormalsMap->Pixels){
-                            m_GLRenderer->GenTextures(1,&(v_oglMaterials[i].NormalsMap));
+                            m_GLRenderer->GenTextures2D(1,&(v_oglMaterials[i].NormalsMap));
                             m_GLRenderer->BindTexture(v_oglMaterials[i].NormalsMap);
-                            m_GLRenderer->SetImageData(v_Materials[i].NormalsMap);
+                            m_GLRenderer->SetImageData2D(v_Materials[i].NormalsMap);
                             m_GLRenderer->BindTexture(0);
         }
 	}
