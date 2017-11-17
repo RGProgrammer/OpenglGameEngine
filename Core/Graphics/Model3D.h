@@ -35,7 +35,8 @@ namespace RGP_CORE {
 		Model3D(Vertex3d Pos, Vertex3d Dir, Vertex3d Up);
 		virtual ~Model3D() ;
 		virtual void 	Destroy() ;
-		_s16b			LoadModelFromFile(char* filename);
+		void ClearModelLoadedData();
+		_s16b			LoadModelFromFile(char* filename,_bool ClearDataAfterLoad=true);
 		virtual _s16b   LoadShaderProg(char* VS_File,char* FS_File);
 		virtual _s16b   InitVAOs();
 		virtual void 	Render(Camera* Selected);

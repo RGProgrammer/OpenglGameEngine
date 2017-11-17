@@ -44,6 +44,8 @@ namespace RGP_CORE{
 		GLuint          BitangentBuffer ;
 		GLuint          TexCoords ;
 		GLuint          IndexBuffer ;
+		_u32b			AppliedMaterialIndex;
+		_u32b			numFaces;
     } MeshBuffers ;
 
     ///OpenGL Renderer
@@ -158,7 +160,7 @@ namespace RGP_CORE{
 		_bool BindFrameBuffer(_u32b BufferID);
 		_bool AttachTexturetoFrameBuffer(GLenum AttachementID ,GLenum TextureTarget,_u32b GLTextureID, _s32b Level=0);
 		void  setDrawBuffers(GLenum* bufferenum, _s32b numBuffers);
-		void  setReadBuffers(GLenum* bufferenum, _s32b numBuffers);
+		void  setReadBuffers(GLenum bufferenum);
         ///ShaderProgramManagement
         _u32b  CreateGLProgramFromFile( _s8b* VertexFile, _s8b* FragmentFile=NULL);
 		_u32b  CreateGLProgramFromFile( _s8b* VertexFile, _s8b* GeometryFile,  _s8b* FragmentFile);

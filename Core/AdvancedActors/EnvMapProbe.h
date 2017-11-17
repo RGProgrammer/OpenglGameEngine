@@ -21,7 +21,6 @@ namespace RGP_CORE {
 		~EnvMapProbe();
 		void			Destroy();
 		_bool			Init(GLRenderer* Renderer, GameScene* Scene);
-		void			setRenderer(GLRenderer* Renderer);
 		void			GenerateEnvMap();
 		_bool			isStatic();
 		void			setStatic(_bool make=true);

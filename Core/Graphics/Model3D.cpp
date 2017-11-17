@@ -18,37 +18,10 @@ RGP_CORE::Model3D::~Model3D(){
 
 
 void RGP_CORE::Model3D::Destroy(){
-	if(v_Materials){
-        for(_u32b i=0;i< m_nbMaterials;i++){
-            if(v_Materials[i].DiffuseMap){
-                if(v_Materials[i].DiffuseMap->Pixels){
-                    free(v_Materials[i].DiffuseMap->Pixels);
-                    v_Materials[i].DiffuseMap->Pixels=NULL;
-                }
-                free(v_Materials[i].DiffuseMap);
-                v_Materials[i].DiffuseMap=NULL ;
-            }
-            if(v_Materials[i].SpecularMap){
-                if(v_Materials[i].SpecularMap->Pixels){
-                    free(v_Materials[i].SpecularMap->Pixels);
-                    v_Materials[i].SpecularMap->Pixels=NULL;
-                }
-                free(v_Materials[i].SpecularMap);
-                v_Materials[i].SpecularMap=NULL ;
-            }
-            if(v_Materials[i].NormalsMap){
-                if(v_Materials[i].NormalsMap->Pixels){
-                    free(v_Materials[i].NormalsMap->Pixels);
-                    v_Materials[i].NormalsMap->Pixels=NULL;
-                }
-                free(v_Materials[i].NormalsMap);
-                v_Materials[i].NormalsMap=NULL ;
-            }
-        }
-        free(v_Materials);
-        v_Materials=NULL ;
-	}
-        if(v_oglMaterials){
+	
+	ClearModelLoadedData();
+
+	if(v_oglMaterials){
          for(_u32b i=0;i< m_nbMaterials;i++){
             if(v_oglMaterials[i].DiffuseMap)
                 m_GLRenderer->DeleteTextures(1,&(v_oglMaterials[i].DiffuseMap));
@@ -85,6 +58,8 @@ void RGP_CORE::Model3D::Destroy(){
             if(v_Buffers[i].VertexArrayObject){
                 m_GLRenderer->DeleteVertexArrays(1,&(v_Buffers[i].VertexArrayObject));
             }
+			v_Buffers[i].AppliedMaterialIndex = 0;
+			v_Buffers[i].numFaces = 0;
         }
         free(v_Buffers);
         v_Buffers=NULL ;
@@ -94,38 +69,7 @@ void RGP_CORE::Model3D::Destroy(){
 		free(m_VAOforShadowcasting);
 		m_VAOforShadowcasting = NULL;
 	}
-	if(v_Meshes){
-		for(_u32b i=0; i< m_nbMeshes ;i++){
-			if(v_Meshes[i].Name){
-				free(v_Meshes[i].Name);
-				v_Meshes[i].Name=NULL ;
-			}
-			if(v_Meshes[i].VertexBuffer){
-				free(v_Meshes[i].VertexBuffer=NULL);
-				v_Meshes[i].VertexBuffer=NULL ;
-			}
-			if(v_Meshes[i].TangentBuffer){
-                free(v_Meshes[i].TangentBuffer);
-                free(v_Meshes[i].BitangentBuffer);
-                v_Meshes[i].TangentBuffer=NULL ;
-                v_Meshes[i].BitangentBuffer=NULL ;
-			}
-			if(v_Meshes[i].NormalBuffer){
-				free(v_Meshes[i].NormalBuffer);
-				v_Meshes[i].NormalBuffer=NULL ;
-			}
-			if(v_Meshes[i].IndexBuffer){
-				free(v_Meshes[i].IndexBuffer);
-				v_Meshes[i].IndexBuffer=NULL ;
-			}
-			if(v_Meshes[i].TexCoords){
-                free(v_Meshes[i].TexCoords);
-				v_Meshes[i].TexCoords=NULL ;
-			}
-		}
-		free(v_Meshes);
-		v_Meshes=NULL ;
-	}
+	
 	m_nbMeshes = 0;
 	if (m_ShaderProgram){
 
@@ -139,7 +83,75 @@ void RGP_CORE::Model3D::Destroy(){
 	Renderable::Destroy();
 };
 
-_s16b RGP_CORE::Model3D::LoadModelFromFile(char* filename){
+void RGP_CORE::Model3D::ClearModelLoadedData()
+{
+	if (v_Materials) {
+		for (_u32b i = 0; i< m_nbMaterials; i++) {
+			if (v_Materials[i].DiffuseMap) {
+				if (v_Materials[i].DiffuseMap->Pixels) {
+					free(v_Materials[i].DiffuseMap->Pixels);
+					v_Materials[i].DiffuseMap->Pixels = NULL;
+				}
+				free(v_Materials[i].DiffuseMap);
+				v_Materials[i].DiffuseMap = NULL;
+			}
+			if (v_Materials[i].SpecularMap) {
+				if (v_Materials[i].SpecularMap->Pixels) {
+					free(v_Materials[i].SpecularMap->Pixels);
+					v_Materials[i].SpecularMap->Pixels = NULL;
+				}
+				free(v_Materials[i].SpecularMap);
+				v_Materials[i].SpecularMap = NULL;
+			}
+			if (v_Materials[i].NormalsMap) {
+				if (v_Materials[i].NormalsMap->Pixels) {
+					free(v_Materials[i].NormalsMap->Pixels);
+					v_Materials[i].NormalsMap->Pixels = NULL;
+				}
+				free(v_Materials[i].NormalsMap);
+				v_Materials[i].NormalsMap = NULL;
+			}
+		}
+		free(v_Materials);
+		v_Materials = NULL;
+	}
+	if (v_Meshes) {
+		for (_u32b i = 0; i< m_nbMeshes; i++) {
+			if (v_Meshes[i].Name) {
+				free(v_Meshes[i].Name);
+				v_Meshes[i].Name = NULL;
+			}
+			if (v_Meshes[i].VertexBuffer) {
+				free(v_Meshes[i].VertexBuffer = NULL);
+				v_Meshes[i].VertexBuffer = NULL;
+			}
+			if (v_Meshes[i].TangentBuffer) {
+				free(v_Meshes[i].TangentBuffer);
+				free(v_Meshes[i].BitangentBuffer);
+				v_Meshes[i].TangentBuffer = NULL;
+				v_Meshes[i].BitangentBuffer = NULL;
+			}
+			if (v_Meshes[i].NormalBuffer) {
+				free(v_Meshes[i].NormalBuffer);
+				v_Meshes[i].NormalBuffer = NULL;
+			}
+			if (v_Meshes[i].IndexBuffer) {
+				free(v_Meshes[i].IndexBuffer);
+				v_Meshes[i].IndexBuffer = NULL;
+			}
+			if (v_Meshes[i].TexCoords) {
+				free(v_Meshes[i].TexCoords);
+				v_Meshes[i].TexCoords = NULL;
+			}
+		}
+		free(v_Meshes);
+		v_Meshes = NULL;
+	}
+
+};
+
+
+_s16b RGP_CORE::Model3D::LoadModelFromFile(char* filename, _bool ClearDataAfterLoad ){
 	if(!m_GLRenderer)
         return 0 ;
 	const aiScene* Scene = aiImportFile(filename, aiProcess_Triangulate | aiProcess_MakeLeftHanded |
@@ -181,6 +193,8 @@ _s16b RGP_CORE::Model3D::LoadModelFromFile(char* filename){
 	}
 	if (!InitVAOs())
 		return 0;
+	if (ClearDataAfterLoad)
+		ClearModelLoadedData();
     return 1;
 };
 
@@ -267,17 +281,17 @@ void RGP_CORE::Model3D::Render(Camera* Selected){
         for(_u32b i = 0 ;i<m_nbMeshes;++i){
             ///Texture
             m_GLRenderer->SetActiveTexture(0);
-            m_GLRenderer->BindTexture(v_oglMaterials[v_Meshes[i].AppliedMaterial].DiffuseMap);
+            m_GLRenderer->BindTexture(v_oglMaterials[v_Buffers[i].AppliedMaterialIndex].DiffuseMap);
             Location=m_GLRenderer->GetUniformLocation(m_ShaderProgram,"Diffusemap");
             m_GLRenderer->SetUniformSample(Location,0);
 
             m_GLRenderer->SetActiveTexture(1);
-            m_GLRenderer->BindTexture(v_oglMaterials[v_Meshes[i].AppliedMaterial].NormalsMap);
+            m_GLRenderer->BindTexture(v_oglMaterials[v_Buffers[i].AppliedMaterialIndex].NormalsMap);
             Location=m_GLRenderer->GetUniformLocation(m_ShaderProgram,"Normalmap");
             m_GLRenderer->SetUniformSample(Location,1);
 
             m_GLRenderer->SetActiveTexture(2);
-            m_GLRenderer->BindTexture(v_oglMaterials[v_Meshes[i].AppliedMaterial].SpecularMap);
+            m_GLRenderer->BindTexture(v_oglMaterials[v_Buffers[i].AppliedMaterialIndex].SpecularMap);
             Location=m_GLRenderer->GetUniformLocation(m_ShaderProgram,"Specularmap");
             m_GLRenderer->SetUniformSample(Location,2);
 
@@ -285,7 +299,7 @@ void RGP_CORE::Model3D::Render(Camera* Selected){
 
             ///Bind the VAO
             m_GLRenderer->BindVertexArray(v_Buffers[i].VertexArrayObject);
-            m_GLRenderer->DrawElements(GL_TRIANGLES,v_Meshes[i].nbFaces*3,GL_UNSIGNED_INT,(void*)0  );
+            m_GLRenderer->DrawElements(GL_TRIANGLES,v_Buffers[i].numFaces*3,GL_UNSIGNED_INT,(void*)0  );
         }
         ///after rendering
         m_GLRenderer->BindVertexArray(0);
@@ -311,7 +325,7 @@ void	RGP_CORE::Model3D::CastShadow()
 		//binding need VAO
 		m_GLRenderer->BindVertexArray(m_VAOforShadowcasting[i]);
 		//Draw
-		m_GLRenderer->DrawElements(GL_TRIANGLES, v_Meshes[i].nbFaces * 3, GL_UNSIGNED_INT, (void*)0);
+		m_GLRenderer->DrawElements(GL_TRIANGLES, v_Buffers[i].numFaces * 3, GL_UNSIGNED_INT, (void*)0);
 	}
 	m_GLRenderer->BindVertexArray(0);
 };
@@ -639,11 +653,14 @@ _u16b RGP_CORE::Model3D::GenerateBuffers(){
         v_Buffers[i].TangentBuffer=0;
         v_Buffers[i].BitangentBuffer=0 ;
         v_Buffers[i].TexCoords=0;
+		v_Buffers[i].AppliedMaterialIndex = 0;
+		v_Buffers[i].numFaces = 0;
 		m_VAOforShadowcasting[i] = 0;
     };
 
     for(_u32b i=0; i< m_nbMeshes;++i){
 
+		v_Buffers[i].AppliedMaterialIndex = v_Meshes[i].AppliedMaterial;
         ///generating vertices buffer
         m_GLRenderer->GenBuffers(1,&(v_Buffers[i].VertexBuffer));
         if(!v_Buffers[i].VertexBuffer)
@@ -691,7 +708,8 @@ _u16b RGP_CORE::Model3D::GenerateBuffers(){
         ///filling buffer with data code here
         m_GLRenderer->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, v_Buffers[i].IndexBuffer);
         m_GLRenderer->setBufferData(GL_ELEMENT_ARRAY_BUFFER, v_Meshes[i].nbFaces*3*sizeof(_u32b) , v_Meshes[i].IndexBuffer, GL_STATIC_DRAW);
-        ///........
+        ///.........
+		v_Buffers[i].numFaces = v_Meshes[i].nbFaces;
 
     }
     m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER,0);

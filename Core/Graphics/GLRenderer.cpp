@@ -1141,6 +1141,7 @@ _bool RGP_CORE::GLRenderer::BindTexture(_u32b textureID){
     return true ;
 };
 
+//FBOs
 _bool RGP_CORE::GLRenderer::GenFrameBuffers(_u32b numFrameBuffers, GLuint* target)
 {
 	if (!target)
@@ -1177,6 +1178,17 @@ _bool RGP_CORE::GLRenderer::AttachTexturetoFrameBuffer(GLenum AttachementID, GLe
 	return true;
 };
 
+void  RGP_CORE::GLRenderer::setDrawBuffers(GLenum* bufferenum, _s32b numBuffers)
+{
+	if (numBuffers == 0)
+		glDrawBuffer(GL_NONE);
+	else if(numBuffers > 0)
+		glDrawBuffers(numBuffers, bufferenum);
+};
+void  RGP_CORE::GLRenderer::setReadBuffers(GLenum bufferenum) 
+{
+	glReadBuffer(bufferenum);
+};
 
 ///ShaderProgramManagement
 
