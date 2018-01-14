@@ -6,7 +6,7 @@ RGP_CORE::Model3D::Model3D(Vertex3d Pos): Model3D(Pos,{0.0f,0.0f,-1.0f},{0.0f,1.
 };
 RGP_CORE::Model3D::Model3D(Vertex3d Pos, Vertex3d Dir, Vertex3d Up): Renderable(Pos,Dir, Up),
 															m_nbMeshes(0), v_Meshes(NULL), v_Buffers(NULL),
-															m_VAOforShadowcasting(NULL),
+															m_VAOforShadowcasting(NULL), m_ReflectionProbe(NULL),
 															v_Materials(NULL),v_oglMaterials(NULL),m_nbMaterials(0),
 															m_FileDirectory(NULL),m_ShaderProgram(0)
 {
@@ -211,7 +211,6 @@ _s16b   RGP_CORE::Model3D::LoadShaderProg(char* VS_File,char* FS_File){
 };
 
 _s16b   RGP_CORE::Model3D::InitVAOs(){
-	int error;
     if(!m_ShaderProgram)
         return 0;
     glGetError();
@@ -267,48 +266,68 @@ _s16b   RGP_CORE::Model3D::InitVAOs(){
 void RGP_CORE::Model3D::Render(Camera* Selected){
     if(isVisible() && Selected && m_GLRenderer){
         ///new rendering code here using the high level opengl interface(m_GLRenderer)
-        ///set the program to use
+        //set the program to use
         int Location ;
         m_GLRenderer->SetShaderProgram(m_ShaderProgram);
         ///setup uniform variable
-        ///Matrices
+        //Matrices
 		Location = m_GLRenderer->GetUniformLocation(m_ShaderProgram, "WorldMtx");
 		m_GLRenderer->SetUniformvMtx(Location,this->getTransMtx());
 		Location = m_GLRenderer->GetUniformLocation(m_ShaderProgram, "ViewMtx");
 		m_GLRenderer->SetUniformvMtx(Location,Selected->getViewMtx());
 		Location = m_GLRenderer->GetUniformLocation(m_ShaderProgram, "ProjMtx");
 		m_GLRenderer->SetUniformvMtx(Location,Selected->getProjectionMtx());
+
+
+		//providing attached reflection probe to the shader program
+		if (m_ReflectionProbe) {
+			m_GLRenderer->SetActiveTexture(0);
+			m_GLRenderer->BindTexture(m_GLRenderer->BindTexture(m_ReflectionProbe->getEnvMap()));
+			Location = m_GLRenderer->GetUniformLocation(m_ShaderProgram, "ReflectMap");
+			m_GLRenderer->SetUniformSample(Location, 0);
+
+			Location = m_GLRenderer->GetUniformLocation(m_ShaderProgram, "hasReflectMap");
+			m_GLRenderer->SetUniformI(Location, 1);
+		}
+		else {
+			Location = m_GLRenderer->GetUniformLocation(m_ShaderProgram, "hasReflectMap");
+			m_GLRenderer->SetUniformI(Location, 0);
+		}
+
+		
         for(_u32b i = 0 ;i<m_nbMeshes;++i){
-            ///Texture
-            m_GLRenderer->SetActiveTexture(0);
+            //Textures
+            m_GLRenderer->SetActiveTexture(1);
             m_GLRenderer->BindTexture(v_oglMaterials[v_Buffers[i].AppliedMaterialIndex].DiffuseMap);
             Location=m_GLRenderer->GetUniformLocation(m_ShaderProgram,"Diffusemap");
-            m_GLRenderer->SetUniformSample(Location,0);
-
-            m_GLRenderer->SetActiveTexture(1);
-            m_GLRenderer->BindTexture(v_oglMaterials[v_Buffers[i].AppliedMaterialIndex].NormalsMap);
-            Location=m_GLRenderer->GetUniformLocation(m_ShaderProgram,"Normalmap");
             m_GLRenderer->SetUniformSample(Location,1);
 
             m_GLRenderer->SetActiveTexture(2);
-            m_GLRenderer->BindTexture(v_oglMaterials[v_Buffers[i].AppliedMaterialIndex].SpecularMap);
-            Location=m_GLRenderer->GetUniformLocation(m_ShaderProgram,"Specularmap");
+            m_GLRenderer->BindTexture(v_oglMaterials[v_Buffers[i].AppliedMaterialIndex].NormalsMap);
+            Location=m_GLRenderer->GetUniformLocation(m_ShaderProgram,"Normalmap");
             m_GLRenderer->SetUniformSample(Location,2);
 
+            m_GLRenderer->SetActiveTexture(3);
+            m_GLRenderer->BindTexture(v_oglMaterials[v_Buffers[i].AppliedMaterialIndex].SpecularMap);
+            Location=m_GLRenderer->GetUniformLocation(m_ShaderProgram,"Specularmap");
+            m_GLRenderer->SetUniformSample(Location,3);
 
 
-            ///Bind the VAO
+
+            //Bind the VAO
             m_GLRenderer->BindVertexArray(v_Buffers[i].VertexArrayObject);
             m_GLRenderer->DrawElements(GL_TRIANGLES,v_Buffers[i].numFaces*3,GL_UNSIGNED_INT,(void*)0  );
         }
-        ///after rendering
+        //after rendering
         m_GLRenderer->BindVertexArray(0);
-        m_GLRenderer->SetActiveTexture(GL_TEXTURE0);
+        m_GLRenderer->SetActiveTexture(0);
         m_GLRenderer->BindTexture(0);
-        m_GLRenderer->SetActiveTexture(GL_TEXTURE1);
+        m_GLRenderer->SetActiveTexture(1);
         m_GLRenderer->BindTexture(0);
-        m_GLRenderer->SetActiveTexture(GL_TEXTURE2);
+        m_GLRenderer->SetActiveTexture(2);
         m_GLRenderer->BindTexture(0);
+		m_GLRenderer->SetActiveTexture(3);
+		m_GLRenderer->BindTexture(0);
 		m_GLRenderer->SetActiveTexture(GL_NONE);
 
     }
@@ -329,6 +348,16 @@ void	RGP_CORE::Model3D::CastShadow()
 	}
 	m_GLRenderer->BindVertexArray(0);
 };
+
+void RGP_CORE::Model3D::AttachReflectionProbe(EnvMapProbe* Probe)
+{
+	m_ReflectionProbe = Probe;
+};
+RGP_CORE::EnvMapProbe*	RGP_CORE::Model3D::getReflectionProbe(EnvMapProbe* Probe)
+{
+	return m_ReflectionProbe;
+};
+
 
 
 _u16b RGP_CORE::Model3D::ProcessNode(aiNode* Node,const aiScene* Scene){
@@ -499,9 +528,11 @@ _u16b RGP_CORE::Model3D::LoadMaterialstoMemory(const aiScene* Scene){
         v_Materials[i].NormalsMap=NULL ;
         v_Materials[i].SpecularMap=NULL;
         v_Materials[i].DiffuseMap=NULL;
+		aiGetMaterialFloat(Scene->mMaterials[i],AI_MATKEY_REFRACTI,&(v_Materials[i].IOR));
         hasDiffusemap=false;
         for(_u16b j=0 ;j< Scene->mMaterials[i]->mNumProperties;j++){
-                if(Scene->mMaterials[i]->mProperties[j]->mSemantic==aiTextureType_DIFFUSE){
+			
+            if(Scene->mMaterials[i]->mProperties[j]->mSemantic==aiTextureType_DIFFUSE){
                     v_Materials[i].DiffuseMap=(Image*)malloc(sizeof(Image));
                     v_Materials[i].DiffuseMap->Height=0 ;
                     v_Materials[i].DiffuseMap->Width=0;
@@ -525,7 +556,7 @@ _u16b RGP_CORE::Model3D::LoadMaterialstoMemory(const aiScene* Scene){
                         }
                     }
                     hasDiffusemap=true ;
-                }else if(Scene->mMaterials[i]->mProperties[j]->mSemantic==aiTextureType_SPECULAR){
+             }else if(Scene->mMaterials[i]->mProperties[j]->mSemantic==aiTextureType_SPECULAR){
                     v_Materials[i].SpecularMap=(Image*)malloc(sizeof(Image));
                     v_Materials[i].SpecularMap->Height=0 ;
                     v_Materials[i].SpecularMap->Width=0;
@@ -547,7 +578,7 @@ _u16b RGP_CORE::Model3D::LoadMaterialstoMemory(const aiScene* Scene){
                         }
                     }
                     hasSpecularmap=true ;
-                }else if(Scene->mMaterials[i]->mProperties[j]->mSemantic==aiTextureType_NORMALS){
+             }else if(Scene->mMaterials[i]->mProperties[j]->mSemantic==aiTextureType_NORMALS){
                     v_Materials[i].NormalsMap=(Image*)malloc(sizeof(Image));
                     v_Materials[i].NormalsMap->Height=0 ;
                     v_Materials[i].NormalsMap->Width=0;
@@ -614,6 +645,7 @@ _u16b RGP_CORE::Model3D::GenerateOGLMaterials(){
         v_oglMaterials[i].NormalsMap=0 ;
         v_oglMaterials[i].SpecularMap=0;
         v_oglMaterials[i].DiffuseMap=0;
+		v_oglMaterials[i].IOR = v_Materials[i].IOR;
 		if(v_Materials[i].DiffuseMap && v_Materials[i].DiffuseMap->Pixels){
                             m_GLRenderer->GenTextures2D(1,&(this->v_oglMaterials[i].DiffuseMap));
                             m_GLRenderer->BindTexture(v_oglMaterials[i].DiffuseMap);

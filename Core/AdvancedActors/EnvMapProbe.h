@@ -4,9 +4,10 @@
 /*Env Map or Environment map is a class made to be used by object that reflect or refract light 
  this type of object need to be attached to be effective*/
 
-
+#include "..//Scene//Camera.h"
 #include "..//Graphics//GLRenderer.h"
 #include "..//Scene//GameScene.h"
+
 
 
 
@@ -24,25 +25,20 @@ namespace RGP_CORE {
 		void			GenerateEnvMap();
 		_bool			isStatic();
 		void			setStatic(_bool make=true);
-		
-
 		GLuint			getEnvMap();
-
+		void			setPosition(Vertex3d Pos);
 	private:
+		GLRenderer *	m_Renderer;
+		GameScene*		m_Scene;
+		PerspCamera*	m_PerspCameras[6];
+		_bool			m_isInitialized;
 		_bool			m_isStatic;
 		GLuint			m_FBO;
 		GLuint			m_TextureCubeMap;
-		GLRenderer*		m_Renderer;
-		GameScene*		m_Scene;
+		
 
-
-	private :
-		static _bool	InitStaticAttributs();
 	};
 
-	static _float		ViewMatices[96];//6* 4*4
-	static _float		ProjMatix[16];
-	static _bool		AttributsInitialized = false;//to check if the matrices are initialized
 	
 	
 }

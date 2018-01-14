@@ -41,7 +41,9 @@ namespace RGP_CORE {
 		virtual _s16b   InitVAOs();
 		virtual void 	Render(Camera* Selected);
 		virtual void	CastShadow();
-		_bool			isEnvMap() { return false; };
+		//_bool			isEnvMap() { return false; };
+		void			AttachReflectionProbe(EnvMapProbe* Probe);
+		EnvMapProbe*	getReflectionProbe(EnvMapProbe* Probe);
 	protected:
 		_u16b ProcessNode(aiNode* Node,const aiScene* Scene);/// currently this function copy only a static model
         _u16b AddMesh(const char* Name,_u16b MaterialID);
@@ -56,14 +58,15 @@ namespace RGP_CORE {
         _u16b GenerateOGLMaterials();
         _u16b GenerateBuffers();
 	protected:
+		_s8b*					m_FileDirectory;
 		pMesh					v_Meshes ;
 		MeshBuffers*            v_Buffers ;
 		GLuint*					m_VAOforShadowcasting;
-		_u32b					m_nbMeshes;
 		Material*               v_Materials;
 		OGLMaterial*            v_oglMaterials;
+		EnvMapProbe*			m_ReflectionProbe;
+		_u32b					m_nbMeshes;
 		_u32b                   m_nbMaterials;
-		_s8b*					m_FileDirectory;
 		_u32b				    m_ShaderProgram ;
 	};
 

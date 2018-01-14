@@ -34,6 +34,9 @@ void RGP_CORE::Camera::UpdateViewMtx(){
 };
 
 
+RGP_CORE::PerspCamera::PerspCamera(): PerspCamera(M_PI_2,1.0f,1.0f,500.0f)
+{
+};
 RGP_CORE::PerspCamera::PerspCamera(_float FOV, _float Aspect, _float Near, _float Far):Camera(){
     if(FOV>0.0f)
         m_FOV=FOV ;

@@ -41,7 +41,6 @@ void RGP_CORE::SoundEngine::Destroy(){
 void RGP_CORE::SoundEngine::setListener(RGP_CORE::BaseActor* Listener){
     Vertex3d  ver1,ver2;
     if(!Listener){
-        Vertex3d  ver1,ver2;
         ver1=Listener->getDirection();
         ver2=Listener->getUp();
         ALfloat tab[6]={ver1.x,ver1.y,ver1.z,ver2.x,ver2.y,ver2.z};

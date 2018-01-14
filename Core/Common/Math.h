@@ -129,11 +129,11 @@ inline bool OppositeDirection(Vertex3d ver1,Vertex3d ver2){
     else
         return false;
 }
-inline float DegreetoRadius(float Degree)
+inline _float DegreetoRadius(_float Degree)
 {
 	return Degree* M_PI / 180.0f;
 }
-inline float RadiustoDegree(float Radius)
+inline _float RadiustoDegree(_float Radius)
 {
 	return Radius*180.0 / M_PI;
 }

@@ -27,6 +27,7 @@ namespace RGP_CORE{
 
 	class PerspCamera : virtual public Camera{
     public:
+		PerspCamera();
         PerspCamera(_float FOV, _float Aspect, _float Near=1.0f, _float Far=1000.0f);
         inline void setParameters(_float FOV, _float Aspect, _float Near, _float Far);
         _float getAspectValue();

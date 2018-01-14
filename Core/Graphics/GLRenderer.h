@@ -27,12 +27,14 @@ namespace RGP_CORE{
 		Image*			DiffuseMap;
 		Image*			SpecularMap;
 		Image*			NormalsMap;
+		_float			IOR;
 	} Material ;
 
 	typedef struct {
         GLuint          DiffuseMap;
 		GLuint			SpecularMap;
 		GLuint			NormalsMap;
+		_float			IOR;
 	} OGLMaterial ;
 
     ///mesh structure for openGL
@@ -125,8 +127,9 @@ namespace RGP_CORE{
         void	setScene(GameScene*   Scene);
         void	RenderCurrentScene();
 		void	RenderToScreen();
-		void	DrawSceneColors(_u32b FBO);
-		void	DrawSceneShadows(_u32b FBO);
+		void	RenderSceneColors(_u32b FBO, Camera* camera = NULL);
+		void	RenderSceneShadows(_u32b FBO, Camera* camera = NULL);
+		void	RenderSceneLightAccum();
 		void	LoadShadowProgram();
 		void	UnloadShadowProgram();
 		void	UpdateEnvironmentMaps();
@@ -152,7 +155,7 @@ namespace RGP_CORE{
 								Image* back, Image* top, Image* bottom);
 		void  SetImageDataCube(_s32b Width, _s32b Height);
         void  SetActiveTexture(_u16b index);///starts from GL_TEXTURE0
-        _bool BindTexture(_u32b textureID);
+        _bool BindTexture(_u32b textureID,_bool Texture2D=true);
 		
 		///FBOs
 		_bool GenFrameBuffers(_u32b numFrameBuffers, GLuint* target);
@@ -167,6 +170,8 @@ namespace RGP_CORE{
         void    DeleteGLProgram(_u32b ProgramID);
         _s32b   GetUniformLocation(_u32b programID,_s8b*   Name);
         _bool   SetUniformF(_s32b Location,_float data );
+		_bool   SetUniform3F(_s32b Location, _float data1, _float data2, _float data3);
+		_bool   SetUniformI(_s32b Location, _u32b data);
         _bool   SetUniformFv(_s32b Location,_float* data ,_u32b numElements );
         _bool   SetUniformvMtx(_s32b Location,_float* Matrix_4x4 );
         _bool   SetUniformSample(_s32b Location, _u32b TextureUnit);
@@ -176,8 +181,12 @@ namespace RGP_CORE{
         _bool   DisableVertexAttribArray(_u32b index);
         void    SetShaderProgram(_u32b programID);
     private:
-        _bool CreateNeededObjects();//FBOs and Textures
-        _bool AttachTextures();
+        _bool	CreateNeededObjects();//FBOs and Textures
+		_bool	AttachColorsTextures();
+		_bool	CreateColorsObjects();
+		_bool	CreateShadowsObjects();
+		_bool	CreateLightObjects();
+        
         _bool InitFinalPhase();
 		
         
@@ -201,15 +210,21 @@ namespace RGP_CORE{
         GLuint**					m_AttachmentTextures;
         _s16b						m_SelectedFBO;
 
+		//light
+		_u32b						m_LightAccumProgram;
+		GLuint						m_LightAccumBuffer;
+		GLuint						m_LightAccumDiffuseTexture;
+		GLuint						m_LightAccumSpecularTexture;
+
 		//Shadows
 		_u32b						m_ShadowVectorSize;
 		_u32b						m_NumShadowFBOs;
 		_u32b						m_ShadowRenderingProgram;
 		GLuint*						m_ShadowFBOs;
 		GLuint*						m_ShadowAttachmentTexture;
-		_u32b						m_CombineShadowProgram;
-		GLuint						m_CombinedShadowResultFBO;
-		GLuint						m_CombinedShadowResultTexture;
+		_u32b						m_ShadowAccumProgram;
+		GLuint						m_ShadowAccumBuffer;
+		GLuint						m_ShadowAccumTexture;
 		
 
     };
