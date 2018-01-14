@@ -4,7 +4,7 @@
 #include "../Core/AdvancedActors/BaseParticaleSystem.h"
 #include "../Core/Graphics/Model3D.h"
 
-#define MAX_INJECTED		1000
+#define MAX_INJECTED		20
 
 using namespace RGP_CORE;
 class Generator : public EmissionPointGenerator {

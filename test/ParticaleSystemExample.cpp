@@ -93,7 +93,7 @@ _bool ExampleParticale::Init()
 	if (!m_Model)
 		return false;
 	m_Model->setRenderer(m_GLRenderer);
-	if (!m_Model->LoadModelFromFile("..//test//Samples//Sphere.obj"))
+	if (!m_Model->LoadModelFromFile("..//test//Samples//eyeball.obj"))
 		return false;
 
 	return true;

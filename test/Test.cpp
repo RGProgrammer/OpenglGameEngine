@@ -36,41 +36,29 @@ void RGP_CORE::Test::Start() {
 	LightSource* light = NULL;
 	PModel*	PM = NULL;
 
-	/*
-	for (int k = -2; k < 2; ++k) {
-		light = new SpotLight();
-		light->setPosition({ 0.0f,20.0f,0.0f- k*8.0f });
-		light->setOrientation({ 0.0,-1.0f,0.0f }, { 0.0f,0.0f,1.0f });
-		m_CurrentScene->AddLight(light);
-	}*/
-	
-	light = new DirectionnalLight();
-	light->setLightSpecularColor({ (_float)0.2,(_float)0.2,(_float)0.2 });
-	light->setOrientation({ (_float)0.0,(_float)-1.0,(_float)0.0 }, { (_float)0.0,(_float)0.0,(_float)1.0 });
+	light = new SpotLight();
+	light->setPosition({ 0.0f,10.0f,0.0f });
+	light->setOrientation({ 0.0f,-1.0f,0.0f }, { 0.0f,0.0f,1.0f });
 	m_CurrentScene->AddLight(light);
 
+	/*light = new PointLight();
+	light->setPosition({ 0.0f,2.0f,0.0f });
+	light->setLightDistance(20.0f);
+	m_CurrentScene->AddLight(light);*/
 
+	/*light = new DirectionnalLight();
+	light->setOrientation({ 0.0f,-1.0f,0.0f }, { 0.0f,0.0f,1.0f });
+	m_CurrentScene->AddLight(light);*/
+	testmodel1 = new Model3D();
+	testmodel1->setRenderer(m_Renderer);
+	testmodel1->LoadModelFromFile("..//test//Samples//Sky.obj");
+	m_CurrentScene->AddActor(testmodel1);
+
+	
 	PM = PModel::CreateGround(m_Renderer,{ 0.0f,-4.0f,0.0f });
 	m_CurrentScene->AddActor(PM);
-	/*
-	PM = PModel::CreateCube(m_Renderer, { 0.0f,10.0f,0.0f }, {0.0f,0.0f,1.0f},{0.0f,1.0f,0.0f} );
-	m_CurrentScene->AddActor(PM);
 
-	PM = PModel::CreateSphere(m_Renderer, { 8.0f,10.0f,0.0f }, { 0.0f,0.0f,1.0f }, { 0.0f,1.0f,0.0f });
-	m_CurrentScene->AddActor(PM);*/
-	
-	ExampleParticale* sample = new ExampleParticale();
-	sample->setRenderer(m_Renderer);
-	sample->Init();
 
-	ExampleEmitter*	emitter = new ExampleEmitter();
-	emitter->Init(m_Physics ,sample);
-	emitter->setScene(m_CurrentScene);
-	m_CurrentScene->AddActor(emitter);
-
-	/*testmodel1 = new Model3D();
-	testmodel1->setRenderer(m_Renderer);
-	testmodel1->LoadModelFromFile("..//test//classroom//classroom.blend");*/
 	
 	///ecerything is good
 	m_Renderer->setScene(m_CurrentScene);
@@ -107,22 +95,22 @@ void RGP_CORE::Test::Start() {
 
         state = glfwGetKey(m_Renderer->getTarget()->getglfwWindow(), GLFW_KEY_UP);
         if (state == GLFW_PRESS){
-            m_Camera->RotateViaSide(-0.01);
+            m_Camera->RotateViaSide(-0.01f);
 
         }
         state = glfwGetKey(m_Renderer->getTarget()->getglfwWindow(), GLFW_KEY_DOWN);
         if (state == GLFW_PRESS){
-            m_Camera->RotateViaSide(0.01);
+            m_Camera->RotateViaSide(0.01f);
 
         }
         state = glfwGetKey(m_Renderer->getTarget()->getglfwWindow(), GLFW_KEY_LEFT);
         if (state == GLFW_PRESS){
-            m_Camera->RotateViaUp(0.01);
+            m_Camera->RotateViaUp(0.01f);
 
         }
         state = glfwGetKey(m_Renderer->getTarget()->getglfwWindow(), GLFW_KEY_RIGHT);
         if (state == GLFW_PRESS){
-            m_Camera->RotateViaUp(-0.01);
+            m_Camera->RotateViaUp(-0.01f);
         }
 		state = glfwGetKey(m_Renderer->getTarget()->getglfwWindow(), GLFW_KEY_B);
 		if (state == GLFW_PRESS) {
@@ -155,7 +143,6 @@ void RGP_CORE::Test::Start() {
     }
 };
 int RGP_CORE::Test::Init(){
-	int i;
     m_CurrentScene=new GameScene ();
     if(!m_CurrentScene)
         return 0 ;
