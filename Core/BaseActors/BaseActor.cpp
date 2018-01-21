@@ -108,7 +108,7 @@ void RGP_CORE::BaseActor::Scale(Vertex3d scale){
 Vertex3d RGP_CORE::BaseActor::getScale(){ return m_Scale ;};
 void RGP_CORE::BaseActor::UpdateTransMtx(){
 	m_Direction=Normalize3d(m_Direction);
-	Vertex3d Side = Normalize3d(CrossProduct3d(m_Direction,m_Up));
+	Vertex3d Side = Normalize3d(CrossProduct3d(m_Up,m_Direction));
 	//m_Up = Normalize3d(CrossProduct3d(Side, m_Direction));
     m_TransMtx[0]=m_Scale.x*Side.x; 	m_TransMtx[4]=m_Scale.y*m_Up.x; 	m_TransMtx[8 ]=m_Scale.z*m_Direction.x; 	m_TransMtx[12]=m_Position.x ;
     m_TransMtx[1]=m_Scale.x*Side.y; 	m_TransMtx[5]=m_Scale.y*m_Up.y; 	m_TransMtx[9 ]=m_Scale.z*m_Direction.y; 	m_TransMtx[13]=m_Position.y ;

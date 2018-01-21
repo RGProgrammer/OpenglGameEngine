@@ -787,8 +787,8 @@ void  RGP_CORE::GLRenderer::setScene(GameScene*   Scene){
 				glBindTexture(GL_TEXTURE_2D, m_ShadowAttachmentTexture[i]);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
 				glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24,
 					m_Config.ShadowResolution,
 					m_Config.ShadowResolution,
@@ -810,30 +810,32 @@ void  RGP_CORE::GLRenderer::setScene(GameScene*   Scene){
 	}
 };
 
-
-void  RGP_CORE::GLRenderer::RenderCurrentScene(){
-
-	
+void	RGP_CORE::GLRenderer::RenderScene(_u32b FBO_Target)
+{
 	//this->UpdateEnvironmentMaps();
-	
-	
+
+
 	//RENDER SCENE Colors to the SelectedFBO
 	this->RenderSceneColors(m_FBOs[m_SelectedFBO]);
-	
+
 	////if should draw shadows
-	if (m_Config.EnableShadows==true){
+	if (m_Config.EnableShadows == true) {
 		this->RenderSceneShadows(m_ShadowAccumBuffer);
 	}
-    this->RenderSceneLightAccum();
+	this->RenderSceneLightAccum();
 	///combine results and render to the screen ;
-    this->RenderToScreen();
+	this->RenderToTarget(FBO_Target);
 	//Next frame
 	if (m_NumFBOs - 1 == m_SelectedFBO)
 		m_SelectedFBO = 0;
 	else
 		++m_SelectedFBO;
 
-	
+};
+
+void  RGP_CORE::GLRenderer::RenderCurrentScene()
+{
+	this->RenderScene(0);
 };
 void	RGP_CORE::GLRenderer::LoadShadowProgram()
 {
@@ -1101,13 +1103,13 @@ void	RGP_CORE::GLRenderer:: RenderSceneLightAccum()
 
 	}
 };
-void RGP_CORE::GLRenderer::RenderToScreen(){
+void RGP_CORE::GLRenderer::RenderToTarget(_u32b FBO_Target){
         _s32b location = -1 ;
         _s8b shaderstring[50]="";
         LightSource* Source=NULL ;
         _u32b nbLights=0 ;
 		glGetError();
-        glBindFramebuffer(GL_FRAMEBUFFER,0);
+        glBindFramebuffer(GL_FRAMEBUFFER, FBO_Target);
 		if (glGetError())
 			printf("why this is happening\n");
 

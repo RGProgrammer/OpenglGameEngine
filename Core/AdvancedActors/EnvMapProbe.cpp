@@ -103,5 +103,10 @@ void			RGP_CORE::EnvMapProbe::setPosition(Vertex3d Pos)
 		if (m_PerspCameras[i])
 			m_PerspCameras[i]->setPosition(this->getPosition());
 	}
+
 };
 
+GLuint			RGP_CORE::EnvMapProbe::getTexture()
+{
+	return m_TextureCubeMap;
+};

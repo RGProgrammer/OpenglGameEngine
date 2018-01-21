@@ -154,9 +154,7 @@ void RGP_CORE::Model3D::ClearModelLoadedData()
 _s16b RGP_CORE::Model3D::LoadModelFromFile(char* filename, _bool ClearDataAfterLoad ){
 	if(!m_GLRenderer)
         return 0 ;
-	const aiScene* Scene = aiImportFile(filename, aiProcess_Triangulate | aiProcess_MakeLeftHanded |
-                                                 aiProcess_PreTransformVertices |
-                                                 aiProcess_RemoveRedundantMaterials);
+	const aiScene* Scene = aiImportFile(filename, aiProcessPreset_TargetRealtime_MaxQuality | aiProcess_PreTransformVertices);
 	//if failed
 	if(!Scene){
         printf("error loading file\n");
@@ -391,7 +389,6 @@ _u16b RGP_CORE::Model3D::AddMesh(const char* Name, _u16b MaterialID){
     v_Meshes=tmp;
     m_nbMeshes++;
 	if (Name){
-		printf("%s\n", Name);
 		v_Meshes[m_nbMeshes - 1].Name = (char*)malloc((strlen(Name)+1)*sizeof(char));
 		if (v_Meshes[m_nbMeshes - 1].Name){
 			strcpy(v_Meshes[m_nbMeshes - 1].Name, Name);
@@ -626,9 +623,9 @@ _u16b RGP_CORE::Model3D::LoadMaterialstoMemory(const aiScene* Scene){
             v_Materials[i].SpecularMap->Height=1 ;
             v_Materials[i].SpecularMap->Width=1;
             v_Materials[i].SpecularMap->Pixels=(_u8b*)malloc(4*sizeof(_u8b));
-            v_Materials[i].SpecularMap->Pixels[0]=127 ;
-            v_Materials[i].SpecularMap->Pixels[1]=127 ;
-            v_Materials[i].SpecularMap->Pixels[2]=127 ;
+            v_Materials[i].SpecularMap->Pixels[0]=0 ;
+            v_Materials[i].SpecularMap->Pixels[1]=0 ;
+            v_Materials[i].SpecularMap->Pixels[2]=0 ;
             v_Materials[i].SpecularMap->Pixels[3]=0 ;
         }
     }
@@ -730,7 +727,7 @@ _u16b RGP_CORE::Model3D::GenerateBuffers(){
                 return 0 ;
             ///filling buffer with data code here
             m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER, v_Buffers[i].TexCoords);
-            m_GLRenderer->setBufferData(GL_ARRAY_BUFFER,v_Meshes[i].nbTexCoords*2,v_Meshes[i].TexCoords,GL_STATIC_DRAW);
+            m_GLRenderer->setBufferData(GL_ARRAY_BUFFER,v_Meshes[i].nbTexCoords*2*sizeof(_float),v_Meshes[i].TexCoords,GL_STATIC_DRAW);
         };
 
         ///generating indices buffer

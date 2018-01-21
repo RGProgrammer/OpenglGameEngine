@@ -13,6 +13,7 @@
 
 #include "PhysicalExample.h"
 #include "ParticaleSystemExample.h"
+#include "ReflexObject.h"
 #include <exception>
 
 namespace RGP_CORE {

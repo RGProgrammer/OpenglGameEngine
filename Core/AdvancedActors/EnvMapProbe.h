@@ -27,6 +27,7 @@ namespace RGP_CORE {
 		void			setStatic(_bool make=true);
 		GLuint			getEnvMap();
 		void			setPosition(Vertex3d Pos);
+		GLuint			getTexture();
 	private:
 		GLRenderer *	m_Renderer;
 		GameScene*		m_Scene;

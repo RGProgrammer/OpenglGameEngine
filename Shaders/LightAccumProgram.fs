@@ -55,7 +55,7 @@ void main()
 		LightDir=(CameraViewMtx*Source.WorldMtx[2]).xyz*(-1);
 		Intensity=max(dot(NormalColor,LightDir),0.0);
 		if(Intensity>0.0){
-			HalfV=normalize(normalize(FragCoord)+LightDir);
+			HalfV=normalize(LightDir+normalize(-FragCoord));
 			SpecularColor=pow(dot(NormalColor,HalfV),Source.Shininess)*Source.SpecularColor;
 			DiffuseColor=Intensity*Source.DiffuseColor.rgb;
 		}

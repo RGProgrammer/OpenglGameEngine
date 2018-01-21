@@ -17,10 +17,11 @@ in vec2 texcoord0;
 
 
 void main(){
+	vec3 normalcolor0 ;
+	normalcolor0 = texture2D(Normalmap, texcoord0).rgb;
+	normalcolor0 = normalize(normalcolor0 * 2.0 - 1.0);   
+	normalcolor0 = normalize(TBN * normalcolor0);	
 	
-
-	gl_FragData[4]=PositionColor; 
-
 	if(hasReflectMap==0)
 		gl_FragData[0]=texture2D(Diffusemap,texcoord0);
 	else{
@@ -28,13 +29,8 @@ void main(){
 	}
 
 	gl_FragData[1]=texture2D(Specularmap,texcoord0);
-
-	//vec3 normalcolor0 ;
-	//normalcolor0 = texture2D(Normalmap, texcoord0).rgb;
-	//normalcolor0 = normalize(normalcolor0 * 2.0 - 1.0);   
-	//normalcolor0 = normalize(TBN * normalcolor0);	
-	//gl_FragData[2]=ViewMtx*vec4(normalize(normalcolor0),0.0);
-	gl_FragData[2]=ViewMtx*vec4(Normal0,0.0) ;
+	gl_FragData[2]=ViewMtx*vec4(normalize(normalcolor0),0.0);
 	gl_FragData[3]=vec4(0.0);
+	gl_FragData[4]=PositionColor; 
 
 }

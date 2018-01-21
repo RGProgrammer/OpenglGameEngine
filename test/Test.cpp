@@ -36,27 +36,47 @@ void RGP_CORE::Test::Start() {
 	LightSource* light = NULL;
 	PModel*	PM = NULL;
 
-	light = new SpotLight();
+/*	light = new SpotLight();
 	light->setPosition({ 0.0f,10.0f,0.0f });
 	light->setOrientation({ 0.0f,-1.0f,0.0f }, { 0.0f,0.0f,1.0f });
+	m_CurrentScene->AddLight(light);*/
+
+	light = new PointLight();
+	light->setPosition({ 0.0f,20.0f,0.0f });
+	light->setLightDistance(40.0f);
 	m_CurrentScene->AddLight(light);
 
-	/*light = new PointLight();
-	light->setPosition({ 0.0f,2.0f,0.0f });
-	light->setLightDistance(20.0f);
-	m_CurrentScene->AddLight(light);*/
-
 	/*light = new DirectionnalLight();
-	light->setOrientation({ 0.0f,-1.0f,0.0f }, { 0.0f,0.0f,1.0f });
+	light->setOrientation({ -0.5f,-0.5f,0.0f }, { -0.5f,0.5f,1.0f });
 	m_CurrentScene->AddLight(light);*/
+	
 	testmodel1 = new Model3D();
 	testmodel1->setRenderer(m_Renderer);
-	testmodel1->LoadModelFromFile("..//test//Samples//Sky.obj");
+	testmodel1->LoadModelFromFile("..//test//Samples//mountains.obj");
+	testmodel1->setPosition({ 0.0f,-1.0f,0.0f });
+	testmodel1->setShadowCast(false);
 	m_CurrentScene->AddActor(testmodel1);
 
-	
-	PM = PModel::CreateGround(m_Renderer,{ 0.0f,-4.0f,0.0f });
+	testmodel1 = new Model3D();
+	testmodel1->setRenderer(m_Renderer);
+	testmodel1->LoadModelFromFile("..//test//Samples//sky.obj");
+	m_CurrentScene->AddActor(testmodel1);
+
+	PM = PModel::CreateGround(m_Renderer,{ 0.0f,-2.0f,0.0f });
+	PM->setShadowCast(false);
 	m_CurrentScene->AddActor(PM);
+	
+	
+	
+	
+	/*EnvMapProbe *Probe = new EnvMapProbe();
+	if (!Probe->Init(m_Renderer, m_CurrentScene))
+		printf("error Probe\n");
+	ReflexObject *actor =new ReflexObject();
+	if (!actor->Init(m_Renderer, Probe))
+		printf("Error reflexive object creation");
+	m_CurrentScene->AddActor(actor);*/
+	
 
 
 	
@@ -118,7 +138,6 @@ void RGP_CORE::Test::Start() {
 			if (PM) {
 				PM->setRenderer(m_Renderer);
 				m_CurrentScene->AddActor(PM);
-				printf("Cube Created\n");
 				m_Physics->reRegisterPhysicalActors();
 			}
 		}
@@ -128,7 +147,6 @@ void RGP_CORE::Test::Start() {
 			if (PM) {
 				PM->setRenderer(m_Renderer);
 				m_CurrentScene->AddActor(PM);
-				printf("sphere Created\n");
 				m_Physics->reRegisterPhysicalActors();
 			}
 		}
@@ -141,6 +159,7 @@ void RGP_CORE::Test::Start() {
 		}
         m_Renderer->RenderCurrentScene();
     }
+
 };
 int RGP_CORE::Test::Init(){
     m_CurrentScene=new GameScene ();
