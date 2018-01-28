@@ -6,6 +6,7 @@
 
 uniform sampler2D PositionMap ;
 uniform int lighttype ;
+uniform float shadowStrengh ;
 uniform mat4 LightProjMatrix ;
 uniform mat4 LightViewMtx ;
 uniform sampler2D ShadowMap ;
@@ -46,7 +47,7 @@ void main (){
 	vec4 ShadowMapTexCoord=vec4(0.0);
 	//WSFragCoord0=EyetoWorldSpace(ViewSpaceFragCoord(CameraDepthMap,texcoord0,CameraProMtx),CameraViewMtx);
 	WSFragCoord0=texture2D(PositionMap,texcoord0) ;
-	color=vec3(0.0);
+	color=vec3(shadowStrengh);
 	ProjectionCoord=LightProjMatrix*LightViewMtx*WSFragCoord0 ;
 	ProjectionCoord/=ProjectionCoord.w ;
 	ShadowMapTexCoord=ProjectionCoord*0.5+0.5;

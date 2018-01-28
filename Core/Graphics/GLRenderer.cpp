@@ -810,17 +810,17 @@ void  RGP_CORE::GLRenderer::setScene(GameScene*   Scene){
 	}
 };
 
-void	RGP_CORE::GLRenderer::RenderScene(_u32b FBO_Target)
+void	RGP_CORE::GLRenderer::RenderScene(_u32b FBO_Target,Camera* camera)
 {
 	//this->UpdateEnvironmentMaps();
 
 
 	//RENDER SCENE Colors to the SelectedFBO
-	this->RenderSceneColors(m_FBOs[m_SelectedFBO]);
+	this->RenderSceneColors(m_FBOs[m_SelectedFBO],camera);
 
 	////if should draw shadows
 	if (m_Config.EnableShadows == true) {
-		this->RenderSceneShadows(m_ShadowAccumBuffer);
+		this->RenderSceneShadows(m_ShadowAccumBuffer,camera);
 	}
 	this->RenderSceneLightAccum();
 	///combine results and render to the screen ;
@@ -980,6 +980,10 @@ void RGP_CORE::GLRenderer::RenderSceneShadows(_u32b FBO, Camera* camera)
 				glUniform1i(Location1, 2);
 			else                              //Spot light
 				glUniform1i(Location1, 3);
+			
+
+			Location1 = this->GetUniformLocation(m_ShadowAccumProgram, "shadowStrengh");
+			this->SetUniformF(Location1, Source->getShadowStrengh());
 
 			Location1 = this->GetUniformLocation(m_ShadowAccumProgram, "LightProjMatrix");
 			this->SetUniformvMtx(Location1, Source->getLightProjectionMtx(Eye));
@@ -1024,10 +1028,13 @@ void RGP_CORE::GLRenderer::RenderSceneShadows(_u32b FBO, Camera* camera)
 		m_ShaderManager->BindProgram(0);
 	}
 };
-void	RGP_CORE::GLRenderer:: RenderSceneLightAccum()
+void	RGP_CORE::GLRenderer:: RenderSceneLightAccum(Camera* camera)
 {
 	GLint Location = -1;
 	LightSource* Source = NULL;
+	Camera *Eye = camera;
+	if (!Eye)
+		Eye = m_SelectedScene->getCamera();
 	if (m_SelectedScene) {
 		this->BindFrameBuffer(m_LightAccumBuffer);
 		this->SetShaderProgram(m_LightAccumProgram);
@@ -1051,13 +1058,13 @@ void	RGP_CORE::GLRenderer:: RenderSceneLightAccum()
 		this->BindTexture(m_AttachmentTextures[m_SelectedFBO][DEPTH_TEXTURE]);
 		this->SetUniformSample(Location, 1);
 		Location = this->GetUniformLocation(m_LightAccumProgram, "CameraViewMtx");
-		this->SetUniformvMtx(Location, m_SelectedScene->getCamera()->getViewMtx());
+		this->SetUniformvMtx(Location, Eye->getViewMtx());
 		Location = this->GetUniformLocation(m_LightAccumProgram, "CameraProjMtx");
-		this->SetUniformvMtx(Location, m_SelectedScene->getCamera()->getProjectionMtx());
+		this->SetUniformvMtx(Location, Eye->getProjectionMtx());
 		Location = this->GetUniformLocation(m_LightAccumProgram, "CameraPos");
-		this->SetUniform3F(Location, m_SelectedScene->getCamera()->getPosition().x,
-			m_SelectedScene->getCamera()->getPosition().y,
-			m_SelectedScene->getCamera()->getPosition().z);
+		this->SetUniform3F(Location, Eye->getPosition().x,
+			Eye->getPosition().y,
+			Eye->getPosition().z);
 
 
 		//for each light
@@ -1279,12 +1286,12 @@ void  RGP_CORE::GLRenderer::SetImageDataCube(RGP_CORE::Image* right , RGP_CORE::
 };
 void  RGP_CORE::GLRenderer::SetImageDataCube(_s32b Width, _s32b Height) 
 {
-	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X  , 0, GL_RGBA32F, m_Target->getWidth(), m_Target->getHeight(), 0, GL_RGBA, GL_FLOAT, 0);
-	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+1, 0, GL_RGBA32F, m_Target->getWidth(), m_Target->getHeight(), 0, GL_RGBA, GL_FLOAT, 0);
-	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+2, 0, GL_RGBA32F, m_Target->getWidth(), m_Target->getHeight(), 0, GL_RGBA, GL_FLOAT, 0);
-	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+3, 0, GL_RGBA32F, m_Target->getWidth(), m_Target->getHeight(), 0, GL_RGBA, GL_FLOAT, 0);
-	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+4, 0, GL_RGBA32F, m_Target->getWidth(), m_Target->getHeight(), 0, GL_RGBA, GL_FLOAT, 0);
-	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+5, 0, GL_RGBA32F, m_Target->getWidth(), m_Target->getHeight(), 0, GL_RGBA, GL_FLOAT, 0);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X  , 0, GL_RGBA32F, Width, Height, 0, GL_RGBA, GL_FLOAT, 0);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+1, 0, GL_RGBA32F, Width, Height, 0, GL_RGBA, GL_FLOAT, 0);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+2, 0, GL_RGBA32F, Width, Height, 0, GL_RGBA, GL_FLOAT, 0);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+3, 0, GL_RGBA32F, Width, Height, 0, GL_RGBA, GL_FLOAT, 0);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+4, 0, GL_RGBA32F, Width, Height, 0, GL_RGBA, GL_FLOAT, 0);
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+5, 0, GL_RGBA32F, Width, Height, 0, GL_RGBA, GL_FLOAT, 0);
 };
 void  RGP_CORE::GLRenderer::SetActiveTexture(_u16b index)
 {

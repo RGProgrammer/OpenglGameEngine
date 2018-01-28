@@ -2,7 +2,7 @@
 
 RGP_CORE::LightSource::LightSource() : BaseActor(),
 										m_Distance(10.0f), m_Shiness(1.0f), m_CutoffAngle(-1.0f),
-										m_LightViewMtx(NULL), m_LightProjectionMtx(NULL)
+										m_LightViewMtx(NULL), m_LightProjectionMtx(NULL), m_ShadowStrengh(0.0)
 { 
 	m_ID |= LIGHTSOURCE;
 	m_DiffuseColor[0]  = 1.0f ; m_DiffuseColor[1]  = 1.0f; m_DiffuseColor[2]  = 1.0f;
@@ -13,7 +13,7 @@ RGP_CORE::LightSource::LightSource() : BaseActor(),
 
 RGP_CORE::LightSource::LightSource(Vertex3d Pos): BaseActor(Pos),
 													m_Distance(10.0f), m_Shiness(1.0f), m_CutoffAngle(-1.0f),
-													m_LightViewMtx(NULL), m_LightProjectionMtx(NULL)
+													m_LightViewMtx(NULL), m_LightProjectionMtx(NULL), m_ShadowStrengh(0.0)
 { 
 	m_ID |= LIGHTSOURCE ;
 	m_DiffuseColor[0] = 1.0f; m_DiffuseColor[1] = 1.0f; m_DiffuseColor[2] = 1.0f;
@@ -24,7 +24,7 @@ RGP_CORE::LightSource::LightSource(Vertex3d Pos): BaseActor(Pos),
 
 RGP_CORE::LightSource::LightSource(Vertex3d Pos,Vertex3d Dir,Vertex3d Up): BaseActor(Pos,Dir,Up),
 										m_Distance(10.f), m_Shiness(1.0f), m_CutoffAngle(-1.0f),
-										m_LightViewMtx(NULL), m_LightProjectionMtx(NULL)
+										m_LightViewMtx(NULL), m_LightProjectionMtx(NULL), m_ShadowStrengh(0.0)
 { 
 	m_ID |= LIGHTSOURCE ;
 	m_DiffuseColor[0] = 1.0f; m_DiffuseColor[1] = 1.0f; m_DiffuseColor[2] = 1.0f;
@@ -87,8 +87,12 @@ void RGP_CORE::LightSource::setLightAmbientColor(Vertex3d color){
 void RGP_CORE::LightSource::setLightDistance(_float Distance){
     m_Distance=Distance ;
 };
-void RGP_CORE::LightSource::setLightStrength(_float Strength){
+void RGP_CORE::LightSource::setLightShiness(_float Strength){
     m_Shiness=Strength ;
+};
+void RGP_CORE::LightSource::setShadowStrengh(_float level)
+{
+	m_ShadowStrengh = level;
 };
 const float* RGP_CORE::LightSource::getLightDiffuseColor(){ return m_DiffuseColor;};
 const float* RGP_CORE::LightSource::getLightSpecularColor(){ return m_SpecularColor;};
@@ -97,7 +101,7 @@ _float   RGP_CORE::LightSource::getLightDistance(){ return m_Distance ;};
 _float   RGP_CORE::LightSource::getLightAttinuation(){ return 1.0f / m_Distance ;};
 _float   RGP_CORE::LightSource::getLightCutoffAngle(){ return m_CutoffAngle ;};
 _float   RGP_CORE::LightSource::getLightShiness(){return m_Shiness ;};
-
+_float   RGP_CORE::LightSource::getShadowStrengh() {return m_ShadowStrengh;};
 _float*	RGP_CORE::LightSource::getLightViewMtx(){ 
 	UpdateLightViewMtx();
 	return m_LightViewMtx; };

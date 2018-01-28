@@ -125,12 +125,12 @@ namespace RGP_CORE{
         RenderMode  getRenderMode();
         Window*     getTarget();
         void	setScene(GameScene*   Scene);
-		void	RenderScene(_u32b FBO_Target);
+		void	RenderScene(_u32b FBO_Target,Camera* camera=NULL);
         void	RenderCurrentScene();
 		void	RenderToTarget(_u32b FBO_Target=0);
 		void	RenderSceneColors(_u32b FBO, Camera* camera = NULL);
 		void	RenderSceneShadows(_u32b FBO, Camera* camera = NULL);
-		void	RenderSceneLightAccum();
+		void	RenderSceneLightAccum(Camera* camera=NULL);
 		void	LoadShadowProgram();
 		void	UnloadShadowProgram();
 		void	UpdateEnvironmentMaps();

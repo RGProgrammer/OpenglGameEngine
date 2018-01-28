@@ -53,7 +53,9 @@ _bool			RGP_CORE::EnvMapProbe::Init(GLRenderer* Renderer, GameScene* Scene)
 	m_Renderer->GenTexturesCube(1, &m_TextureCubeMap);
 	if (!m_TextureCubeMap)
 		return false;
-
+	m_Renderer->BindTexture(m_TextureCubeMap, false);
+	m_Renderer->SetImageDataCube(512, 512);
+	m_Renderer->BindTexture(0, false);
 	for (_s8b i = 0; i < 6; ++i) {
 		m_PerspCameras[i] = new PerspCamera(M_PI_2, 1.0f, 1.0f, 500.0f);
 		if (!m_PerspCameras[i])
@@ -77,7 +79,8 @@ void		RGP_CORE::EnvMapProbe::GenerateEnvMap()
 	for (_u32b i = 0; i < 6; ++i) {
 		m_Renderer->BindFrameBuffer(m_FBO);
 		m_Renderer->AttachTexturetoFrameBuffer(GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X+i, m_TextureCubeMap, 0);
-		m_Renderer->RenderSceneColors(m_FBO, m_PerspCameras[i]);
+		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+		//m_Renderer->RenderScene(m_FBO, m_PerspCameras[i]);
 	}
 	m_Renderer->BindFrameBuffer(0);
 };

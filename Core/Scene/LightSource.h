@@ -23,8 +23,8 @@ namespace RGP_CORE {
         void setLightAmbientColor(_float red, _float green, _float blue);
         void setLightAmbientColor(Vertex3d color);
         void setLightDistance(_float Distance);
-        void setLightStrength(_float Strength);
-
+        void setLightShiness(_float Strength);
+		void setShadowStrengh(_float level); //define if the shadow should be hard (0.0f) or soft(0.5)
         const _float* getLightDiffuseColor();
         const _float* getLightSpecularColor();
         const _float* getLightAmbientColor();
@@ -32,6 +32,7 @@ namespace RGP_CORE {
         _float   getLightAttinuation();
         _float   getLightCutoffAngle();
         _float   getLightShiness();
+		_float   getShadowStrengh();
 
 		_float*	getLightViewMtx();
 		_float*	getLightProjectionMtx(Camera*	selected);
@@ -44,6 +45,7 @@ namespace RGP_CORE {
         _float				m_Distance ;
         _float				m_CutoffAngle ;
         _float				m_Shiness ;     ///light strength
+		_float				m_ShadowStrengh;
 		_float*				m_LightViewMtx;
 		_float*				m_LightProjectionMtx; 
 
