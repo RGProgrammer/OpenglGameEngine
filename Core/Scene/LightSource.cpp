@@ -93,6 +93,10 @@ void RGP_CORE::LightSource::setLightShiness(_float Strength){
 void RGP_CORE::LightSource::setShadowStrengh(_float level)
 {
 	m_ShadowStrengh = level;
+	if (m_ShadowStrengh > 1.0f)
+		m_ShadowStrengh = 1.0f;
+	else if (m_ShadowStrengh < 0.0)
+		m_ShadowStrengh = 0.0f;
 };
 const float* RGP_CORE::LightSource::getLightDiffuseColor(){ return m_DiffuseColor;};
 const float* RGP_CORE::LightSource::getLightSpecularColor(){ return m_SpecularColor;};
