@@ -36,26 +36,28 @@ void RGP_CORE::Test::Start() {
 	LightSource* light = NULL;
 	PModel*	PM = NULL;
 
-/*	light = new SpotLight();
+	light = new SpotLight();
 	light->setPosition({ 0.0f,10.0f,0.0f });
 	light->setOrientation({ 0.0f,-1.0f,0.0f }, { 0.0f,0.0f,1.0f });
-	m_CurrentScene->AddLight(light);*/
-
-	light = new PointLight();
-	light->setPosition({ 0.0f,20.0f,0.0f });
-	light->setLightDistance(40.0f);
+	light->setShadowStrengh(0.5);
 	m_CurrentScene->AddLight(light);
+
+	/*light = new PointLight();
+	light->setPosition({ 0.0f,10.0f,0.0f });
+	light->setLightDistance(40.0f);
+	light->setShadowStrengh(0.5);
+	m_CurrentScene->AddLight(light);*/
 
 	/*light = new DirectionnalLight();
 	light->setOrientation({ -0.5f,-0.5f,0.0f }, { -0.5f,0.5f,1.0f });
 	m_CurrentScene->AddLight(light);*/
 	
-	testmodel1 = new Model3D();
+	/*testmodel1 = new Model3D();
 	testmodel1->setRenderer(m_Renderer);
 	testmodel1->LoadModelFromFile("..//test//Samples//mountains.obj");
 	testmodel1->setPosition({ 0.0f,-1.0f,0.0f });
 	testmodel1->setShadowCast(false);
-	m_CurrentScene->AddActor(testmodel1);
+	m_CurrentScene->AddActor(testmodel1);*/
 
 	testmodel1 = new Model3D();
 	testmodel1->setRenderer(m_Renderer);
@@ -67,19 +69,7 @@ void RGP_CORE::Test::Start() {
 	m_CurrentScene->AddActor(PM);
 	
 	
-	
-	
-	/*EnvMapProbe *Probe = new EnvMapProbe();
-	if (!Probe->Init(m_Renderer, m_CurrentScene))
-		printf("error Probe\n");
-	ReflexObject *actor =new ReflexObject();
-	if (!actor->Init(m_Renderer, Probe))
-		printf("Error reflexive object creation");
-	m_CurrentScene->AddActor(actor);*/
-	
 
-
-	
 	///ecerything is good
 	m_Renderer->setScene(m_CurrentScene);
 	m_Physics->setScene(m_CurrentScene);
@@ -115,27 +105,29 @@ void RGP_CORE::Test::Start() {
 
         state = glfwGetKey(m_Renderer->getTarget()->getglfwWindow(), GLFW_KEY_UP);
         if (state == GLFW_PRESS){
-            m_Camera->RotateViaSide(-0.01f);
+            m_Camera->RotateViaSide(-0.05f);
 
         }
         state = glfwGetKey(m_Renderer->getTarget()->getglfwWindow(), GLFW_KEY_DOWN);
         if (state == GLFW_PRESS){
-            m_Camera->RotateViaSide(0.01f);
+            m_Camera->RotateViaSide(0.05f);
 
         }
         state = glfwGetKey(m_Renderer->getTarget()->getglfwWindow(), GLFW_KEY_LEFT);
         if (state == GLFW_PRESS){
-            m_Camera->RotateViaUp(0.01f);
+            m_Camera->RotateViaUp(0.05f);
 
         }
         state = glfwGetKey(m_Renderer->getTarget()->getglfwWindow(), GLFW_KEY_RIGHT);
         if (state == GLFW_PRESS){
-            m_Camera->RotateViaUp(-0.01f);
+            m_Camera->RotateViaUp(-0.05f);
         }
 		state = glfwGetKey(m_Renderer->getTarget()->getglfwWindow(), GLFW_KEY_B);
 		if (state == GLFW_PRESS) {
 			PM = PModel::CreateCube(m_Renderer,AddVertex3d(m_Camera->getPosition(), ScaleVertex3d(m_Camera->getDirection(), 5.0f)), {0.0f,0.0f,1.0f}, {0.0f,1.0f,0.0f});
+			
 			if (PM) {
+				PM->setCurrentVolecity(ScaleVertex3d(m_Camera->getDirection(), 25.0f));
 				PM->setRenderer(m_Renderer);
 				m_CurrentScene->AddActor(PM);
 				m_Physics->reRegisterPhysicalActors();
@@ -145,6 +137,7 @@ void RGP_CORE::Test::Start() {
 		if (state == GLFW_PRESS) {
 			PM = PModel::CreateSphere(m_Renderer,AddVertex3d(m_Camera->getPosition(), ScaleVertex3d(m_Camera->getDirection(), 5.0f)),  {0.0f,0.0f,1.0f}, {0.0f,1.0f,0.0f});
 			if (PM) {
+				PM->setCurrentVolecity(ScaleVertex3d(m_Camera->getDirection(), 25.0f));
 				PM->setRenderer(m_Renderer);
 				m_CurrentScene->AddActor(PM);
 				m_Physics->reRegisterPhysicalActors();
@@ -159,6 +152,7 @@ void RGP_CORE::Test::Start() {
 		}
         m_Renderer->RenderCurrentScene();
     }
+	//delete Probe;
 
 };
 int RGP_CORE::Test::Init(){
