@@ -13,7 +13,7 @@
 
 #include "PhysicalExample.h"
 #include "ParticaleSystemExample.h"
-#include "ReflexObject.h"
+#include "InfiniteMirror.h"
 #include <exception>
 
 namespace RGP_CORE {

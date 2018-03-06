@@ -102,7 +102,7 @@ PModel*	PModel::CreateGround(GLRenderer* renderer, Vertex3d Pos)
 		return NULL;
 	}
 	Object->setRenderer(renderer);
-	if (!Object->LoadModelFromFile("..//test//Samples//Ground.obj")) {
+	if (!Object->LoadModelFromFile("..//test//Samples//Ground1.obj")) {
 		printf("error loading Ground\n");
 		delete Object;
 		return NULL;

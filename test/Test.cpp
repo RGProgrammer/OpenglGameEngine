@@ -36,37 +36,55 @@ void RGP_CORE::Test::Start() {
 	LightSource* light = NULL;
 	PModel*	PM = NULL;
 
-	light = new SpotLight();
+	/*light = new SpotLight();
 	light->setPosition({ 0.0f,10.0f,0.0f });
 	light->setOrientation({ 0.0f,-1.0f,0.0f }, { 0.0f,0.0f,1.0f });
 	light->setShadowStrengh(0.5);
-	m_CurrentScene->AddLight(light);
-
-	/*light = new PointLight();
-	light->setPosition({ 0.0f,10.0f,0.0f });
-	light->setLightDistance(40.0f);
-	light->setShadowStrengh(0.5);
 	m_CurrentScene->AddLight(light);*/
+
+	light = new PointLight();
+	light->setPosition({ 0.0f,30.0f,0.0f });
+	light->setLightDistance(50.0f);
+	light->setShadowStrengh(0.5);
+	m_CurrentScene->AddLight(light);
 
 	/*light = new DirectionnalLight();
 	light->setOrientation({ -0.5f,-0.5f,0.0f }, { -0.5f,0.5f,1.0f });
 	m_CurrentScene->AddLight(light);*/
 	
-	/*testmodel1 = new Model3D();
-	testmodel1->setRenderer(m_Renderer);
-	testmodel1->LoadModelFromFile("..//test//Samples//mountains.obj");
-	testmodel1->setPosition({ 0.0f,-1.0f,0.0f });
-	testmodel1->setShadowCast(false);
-	m_CurrentScene->AddActor(testmodel1);*/
 
 	testmodel1 = new Model3D();
 	testmodel1->setRenderer(m_Renderer);
-	testmodel1->LoadModelFromFile("..//test//Samples//sky.obj");
+	if (!testmodel1->LoadModelFromFile("..//test//Samples//sky.obj"))
+		printf("error \n");
 	m_CurrentScene->AddActor(testmodel1);
+
+	//this did not work
+	/*InfiniteMirror* test = new InfiniteMirror();
+	test->setPosition({ 0.0f,2.0f,0.0f });
+	if (!test->Init(m_Renderer)) {
+		delete test;
+		test = NULL;
+		printf("something \n");
+	}
+	m_CurrentScene->AddActor(test);*/
 
 	PM = PModel::CreateGround(m_Renderer,{ 0.0f,-2.0f,0.0f });
 	PM->setShadowCast(false);
 	m_CurrentScene->AddActor(PM);
+	PM = PModel::CreateCube(m_Renderer, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,1.0f }, { 0.0f,1.0f,0.0f });
+	PM->setShadowCast(false);
+	m_CurrentScene->AddActor(PM);
+	PM = PModel::CreateCube(m_Renderer, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,1.0f }, { 0.0f,1.0f,0.0f });
+	PM->setShadowCast(false);
+	m_CurrentScene->AddActor(PM);
+	PM = PModel::CreateSphere(m_Renderer, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,1.0f }, { 0.0f,1.0f,0.0f });
+	PM->setShadowCast(false);
+	m_CurrentScene->AddActor(PM);
+	PM = PModel::CreateSphere(m_Renderer, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,1.0f }, { 0.0f,1.0f,0.0f });
+	PM->setShadowCast(false);
+	m_CurrentScene->AddActor(PM);
+
 	
 	
 
@@ -144,13 +162,14 @@ void RGP_CORE::Test::Start() {
 			}
 		}
 		m_Physics->Update(m_Timer->getDeltaTime());
-		for (_u32b i = 0; i < m_CurrentScene->getNBActors(); ++i) {
+		for (_u32b i = 0; i < m_CurrentScene->getNumActors(); ++i) {
 			if (m_CurrentScene->getActor(i)->getID() & DYNAMIC) {
 				Dynamic* object = dynamic_cast<Dynamic*>(m_CurrentScene->getActor(i));
 				object->Update(1.0f / 60.0f);
 			}
 		}
         m_Renderer->RenderCurrentScene();
+		m_Renderer->SwapBuffers();
     }
 	//delete Probe;
 
@@ -168,7 +187,7 @@ int RGP_CORE::Test::Init(){
 		return 0;
 	if (!m_Physics->Init(m_CurrentScene))
 		return 0;
-    m_Camera=new PerspCamera(M_PI_2, 800.0f / 600.0f,0.1f,5000.0f);
+    m_Camera=new PerspCamera(M_PI_2, 800.0f/600.0f,0.1f,50000.0f);
 	m_Camera->setPosition({ 0.0f,7.0f,-7.0f });
 	m_Camera->setOrientation({ 0.0f, -0.5f, 0.5f }, { 0.0f, 0.5f, 0.5f });
     m_CurrentScene->setCamera(m_Camera);
