@@ -131,9 +131,12 @@ namespace RGP_CORE{
 		void	RenderSceneColors(_u32b FBO, Camera* camera = NULL);
 		void	RenderSceneShadows(_u32b FBO, Camera* camera = NULL);
 		void	RenderSceneLightAccum(Camera* camera=NULL);
+		void	SwapBuffers() { glfwSwapBuffers(m_Target->getglfwWindow()); };
 		void	LoadShadowProgram();
 		void	UnloadShadowProgram();
 		void	UpdateEnvironmentMaps();
+		//this is for testing
+		_u32b	getLastFrameTexture();
         ///buffers manager
         ///VBOs
         _bool GenBuffers(_u32b numBuffers,GLuint*    target);
@@ -147,6 +150,7 @@ namespace RGP_CORE{
         _bool BindVertexArray(_u32b BufferID);
         ///VBO and VAO
         void DrawElements(GLenum mode,_u32b Count,GLenum type,void* Offset);
+		void DrawArrays(GLenum mode, _u32b first, _u32b Count);
         ///Textures
         _bool GenTextures2D(_u32b numTexture,GLuint*    target);
 		_bool GenTexturesCube(_u32b numTexture, GLuint* target);

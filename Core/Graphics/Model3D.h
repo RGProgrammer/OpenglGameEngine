@@ -3,9 +3,9 @@
 
 
 #include "..//..//tools//SOIL//SOIL.h"
-#include "..//..//tools//assimp//scene.h"
-#include "..//..//tools//assimp//cimport.h"
-#include "..//..//tools//assimp//postprocess.h"
+#include "..//..//tools//assimp3//scene.h"
+#include "..//..//tools//assimp3//cimport.h"
+#include "..//..//tools//assimp3//postprocess.h"
 #include "..//Common//StringOP.h"
 #include "..//BaseActors//Renderable.h"
 #include ".//GLRenderer.h"

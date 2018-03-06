@@ -31,10 +31,10 @@ typedef struct {
 
 
 inline _float Magnitude3d(Vertex3d Ver){
-	float tmp = Ver.x*Ver.x + Ver.y*Ver.y + Ver.z*Ver.z;
+	_float tmp = Ver.x*Ver.x + Ver.y*Ver.y + Ver.z*Ver.z;
 	if (tmp < 0.0f)
 		return 0;
-    return sqrt(tmp);
+    return (_float)sqrt(tmp);
 };
 inline Vertex3d getVertex3d(Vertex3d point1,Vertex3d point2){
 	Vertex3d Result;
@@ -88,7 +88,7 @@ inline Vertex3d SubsVertex3d(Vertex3d Ver1,Vertex3d Ver2){
 inline Vertex3d Rotate3d(Vertex3d Ver,Vertex3d Pers,_float  ang ){
     Vertex3d Result ;
 	Pers = Normalize3d(Pers);
-	_float MC = 1.0f - cos(ang), S = sin(ang), C = cos(ang);
+	_float MC = 1.0f - (_float)cos(ang), S = (_float)sin(ang), C = (_float)cos(ang);
 	_float	DP = (Ver.x*Pers.x + Ver.y*Pers.y + Ver.z*Pers.z);
 	Result.x = MC*(Pers.x*DP) + S*(Ver.z*Pers.y - Ver.y*Pers.z) + C*Ver.x;
 	Result.y = MC*(Pers.y*DP) + S*(Ver.x*Pers.z - Ver.z*Pers.x) + C*Ver.y;
@@ -131,11 +131,11 @@ inline bool OppositeDirection(Vertex3d ver1,Vertex3d ver2){
 }
 inline _float DegreetoRadius(_float Degree)
 {
-	return Degree* M_PI / 180.0f;
+	return (_float)(Degree* M_PI / 180.0f);
 }
 inline _float RadiustoDegree(_float Radius)
 {
-	return Radius*180.0 / M_PI;
+	return(_float)(Radius*180.0 / M_PI);
 }
 inline void FillViewMatrix(Vertex3d Position, Vertex3d Direction, Vertex3d Up,_float* Dest)
 {
@@ -149,7 +149,7 @@ inline void FillViewMatrix(Vertex3d Position, Vertex3d Direction, Vertex3d Up,_f
 }
 inline void FillPersPectiveMatrix(_float FOV, _float Aspect , _float Near, _float Far , _float* Dest)
 {
-	_float tanHalfFovy = tan(FOV / 2.0f);
+	_float tanHalfFovy = (_float)tan(FOV / 2.0f);
 
 	Dest[1] = Dest[2] = Dest[3] = 0.0f;
 	Dest[4] = Dest[6] = Dest[7] = 0.0f;

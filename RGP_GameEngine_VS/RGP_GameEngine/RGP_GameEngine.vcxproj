@@ -64,7 +64,7 @@
       <AdditionalDependencies>../../tools/glew/lib/Release/Win32/glew32s.lib;../../tools/bullet3/lib/Bullet3Common_Debug.lib;../../tools/bullet3/lib/LinearMath_Debug.lib;../../tools/bullet3/lib/BulletCollision_Debug.lib;../../tools/bullet3/lib/BulletDynamics_Debug.lib;../../tools/assimp/lib/assimp.lib;../../tools/glfw/VClibs/glfw3dll.lib;../../tools/openal/libs/Win32/OpenAL32.lib;../../tools/SOIL/lib/SOIL.lib;opengl32.lib;msvcrt.lib;msvcmrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Lib>
-      <AdditionalDependencies>../../tools/glew/lib/Release/Win32/glew32s.lib;../../tools/bullet3/lib/Bullet3Common_Debug.lib;../../tools/bullet3/lib/LinearMath_Debug.lib;../../tools/bullet3/lib/BulletCollision_Debug.lib;../../tools/bullet3/lib/BulletDynamics_Debug.lib;../../tools/assimp/lib/assimp.lib;../../tools/glfw/VClibs/glfw3dll.lib;../../tools/openal/libs/Win32/OpenAL32.lib;../../tools/SOIL/lib/SOIL.lib;opengl32.lib;msvcrt.lib;msvcmrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>../../tools/glew/lib/Release/Win32/glew32s.lib;../../tools/bullet3/lib/Bullet3Common_Debug.lib;../../tools/bullet3/lib/LinearMath_Debug.lib;../../tools/bullet3/lib/BulletCollision_Debug.lib;../../tools/bullet3/lib/BulletDynamics_Debug.lib;../../tools/assimp3/lib/Debug/assimp-vc140-mt.lib;../../tools/assimp3/lib/Debug/zlibstaticd.lib;../../tools/glfw/VClibs/glfw3dll.lib;../../tools/openal/libs/Win32/OpenAL32.lib;../../tools/SOIL/lib/SOIL.lib;opengl32.lib;msvcrt.lib;msvcmrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -90,7 +90,7 @@
       <UseLibraryDependencyInputs>true</UseLibraryDependencyInputs>
     </ProjectReference>
     <Lib>
-      <AdditionalDependencies>../../tools/glew/lib/Release/Win32/glew32s.lib;../../tools/bullet3/lib/Bullet3Common.lib;../../tools/bullet3/lib/LinearMath.lib;../../tools/bullet3/lib/BulletCollision.lib;../../tools/bullet3/lib/BulletDynamics.lib;../../tools/assimp/lib/assimp.lib;../../tools/glfw/VClibs/glfw3dll.lib;../../tools/openal/libs/Win32/OpenAL32.lib;../../tools/SOIL/lib/SOIL.lib;opengl32.lib;msvcrt.lib;msvcmrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>../../tools/glew/lib/Release/Win32/glew32s.lib;../../tools/bullet3/lib/Bullet3Common.lib;../../tools/bullet3/lib/LinearMath.lib;../../tools/bullet3/lib/BulletCollision.lib;../../tools/bullet3/lib/BulletDynamics.lib;../../tools/assimp3/lib/Release/assimp-vc140-mt.lib;../../tools/assimp3/lib/Release/zlibstatic.lib;../../tools/glfw/VClibs/glfw3dll.lib;../../tools/openal/libs/Win32/OpenAL32.lib;../../tools/SOIL/lib/SOIL.lib;opengl32.lib;msvcrt.lib;msvcmrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>

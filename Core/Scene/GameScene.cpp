@@ -1,8 +1,10 @@
 #include "GameScene.h"
 
 
-RGP_CORE::GameScene::GameScene(): Size(10) ,m_NBActors(0) ,v_Actors(NULL) ,m_NBLights(0),m_LightSources(NULL),
-							m_NBEnvMap(0),m_EnvMaps(NULL),m_Camera(NULL) ,m_Gravity({0.0f,0.0f,0.0f})//,m_PlayerRef(NULL)
+RGP_CORE::GameScene::GameScene(): Size(10) ,m_NumActors(0) ,v_Actors(NULL) ,m_NumLights(0),m_LightSources(NULL),
+								m_NumEnvMap(0),m_EnvMaps(NULL),m_Camera(NULL) ,m_Gravity({0.0f,0.0f,0.0f}),
+								m_NumUILayerComponents(0), m_UILayerCompoenents(NULL )
+							
 {
 };
 RGP_CORE::GameScene::~GameScene() {
@@ -16,7 +18,7 @@ _s16b RGP_CORE::GameScene::AddActor(BaseActor* actor){
         if(v_Actors==NULL)
             return 0 ;
     }
-    if(m_NBActors==Size){
+    if(m_NumActors==Size){
         BaseActor** tmp=v_Actors ;
         // allocation of bigger vetor
         v_Actors=(BaseActor**)malloc((Size+10)*sizeof(BaseActor*));
@@ -26,18 +28,18 @@ _s16b RGP_CORE::GameScene::AddActor(BaseActor* actor){
         }
         //coping old vector data
         Size+=10 ;
-        for(_u32b i=0 ; i<m_NBActors;i++)
+        for(_u32b i=0 ; i<m_NumActors;i++)
             v_Actors[i]=tmp[i];
         free(tmp);
         }
-        v_Actors[m_NBActors]=actor ;
-        m_NBActors++;
+        v_Actors[m_NumActors]=actor ;
+        m_NumActors++;
         return 1 ;
 };
 void RGP_CORE::GameScene::FreeVector(){
     BaseActor* tmp=NULL ;
     if(v_Actors){
-        for(_u32b i=0;i< m_NBActors ;++i){
+        for(_u32b i=0;i< m_NumActors ;++i){
             tmp=v_Actors[i];
             tmp->Destroy();
             delete tmp;
@@ -45,27 +47,37 @@ void RGP_CORE::GameScene::FreeVector(){
         free(v_Actors);
     }
     v_Actors=NULL ;
-    m_NBActors=0 ;
+    m_NumActors=0 ;
     Size=10;
     if(m_LightSources){
-        for(_u32b i=0;i<m_NBLights ;++i){
+        for(_u32b i=0;i<m_NumLights ;++i){
             m_LightSources[i]->Destroy();
             delete (m_LightSources[i]);
         }
         free(m_LightSources);
         m_LightSources=NULL ;
-        m_NBLights=0 ;
+        m_NumLights=0 ;
     }
 
 	if (m_EnvMaps) {
-		for (_u32b i = 0; i<m_NBEnvMap; ++i) {
+		for (_u32b i = 0; i<m_NumEnvMap; ++i) {
 			m_EnvMaps[i]->Destroy();
 			delete (m_EnvMaps[i]);
 		}
 		free(m_EnvMaps);
 		m_EnvMaps = NULL;
-		m_NBEnvMap = 0;
+		m_NumEnvMap = 0;
 	}
+	if (m_UILayerCompoenents) {
+		for (_u32b i = 0; i<m_NumUILayerComponents; ++i) {
+			m_UILayerCompoenents[i]->Destroy();
+			delete (m_UILayerCompoenents[i]);
+		}
+		free(m_UILayerCompoenents);
+		m_UILayerCompoenents = NULL;
+		m_NumUILayerComponents = 0;
+	}
+
 };
 void RGP_CORE::GameScene::Destroy() {
     this->FreeVector();
@@ -74,57 +86,96 @@ void RGP_CORE::GameScene::Destroy() {
 
 };
 RGP_CORE::BaseActor*  RGP_CORE::GameScene::getActor(_u32b index){
-    if(index>=0 && index< m_NBActors){
+    if(index>=0 && index< m_NumActors){
         return v_Actors[index];
     }else return NULL ;
 };
 void RGP_CORE::GameScene::RemoveActorAt(_u32b index){
     BaseActor* tmp =NULL ;
-    if(index>=0 && index< m_NBActors){
+    if(index>=0 && index< m_NumActors){
         tmp=v_Actors[index] ;
         tmp->Destroy();
         delete tmp ;
-        for(_u32b i=index; i<m_NBActors-1 ;i++)
+        for(_u32b i=index; i<m_NumActors-1 ;i++)
             v_Actors[i]=v_Actors[i+1];
-        m_NBActors-- ;
+        m_NumActors-- ;
     }
 };
 
-_u32b RGP_CORE::GameScene::getNBActors(){ return m_NBActors ;};
+_u32b RGP_CORE::GameScene::getNumActors(){ return m_NumActors ;};
 _s16b RGP_CORE::GameScene::AddLight(RGP_CORE::LightSource* Source){
     if(!Source)
         return 0 ;
-    RGP_CORE::LightSource** tmp=(RGP_CORE::LightSource**)malloc((m_NBLights+1)*sizeof(RGP_CORE::LightSource*));
+    RGP_CORE::LightSource** tmp=(RGP_CORE::LightSource**)malloc((m_NumLights+1)*sizeof(RGP_CORE::LightSource*));
     if(!tmp)
         return 0 ;
-    for(_u32b i=0; i< m_NBLights;++i){
+    for(_u32b i=0; i< m_NumLights;++i){
         tmp[i]=m_LightSources[i];
     }
     if(m_LightSources)
         free(m_LightSources);
     m_LightSources=tmp;
-    m_LightSources[m_NBLights]=Source ;
-    ++m_NBLights ;
+    m_LightSources[m_NumLights]=Source ;
+    ++m_NumLights ;
     return 1 ;
 };
 void RGP_CORE::GameScene::RemoveLightAt(_u32b index){
     if(!m_LightSources)
-        if(index>=0 && index< m_NBLights){
+        if(index>=0 && index< m_NumLights){
             m_LightSources[index]->Destroy();
             delete m_LightSources[index];
-            for(_u32b i=0 ; i< m_NBLights-1 ;++i)
+            for(_u32b i=0 ; i< m_NumLights-1 ;++i)
                 m_LightSources[i]=m_LightSources[i+1];
         }
 };
 RGP_CORE::LightSource*  RGP_CORE::GameScene::getLight(_u32b index){
-    if(index>=0 && index <m_NBLights)
+    if(index>=0 && index <m_NumLights)
         return m_LightSources[index];
     else
         return NULL ;
 
 };
-_u32b RGP_CORE::GameScene::getNBLights(){ return m_NBLights ;};
+_u32b RGP_CORE::GameScene::getNumLights(){ return m_NumLights ;};
 void RGP_CORE::GameScene::setCamera(Camera* cam){ m_Camera=cam ;};
 RGP_CORE::Camera* RGP_CORE::GameScene::getCamera(){ return m_Camera ;};
 void RGP_CORE::GameScene::setGravity(Vertex3d force){ m_Gravity= force ;};
 Vertex3d RGP_CORE::GameScene::getGravity(){ return m_Gravity ;};
+
+_s16b	RGP_CORE::GameScene::AddUIComponent(Renderable* component)
+{
+	if (!component)
+		return 0;
+	RGP_CORE::Renderable** tmp = (RGP_CORE::Renderable**)malloc((m_NumUILayerComponents + 1) * sizeof(RGP_CORE::Renderable*));
+	if (!tmp)
+		return 0;
+	for (_u32b i = 0; i< m_NumUILayerComponents; ++i) {
+		tmp[i] = m_UILayerCompoenents[i];
+	}
+	if (m_UILayerCompoenents)
+		free(m_UILayerCompoenents);
+	m_UILayerCompoenents = tmp;
+	m_UILayerCompoenents[m_NumUILayerComponents] = component;
+	++m_NumUILayerComponents;
+	return 1;
+};
+RGP_CORE::Renderable*	RGP_CORE::GameScene::getUICompoenent(_u32b index)
+{
+	if (index >= 0 && index <m_NumUILayerComponents)
+		return m_UILayerCompoenents[index];
+	else
+		return NULL;
+};
+_u32b	RGP_CORE::GameScene::getNumUIComponents()
+{
+	return m_NumUILayerComponents;
+};
+void	RGP_CORE::GameScene::RemoveUIComponentAt(_u32b index)
+{
+	if (!m_UILayerCompoenents)
+		if (index >= 0 && index < m_NumUILayerComponents) {
+			m_UILayerCompoenents[index]->Destroy();
+			delete m_UILayerCompoenents[index];
+			for (_u32b i = 0; i < m_NumUILayerComponents - 1; ++i)
+				m_UILayerCompoenents[i] = m_UILayerCompoenents[i + 1];
+		}
+};

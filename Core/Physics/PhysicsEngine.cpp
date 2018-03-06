@@ -110,7 +110,7 @@ void RGP_CORE::PhysicsEngine::reRegisterPhysicalActors()
 			m_DynamicWorld->removeCollisionObject(object);
 		}
 		//and replace them with the new ones
-		numActors = m_SelectedScene->getNBActors();
+		numActors = m_SelectedScene->getNumActors();
 		for (_u32b i = 0; i < numActors; ++i) {
 			if (m_SelectedScene->getActor(i)->getID() & PHYSICAL) {
 				ptr = dynamic_cast<Physical*>(m_SelectedScene->getActor(i));

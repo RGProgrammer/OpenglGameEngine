@@ -9,11 +9,13 @@
 
 #include "..//Common//BasePrimitiveTypes.h"
 #include "..//AdvancedActors//EnvMapProbe.h"
+#include "..//BaseActors//Renderable.h"
 #include ".//LightSource.h"
 #include ".//Camera.h"
 
 namespace RGP_CORE {
 	class EnvMapProbe;
+	class Renderable;
 
 	class GameScene {
 	public:
@@ -24,18 +26,23 @@ namespace RGP_CORE {
 
     	_s16b						AddActor(BaseActor* actor);
     	BaseActor*					getActor(_u32b index);
-    	_u32b						getNBActors();
+    	_u32b						getNumActors();
     	void						RemoveActorAt(_u32b index);
 
     	_s16b						AddLight(LightSource* Source);
     	LightSource*				getLight(_u32b index);
-    	_u32b						getNBLights();
+    	_u32b						getNumLights();
     	void						RemoveLightAt(_u32b index);
 
 		_s16b						AddEnvMapProbe(LightSource* Source);
 		EnvMapProbe*				getEnvMapProbe(_u32b index);
-		_u32b						getNBEnvMapProbe();
+		_u32b						getNumEnvMapProbe();
 		void						RemoveEnvMapProbeAt(_u32b index);
+
+		_s16b						AddUIComponent(Renderable* Source);
+		Renderable*					getUICompoenent(_u32b index);
+		_u32b						getNumUIComponents();
+		void						RemoveUIComponentAt(_u32b index);
 
     	void						setCamera(Camera*);
     	Camera*						getCamera();
@@ -45,17 +52,21 @@ namespace RGP_CORE {
 	private:
     	_u32b        		Size ;
 
-    	_u32b        		m_NBActors ;
+    	_u32b        		m_NumActors ;
     	BaseActor**         v_Actors ;
 
-    	_u32b               m_NBLights ;
+    	_u32b               m_NumLights ;
     	LightSource**       m_LightSources ;
 
-		_u32b				m_NBEnvMap;
+		_u32b				m_NumEnvMap;
 		EnvMapProbe**		m_EnvMaps;
+
+		_u32b				m_NumUILayerComponents;
+		Renderable**		m_UILayerCompoenents;
 
     	Camera*             m_Camera ;
     	Vertex3d 			m_Gravity ;
 	};
 };
+
 #endif // PFE_GAMESCENE_H_

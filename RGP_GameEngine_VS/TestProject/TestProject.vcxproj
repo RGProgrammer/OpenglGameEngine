@@ -126,12 +126,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\test\InfiniteMirror.cpp" />
     <ClCompile Include="..\..\test\main.cpp" />
     <ClCompile Include="..\..\test\ParticaleSystemExample.cpp" />
     <ClCompile Include="..\..\test\PhysicalExample.cpp" />
     <ClCompile Include="..\..\test\Test.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\test\InfiniteMirror.h" />
     <ClInclude Include="..\..\test\ParticaleSystemExample.h" />
     <ClInclude Include="..\..\test\PhysicalExample.h" />
     <ClInclude Include="..\..\test\Test.h" />

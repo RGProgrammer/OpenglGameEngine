@@ -309,7 +309,13 @@ RGP_CORE::GLShaderProgramsManager::ShaderProgram*
 };
 
 
-
+_u32b	RGP_CORE::GLRenderer::getLastFrameTexture()
+{
+	if (m_SelectedFBO - 1 < 0)
+		return m_AttachmentTextures[0][DIFFUSE_TEXTURE];
+	else
+		return m_AttachmentTextures[m_SelectedFBO - 1][DIFFUSE_TEXTURE];
+};
 
 
 
@@ -457,12 +463,6 @@ _bool RGP_CORE::GLRenderer::InitRenderer(gfxConfig Config){
         printf("error init GLEW\n");
         return false ;
 	}
-	else {
-		printf("%s\n",glGetString(GL_SHADING_LANGUAGE_VERSION));
-		int maxColorAttachments;
-		glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &maxColorAttachments);
-		printf("max attach %d\n", maxColorAttachments);
-	}
 	m_ShaderManager = new GLShaderProgramsManager();
 	if (!m_ShaderManager) {
 		printf("Fatal error\n");
@@ -560,7 +560,7 @@ _bool	RGP_CORE::GLRenderer::CreateColorsObjects()
 	}
 	for (int m = 0; m < m_NumFBOs; m++)
 		if (m_FBOs[m] == 0)
-			printf("oh come on \n");
+			printf("error geerating Frame bufferss \n");
 	if (!AttachColorsTextures())
 		return false;
 	return true;
@@ -593,7 +593,6 @@ _bool RGP_CORE::GLRenderer::AttachColorsTextures() {
 
 _bool	RGP_CORE::GLRenderer::CreateShadowsObjects()
 {
-	int error;
 
 	m_ShadowRenderingProgram = CreateGLProgramFromFile("..//Shaders//ShadowMapProgram.vs", NULL);
 	if (!m_ShadowRenderingProgram) {
@@ -751,10 +750,10 @@ void  RGP_CORE::GLRenderer::setScene(GameScene*   Scene){
 	GLuint* tmp = NULL;
 	LightSource* Source = NULL;
 	if (m_SelectedScene){
-		NumShadowmaps= m_SelectedScene->getNBLights();
+		NumShadowmaps= m_SelectedScene->getNumLights();
 		
 		int error;
-		_u32b numLights = m_SelectedScene->getNBLights();
+		_u32b numLights = m_SelectedScene->getNumLights();
 		for (_u32b i = 0; i < numLights; ++i) {
 			Source=m_SelectedScene->getLight(i);
 			if (Source->getLightCutoffAngle() < 0.0)
@@ -825,6 +824,7 @@ void	RGP_CORE::GLRenderer::RenderScene(_u32b FBO_Target,Camera* camera)
 	this->RenderSceneLightAccum();
 	///combine results and render to the screen ;
 	this->RenderToTarget(FBO_Target);
+	//this->RenderSceneUI(FBO_Target);
 	//Next frame
 	if (m_NumFBOs - 1 == m_SelectedFBO)
 		m_SelectedFBO = 0;
@@ -860,18 +860,15 @@ void RGP_CORE::GLRenderer::RenderSceneColors(_u32b FBO,Camera *camera)
 			Eye = m_SelectedScene->getCamera();
 		}
 
-		nbActors = m_SelectedScene->getNBActors();
+		nbActors = m_SelectedScene->getNumActors();
 		///first step render to current FBO
 		glGetError();
 		glBindFramebuffer(GL_FRAMEBUFFER, FBO);
-		if (glGetError())
-			printf("r u serious \n");
 
 		glViewport(0, 0, m_Target->getWidth(), m_Target->getHeight());
 		glDrawBuffers(5, DrawBuff);
 		
-		glEnable(GL_CULL_FACE);
-		glCullFace(GL_BACK);
+		glDisable(GL_CULL_FACE);
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_SMOOTH);
 		///glClear attachements
@@ -902,8 +899,8 @@ void RGP_CORE::GLRenderer::RenderSceneShadows(_u32b FBO, Camera* camera)
 		else {
 			Eye = m_SelectedScene->getCamera();
 		}
-		_u32b NumActors = m_SelectedScene->getNBActors();
-		_u32b ShadowIndex = 0, numLights=m_SelectedScene->getNBLights();
+		_u32b NumActors = m_SelectedScene->getNumActors();
+		_u32b ShadowIndex = 0, numLights=m_SelectedScene->getNumLights();
 		_s32b Location1 = -1,Location2=-1, Location3=-1;
 		LightSource*	Source = NULL;
 		Renderable*		actor = NULL;
@@ -1068,7 +1065,7 @@ void	RGP_CORE::GLRenderer:: RenderSceneLightAccum(Camera* camera)
 
 
 		//for each light
-		for (_u32b i = 0; i<m_SelectedScene->getNBLights(); ++i) {
+		for (_u32b i = 0; i<m_SelectedScene->getNumLights(); ++i) {
 			Source = m_SelectedScene->getLight(i);
 			//specific light uniform variables
 			///initializing world matrix
@@ -1110,20 +1107,17 @@ void	RGP_CORE::GLRenderer:: RenderSceneLightAccum(Camera* camera)
 
 	}
 };
+
 void RGP_CORE::GLRenderer::RenderToTarget(_u32b FBO_Target){
         _s32b location = -1 ;
         _s8b shaderstring[50]="";
-        LightSource* Source=NULL ;
-        _u32b nbLights=0 ;
 		glGetError();
         glBindFramebuffer(GL_FRAMEBUFFER, FBO_Target);
-		if (glGetError())
-			printf("why this is happening\n");
 
 		glDrawBuffers(1, DrawBuff);
         glViewport(0,0,m_Target->getWidth(),m_Target->getHeight());
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-        glClearColor(0.0f,0.0f,0.0f,0.0f);
+        glClearColor(0.8f,0.8f,0.8f,0.0f);
         ///construct and render the final result
 		m_ShaderManager->BindProgram(m_FinalRenderProgram);
 
@@ -1171,9 +1165,8 @@ void RGP_CORE::GLRenderer::RenderToTarget(_u32b FBO_Target){
         glBindBuffer(GL_ARRAY_BUFFER,0);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
 
-        glfwSwapBuffers(m_Target->getglfwWindow());
-
 };
+
 
 void	RGP_CORE::GLRenderer::UpdateEnvironmentMaps()
 {
@@ -1232,6 +1225,10 @@ _bool  RGP_CORE::GLRenderer::BindVertexArray(_u32b BufferID){
 void RGP_CORE::GLRenderer::DrawElements(GLenum mode,_u32b Count,GLenum Type,void* Offset){
     glDrawElements(mode,Count,Type,Offset);
 };
+void RGP_CORE::GLRenderer::DrawArrays(GLenum mode, _u32b first, _u32b count)
+{
+	glDrawArrays(mode, first, count);
+};
 ///Textures
 _bool RGP_CORE::GLRenderer::GenTextures2D(_u32b numTextures,GLuint*    target){
     if(!target)
@@ -1274,7 +1271,8 @@ void  RGP_CORE::GLRenderer::DeleteTextures(_u32b numTextures,GLuint*    target){
         target[i]=0;
 };
 void  RGP_CORE::GLRenderer::SetImageData2D(RGP_CORE::Image* ImageSource){
-    glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA8,
+    if(ImageSource)
+	glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA8,
                  ImageSource->Width,ImageSource->Height,
                  0,GL_RGBA,GL_UNSIGNED_BYTE,ImageSource->Pixels);
 

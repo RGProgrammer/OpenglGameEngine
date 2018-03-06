@@ -154,7 +154,7 @@ void RGP_CORE::Model3D::ClearModelLoadedData()
 _s16b RGP_CORE::Model3D::LoadModelFromFile(char* filename, _bool ClearDataAfterLoad ){
 	if(!m_GLRenderer)
         return 0 ;
-	const aiScene* Scene = aiImportFile(filename, aiProcessPreset_TargetRealtime_MaxQuality | aiProcess_PreTransformVertices);
+	const aiScene* Scene = aiImportFile(filename, aiProcessPreset_TargetRealtime_MaxQuality);
 	//if failed
 	if(!Scene){
         printf("error loading file\n");
@@ -527,6 +527,8 @@ _u16b RGP_CORE::Model3D::LoadMaterialstoMemory(const aiScene* Scene){
         v_Materials[i].DiffuseMap=NULL;
 		aiGetMaterialFloat(Scene->mMaterials[i],AI_MATKEY_REFRACTI,&(v_Materials[i].IOR));
         hasDiffusemap=false;
+		hasNormalmap = false;
+		hasSpecularmap = false;
         for(_u16b j=0 ;j< Scene->mMaterials[i]->mNumProperties;j++){
 			
             if(Scene->mMaterials[i]->mProperties[j]->mSemantic==aiTextureType_DIFFUSE){
@@ -542,11 +544,12 @@ _u16b RGP_CORE::Model3D::LoadMaterialstoMemory(const aiScene* Scene){
                         aiString path ;
                         Scene->mMaterials[i]->GetTexture(aiTextureType_DIFFUSE,0,&path);
                         char* filename=NULL ;
-                        if(m_FileDirectory){
-                            RGP_CORE::CatStrings(m_FileDirectory,path.C_Str(),&filename);
-                            v_Materials[i].DiffuseMap->Pixels=SOIL_load_image(filename,(int*)(&(v_Materials[i].DiffuseMap->Width)),
-                                                                     (int*)(&(v_Materials[i].DiffuseMap->Height)),NULL,SOIL_LOAD_RGBA);
-                            free(filename);
+						if (m_FileDirectory) {
+							RGP_CORE::CatStrings(m_FileDirectory, path.C_Str(), &filename);
+							v_Materials[i].DiffuseMap->Pixels = SOIL_load_image(filename, (int*)(&(v_Materials[i].DiffuseMap->Width)),
+								(int*)(&(v_Materials[i].DiffuseMap->Height)), NULL, SOIL_LOAD_RGBA);
+							free(filename);
+							
                         }else{
                             v_Materials[i].DiffuseMap->Pixels=SOIL_load_image(path.C_Str(),(int*)(&(v_Materials[i].DiffuseMap->Width)),
                                                                      (int*)(&(v_Materials[i].DiffuseMap->Height)),NULL,SOIL_LOAD_RGBA);
@@ -623,9 +626,9 @@ _u16b RGP_CORE::Model3D::LoadMaterialstoMemory(const aiScene* Scene){
             v_Materials[i].SpecularMap->Height=1 ;
             v_Materials[i].SpecularMap->Width=1;
             v_Materials[i].SpecularMap->Pixels=(_u8b*)malloc(4*sizeof(_u8b));
-            v_Materials[i].SpecularMap->Pixels[0]=0 ;
-            v_Materials[i].SpecularMap->Pixels[1]=0 ;
-            v_Materials[i].SpecularMap->Pixels[2]=0 ;
+            v_Materials[i].SpecularMap->Pixels[0]=120 ;
+            v_Materials[i].SpecularMap->Pixels[1]=120 ;
+            v_Materials[i].SpecularMap->Pixels[2]=120 ;
             v_Materials[i].SpecularMap->Pixels[3]=0 ;
         }
     }
