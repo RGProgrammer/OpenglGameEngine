@@ -1,6 +1,7 @@
 #ifndef _RGP_ANIMATOR_MASTER_H_
 #define _RGP_ANIMATOR_MASTER_H_
 
+#include ".//DataType.h"
 #include "..//Core//Scene//GameScene.h"
 #include "..//Core//Graphics//GLRenderer.h"
 #include "..//Core//Graphics//Model3D.h"
@@ -8,11 +9,21 @@
 #include "..//Core//Scene//DirectionnalLight.h"
 #include "..//tools//imgui//imgui.h"
 
+#define SKELETONEDITING 0
+#define WEIGHMAPPING 1
+#define ANIMATIONEDITING 2
+
 
 using namespace RGP_CORE;
 
 namespace RGP_ANIMATOR
 {
+	typedef struct {
+		Model3D*		model;
+		Skeleton*		skeleton;
+		Animation*		animations;
+		_u32b			numAnimations;
+	} AnimationData;
 	class Animator {
 	public:
 		static Animator* CreateAnimator();
@@ -21,10 +32,15 @@ namespace RGP_ANIMATOR
 		_bool		Init_ImGui_Sys();
 	private:
 		Animator();
-		void		AnimationPlayer();
+		//UI part
+		void		RenderUI();
 		void		AnimationEditor();
-		void		AnimationKeyEditor();
-	
+		void		ModeSelector();
+		void		BoneTool();
+		void		WeightDrawingTool();
+		void		AnimationPlayer();
+		void		KeyEditor();
+		//
 	public:
 		~Animator();
 		void		Start();
@@ -37,9 +53,9 @@ namespace RGP_ANIMATOR
 		Camera*					m_Camera;
 		Timer*					m_Timer;
 		_bool					m_Initialized;
-		_bool					m_View;
-		GLuint					m_FontTexture;
-		//some other attributs will be added later 
+		AnimationData*			m_Data;
+		_u32b					m_NumData;
+		_u8b					m_Mode;
 	};
 
 }

@@ -1,8 +1,8 @@
 #ifndef _RGP_ANIMATOR_DATATYPE_H_
 #define _RGP_ANIMATOR_DATATYPE_H_
 
-#include "../Common//BasePrimitiveTypes.h"
-#include "..//Common//Math.h"
+#include "..//Core//Common//BasePrimitiveTypes.h"
+#include "..//Core//Common//Math.h"
 
 struct Bone {
 	_u8b*			Name;

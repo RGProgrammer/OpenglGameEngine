@@ -868,9 +868,13 @@ void RGP_CORE::GLRenderer::RenderSceneColors(_u32b FBO,Camera *camera)
 		glViewport(0, 0, m_Target->getWidth(), m_Target->getHeight());
 		glDrawBuffers(5, DrawBuff);
 		
-		glDisable(GL_CULL_FACE);
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK);
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_SMOOTH);
+		glDisable(GL_BLEND);
+		//glEnable(GL_BLEND);
+		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		///glClear attachements
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -886,6 +890,7 @@ void RGP_CORE::GLRenderer::RenderSceneColors(_u32b FBO,Camera *camera)
 		glDisable(GL_CULL_FACE);
 		glDisable(GL_DEPTH_TEST);
 		glDisable(GL_SMOOTH);
+		//glDisable(GL_BLEND);
 		
 	}
 };
@@ -1033,6 +1038,8 @@ void	RGP_CORE::GLRenderer:: RenderSceneLightAccum(Camera* camera)
 	if (!Eye)
 		Eye = m_SelectedScene->getCamera();
 	if (m_SelectedScene) {
+		if (m_SelectedScene->getNumLights() == 0)
+			return;
 		this->BindFrameBuffer(m_LightAccumBuffer);
 		this->SetShaderProgram(m_LightAccumProgram);
 		glDrawBuffers(2, DrawBuff);

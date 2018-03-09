@@ -38,14 +38,38 @@ RGP_ANIMATOR::Animator* RGP_ANIMATOR::Animator::CreateAnimator()
 
 RGP_ANIMATOR::Animator::Animator() : m_SceneRenderer(NULL), m_Scene(NULL),
 										m_Camera(NULL), m_Timer(NULL), m_Initialized(false),
-										m_View(true), m_FontTexture(0)
+										m_Data(NULL),m_NumData(0), m_Mode(2)
 {
 };
 RGP_ANIMATOR::Animator::~Animator()
 {
 	this->Destroy();
 };
+void RGP_ANIMATOR::Animator::Destroy()
+{
+	if (m_Scene) {
+		m_Scene->Destroy();
+		delete m_Scene;
+		m_Scene = NULL;
+	}
+	//ImGui should be terminated before the renderer
+	ImGui_ImplGlfwGL3_Shutdown();
 
+	if (m_SceneRenderer) {
+		m_SceneRenderer->Destroy();
+		delete m_SceneRenderer;
+		m_SceneRenderer = NULL;
+	}
+	if (m_Timer) {
+		delete m_Timer;
+		m_Timer = NULL;
+	}
+	if (m_Camera) {
+		delete m_Camera;
+		m_Camera = NULL;
+	}
+	m_Initialized = false;
+};
 _bool RGP_ANIMATOR::Animator::Init()
 {
 	if (m_Initialized)
@@ -57,62 +81,6 @@ _bool RGP_ANIMATOR::Animator::Init()
 	m_Initialized = true;
 	return true;
 };
-void RGP_ANIMATOR::Animator::Start()
-{
-	if (!m_Initialized)
-		return;
-	m_SceneRenderer->setScene(m_Scene);
-	
-	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-	while (true) {
-		int state;
-		glfwPollEvents();
-		if (glfwWindowShouldClose(m_SceneRenderer->getTarget()->getglfwWindow()))
-			break;
-		m_SceneRenderer->RenderCurrentScene();
-		ImGui_ImplGlfwGL3_NewFrame();
-
-		this->AnimationPlayer();
-		this->AnimationEditor();
-		this->AnimationKeyEditor();
-	
-		ImGui::Render();
-		ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
-		m_SceneRenderer->SwapBuffers();
-	}
-};
-
-
-
-void RGP_ANIMATOR::Animator::Destroy()
-{
-	if (m_Scene) {
-		m_Scene->Destroy();
-		delete m_Scene;
-		m_Scene = NULL;
-	}
-	if (m_FontTexture) {
-		m_SceneRenderer->DeleteTextures(1, &m_FontTexture);
-		m_FontTexture = 0;
-	}
-	//ImGui should be terminated before the renderer
-	ImGui_ImplGlfwGL3_Shutdown();
-
-	if (m_SceneRenderer) {
-		m_SceneRenderer->Destroy();
-		delete m_SceneRenderer;
-		m_SceneRenderer = NULL;
-	}
-	if(m_Timer){
-		delete m_Timer;
-		m_Timer = NULL;
-	}
-	if (m_Camera) {
-		delete m_Camera;
-		m_Camera = NULL;
-	}
-	m_Initialized = false;
-};
 _bool RGP_ANIMATOR::Animator::Init_RGP_Sys()
 {
 	m_Scene = new GameScene();
@@ -120,7 +88,7 @@ _bool RGP_ANIMATOR::Animator::Init_RGP_Sys()
 		return false;
 	m_SceneRenderer = new GLRenderer();
 	if (!m_SceneRenderer->InitRenderer({ "Animator",1400,900,5,false ,512,false })) {
-		return false ;
+		return false;
 	}
 	m_Camera = new PerspCamera(M_PI_2, 1400.0f / 900.0f, 0.1f, 5000.0f);
 	m_Camera->setPosition({ 0.0f,12.0f,-10.0f });
@@ -128,10 +96,11 @@ _bool RGP_ANIMATOR::Animator::Init_RGP_Sys()
 	m_Scene->setCamera(m_Camera);
 
 	m_Timer = new Timer();
-	
+
 	LightSource *	light = NULL;
-	light=new DirectionnalLight();
+	light = new DirectionnalLight();
 	light->setOrientation({ -0.5f,-0.5f,0.0f }, { -0.5f,0.5f,1.0f });
+	light->setLightSpecularColor({ 0.1f,0.1f,0.1f });
 	m_Scene->AddLight(light);
 
 	Model3D* model = new Model3D();
@@ -156,6 +125,58 @@ _bool RGP_ANIMATOR::Animator::Init_ImGui_Sys()
 
 	return true;
 };
+void RGP_ANIMATOR::Animator::Start()
+{
+	if (!m_Initialized)
+		return;
+	m_SceneRenderer->setScene(m_Scene);
+	
+	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+	while (true) {
+		int state;
+		glfwPollEvents();
+		if (glfwWindowShouldClose(m_SceneRenderer->getTarget()->getglfwWindow()))
+			break;
+		m_SceneRenderer->RenderCurrentScene();
+		ImGui_ImplGlfwGL3_NewFrame();
+
+		this->RenderUI();
+	
+		ImGui::Render();
+		ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
+		m_SceneRenderer->SwapBuffers();
+	}
+};
+void RGP_ANIMATOR::Animator::RenderUI()
+{
+	this->AnimationEditor();
+	this->ModeSelector();
+	if (m_Mode == SKELETONEDITING) {
+		BoneTool();
+	}
+	else if (m_Mode == WEIGHMAPPING) {
+		WeightDrawingTool();
+	}
+	else if (m_Mode == ANIMATIONEDITING) {
+		AnimationPlayer();
+		KeyEditor();
+	}
+};
+
+void RGP_ANIMATOR::Animator::ModeSelector()
+{
+
+};
+void RGP_ANIMATOR::Animator::BoneTool()
+{
+
+};
+void RGP_ANIMATOR::Animator::WeightDrawingTool()
+{
+
+};
+
+
 
 void	 RGP_ANIMATOR::Animator::AnimationPlayer()
 {
@@ -165,21 +186,51 @@ void	 RGP_ANIMATOR::Animator::AnimationPlayer()
 	ImGui::Button("Pause");
 	ImGui::SameLine();
 	ImGui::Button("Stop");
-	ImGui::Text("does nothing . yet.");
 	ImGui::End();
 };
 void	 RGP_ANIMATOR::Animator::AnimationEditor()
 {
+	char name[50] = "";
 	ImGui::Begin("Animation Editor");
 	ImGui::SetWindowSize(ImVec2(200, 600));
-	ImGui::Text("does nothing . yet.");
+	if (m_Data) {
+		for (_u32b i = 0; i < m_NumData; ++i) {
+			if (ImGui::TreeNode("AnimationData")) {
+				if (ImGui::TreeNode("Model")) {
+					ImGui::Selectable("Mesh names will added here");
+					ImGui::TreePop();
+				}
+				if (ImGui::TreeNode("Skeleton")) {
+					if (m_Data[i].skeleton)
+						for (_u32b s = 0; s < m_Data[i].skeleton->NumParts; ++s) {
+							sprintf(name,"%s", m_Data[i].skeleton->Parts[s].Name);
+							ImGui::Selectable(name);
+						}
+					ImGui::TreePop();
+				}
+				if (ImGui::TreeNode("Animations")) {
+					if (m_Data[i].animations)
+						for (_u32b a = 0; a < m_Data[i].numAnimations; ++a) {
+							sprintf(name,"%s", m_Data[i].animations[a].Name);
+							ImGui::Selectable(name);
+						}
+					ImGui::TreePop();
+				}
+				ImGui::TreePop();
+			}
+		}
+	}
+	else {
+		ImGui::Text("Empty");
+	}
+	
 	ImGui::End();
 };
-void	 RGP_ANIMATOR::Animator::AnimationKeyEditor()
+void	 RGP_ANIMATOR::Animator::KeyEditor()
 {
 	ImGui::Begin("Animation key Editor");
 	ImGui::SetWindowSize(ImVec2(1000, 200));
-	ImGui::Text("does nothing . yet.");
+	ImGui::Text("the most difficult to build for me");
 	ImGui::End();
 };
 
