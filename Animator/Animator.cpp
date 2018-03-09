@@ -38,7 +38,8 @@ RGP_ANIMATOR::Animator* RGP_ANIMATOR::Animator::CreateAnimator()
 
 RGP_ANIMATOR::Animator::Animator() : m_SceneRenderer(NULL), m_Scene(NULL),
 										m_Camera(NULL), m_Timer(NULL), m_Initialized(false),
-										m_Data(NULL),m_NumData(0), m_Mode(2)
+										m_Data(NULL),m_NumData(0), m_Mode(2), m_SelectedMesh(0),
+										m_SelectedBone(0), m_SelectedAnimation(0)
 {
 };
 RGP_ANIMATOR::Animator::~Animator()
@@ -165,15 +166,21 @@ void RGP_ANIMATOR::Animator::RenderUI()
 
 void RGP_ANIMATOR::Animator::ModeSelector()
 {
-
+	ImGui::Begin("Mode Selector");
+	ImGui::Combo("", (int*)(&m_Mode), "SkeletonEditing\0WeightDrawing\0AnimationEditing\0");
+	ImGui::End();
 };
 void RGP_ANIMATOR::Animator::BoneTool()
 {
-
+	ImGui::Begin("Bone Tool");
+	ImGui::Text("Not yet Implemented");
+	ImGui::End();
 };
 void RGP_ANIMATOR::Animator::WeightDrawingTool()
 {
-
+	ImGui::Begin("Drawing Tool");
+	ImGui::Text("Not yet Implemented");
+	ImGui::End();
 };
 
 

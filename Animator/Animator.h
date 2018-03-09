@@ -55,7 +55,10 @@ namespace RGP_ANIMATOR
 		_bool					m_Initialized;
 		AnimationData*			m_Data;
 		_u32b					m_NumData;
-		_u8b					m_Mode;
+		_s32b					m_Mode;
+		_u32b					m_SelectedMesh;//1 ---->NumMeshes
+		_u32b					m_SelectedBone;//1 ---->Numbones
+		_u32b					m_SelectedAnimation;//1 ---->NumAnimations
 	};
 
 }
