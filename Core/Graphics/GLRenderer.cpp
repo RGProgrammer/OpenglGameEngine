@@ -452,6 +452,7 @@ _bool RGP_CORE::GLRenderer::InitRenderer(gfxConfig Config){
         printf("errro initializing GLFW\n");
         return false ;
     }
+	
     m_Target=Window::CreateWindow(Config.Title,Config.Witdh,Config.Height);
     if(!m_Target){
         printf("error creating Window\n");
@@ -463,6 +464,7 @@ _bool RGP_CORE::GLRenderer::InitRenderer(gfxConfig Config){
         printf("error init GLEW\n");
         return false ;
 	}
+	glfwSwapInterval(0);
 	m_ShaderManager = new GLShaderProgramsManager();
 	if (!m_ShaderManager) {
 		printf("Fatal error\n");
@@ -811,8 +813,6 @@ void  RGP_CORE::GLRenderer::setScene(GameScene*   Scene){
 
 void	RGP_CORE::GLRenderer::RenderScene(_u32b FBO_Target,Camera* camera)
 {
-	//this->UpdateEnvironmentMaps();
-
 
 	//RENDER SCENE Colors to the SelectedFBO
 	this->RenderSceneColors(m_FBOs[m_SelectedFBO],camera);
@@ -871,7 +871,6 @@ void RGP_CORE::GLRenderer::RenderSceneColors(_u32b FBO,Camera *camera)
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
 		glEnable(GL_DEPTH_TEST);
-		glEnable(GL_SMOOTH);
 		glDisable(GL_BLEND);
 		//glEnable(GL_BLEND);
 		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

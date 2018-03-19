@@ -1,7 +1,7 @@
 #ifndef _RGP_ANIMATOR_MASTER_H_
 #define _RGP_ANIMATOR_MASTER_H_
 
-#include ".//DataType.h"
+#include "..//Core//AdvancedActors//DataType.h"
 #include "..//Core//Scene//GameScene.h"
 #include "..//Core//Graphics//GLRenderer.h"
 #include "..//Core//Graphics//Model3D.h"
@@ -45,6 +45,9 @@ namespace RGP_ANIMATOR
 		~Animator();
 		void		Start();
 		void		Destroy();
+		_bool		ImportDynamicModel(_s8b* filename);
+		_bool		ImportStaticModel(_s8b* filename);
+
 
 	private:
 		

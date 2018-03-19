@@ -30,12 +30,12 @@
     <ClCompile Include="..\..\tools\imgui\imgui_demo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Animator\AnimatedModel.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Animator\Animator.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Animator\DataType.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\tools\imgui\imconfig.h">
@@ -54,6 +54,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\tools\imgui\stb_truetype.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Animator\AnimatedModel.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -48,9 +48,6 @@
     <ClCompile Include="..\..\Core\Graphics\Window.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Core\Common\StringOP.cpp">
-      <Filter>Fichiers sources</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Core\Common\Timer.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
@@ -147,6 +144,12 @@
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Core\AdvancedActors\EnvMapProbe.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Core\AdvancedActors\AnimatedModel.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Core\AdvancedActors\DataType.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
   </ItemGroup>

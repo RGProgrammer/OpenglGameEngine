@@ -19,6 +19,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Animator\AnimatedModel.cpp" />
     <ClCompile Include="..\..\Animator\Animator.cpp" />
     <ClCompile Include="..\..\test\animator_main.cpp" />
     <ClCompile Include="..\..\tools\imgui\imgui.cpp" />
@@ -26,8 +27,8 @@
     <ClCompile Include="..\..\tools\imgui\imgui_draw.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Animator\AnimatedModel.h" />
     <ClInclude Include="..\..\Animator\Animator.h" />
-    <ClInclude Include="..\..\Animator\DataType.h" />
     <ClInclude Include="..\..\tools\imgui\imconfig.h" />
     <ClInclude Include="..\..\tools\imgui\imgui.h" />
     <ClInclude Include="..\..\tools\imgui\imgui_internal.h" />

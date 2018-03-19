@@ -35,15 +35,18 @@ namespace RGP_CORE {
 		Model3D(Vertex3d Pos, Vertex3d Dir, Vertex3d Up);
 		virtual ~Model3D() ;
 		virtual void 	Destroy() ;
-		void ClearModelLoadedData();
+		void			DestroyBuffers();
+		void			ClearModelLoadedData();
 		_s16b			LoadModelFromFile(char* filename,_bool ClearDataAfterLoad=true);
 		virtual _s16b   LoadShaderProg(char* VS_File,char* FS_File);
 		virtual _s16b   InitVAOs();
 		virtual void 	Render(Camera* Selected);
 		virtual void	CastShadow();
-		//_bool			isEnvMap() { return false; };
-		void			AttachReflectionProbe(EnvMapProbe* Probe);
+		const pMesh		getMesh(_u32b index );
+		_u32b			getNumMeshes();
+		void			setReflectionProbe(EnvMapProbe* Probe);
 		EnvMapProbe*	getReflectionProbe(EnvMapProbe* Probe);
+
 	protected:
 		_u16b ProcessNode(aiNode* Node,const aiScene* Scene);/// currently this function copy only a static model
         _u16b AddMesh(const char* Name,_u16b MaterialID);
@@ -57,6 +60,7 @@ namespace RGP_CORE {
         _u16b LoadMaterialstoMemory(const aiScene* Scene);
         _u16b GenerateOGLMaterials();
         _u16b GenerateBuffers();
+		_u16b FillBuffers();
 	protected:
 		_s8b*					m_FileDirectory;
 		pMesh					v_Meshes ;
@@ -65,9 +69,10 @@ namespace RGP_CORE {
 		Material*               v_Materials;
 		OGLMaterial*            v_oglMaterials;
 		EnvMapProbe*			m_ReflectionProbe;
-		_u32b					m_nbMeshes;
-		_u32b                   m_nbMaterials;
+		_u32b					m_NumMeshes;
+		_u32b                   m_NumMaterials;
 		_u32b				    m_ShaderProgram ;
+		_bool					m_ClearAfterLoad;
 	};
 
 };

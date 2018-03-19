@@ -101,7 +101,6 @@
     <ClCompile Include="..\..\Core\BaseActors\Dynamic.cpp" />
     <ClCompile Include="..\..\Core\BaseActors\Physical.cpp" />
     <ClCompile Include="..\..\Core\BaseActors\Renderable.cpp" />
-    <ClCompile Include="..\..\Core\Common\StringOP.cpp" />
     <ClCompile Include="..\..\Core\Common\Timer.cpp" />
     <ClCompile Include="..\..\Core\Graphics\GLRenderer.cpp" />
     <ClCompile Include="..\..\Core\Graphics\Model3D.cpp" />
@@ -116,7 +115,9 @@
     <ClCompile Include="..\..\Core\Sound\SoundEngine.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Core\AdvancedActors\AnimatedModel.h" />
     <ClInclude Include="..\..\Core\AdvancedActors\BaseParticaleSystem.h" />
+    <ClInclude Include="..\..\Core\AdvancedActors\DataType.h" />
     <ClInclude Include="..\..\Core\AdvancedActors\EnvMapProbe.h" />
     <ClInclude Include="..\..\Core\AdvancedActors\PhysicalModel.h" />
     <ClInclude Include="..\..\Core\BaseActors\BaseActor.h" />

@@ -5,10 +5,10 @@ RGP_CORE::Model3D::Model3D():Model3D({0.0f,0.0f,0.0f}){
 RGP_CORE::Model3D::Model3D(Vertex3d Pos): Model3D(Pos,{0.0f,0.0f,-1.0f},{0.0f,1.0f,0.0f}){
 };
 RGP_CORE::Model3D::Model3D(Vertex3d Pos, Vertex3d Dir, Vertex3d Up): Renderable(Pos,Dir, Up),
-															m_nbMeshes(0), v_Meshes(NULL), v_Buffers(NULL),
+															m_NumMeshes(0), v_Meshes(NULL), v_Buffers(NULL),
 															m_VAOforShadowcasting(NULL), m_ReflectionProbe(NULL),
-															v_Materials(NULL),v_oglMaterials(NULL),m_nbMaterials(0),
-															m_FileDirectory(NULL),m_ShaderProgram(0)
+															v_Materials(NULL),v_oglMaterials(NULL),m_NumMaterials(0),
+															m_FileDirectory(NULL),m_ShaderProgram(0), m_ClearAfterLoad(true)
 {
 	m_DoesCastShadow = true;
 };
@@ -19,10 +19,11 @@ RGP_CORE::Model3D::~Model3D(){
 
 void RGP_CORE::Model3D::Destroy(){
 	
-	ClearModelLoadedData();
+	this->ClearModelLoadedData();
+	this->DestroyBuffers();
 
 	if(v_oglMaterials){
-         for(_u32b i=0;i< m_nbMaterials;i++){
+         for(_u32b i=0;i< m_NumMaterials;i++){
             if(v_oglMaterials[i].DiffuseMap)
                 m_GLRenderer->DeleteTextures(1,&(v_oglMaterials[i].DiffuseMap));
             if(v_oglMaterials[i].SpecularMap)
@@ -32,45 +33,17 @@ void RGP_CORE::Model3D::Destroy(){
          }
          free(v_oglMaterials);
          v_oglMaterials=NULL ;
-         m_nbMaterials=0 ;
+         m_NumMaterials=0 ;
     }
 
-	if(v_Buffers){
-        for(_u32b i=0; i< m_nbMeshes ;i++){
-            if(v_Buffers[i].VertexBuffer){
-                m_GLRenderer->DeleteBuffers(1,&(v_Buffers[i].VertexBuffer));
-            }
-            if(v_Buffers[i].NormalBuffer){
-                m_GLRenderer->DeleteBuffers(1,&(v_Buffers[i].NormalBuffer));
-            }
-            if(v_Buffers[i].TangentBuffer){
-                m_GLRenderer->DeleteBuffers(1,&(v_Buffers[i].TangentBuffer));
-            }
-            if(v_Buffers[i].BitangentBuffer){
-                m_GLRenderer->DeleteBuffers(1,&(v_Buffers[i].BitangentBuffer));
-            }
-            if(v_Buffers[i].IndexBuffer){
-                m_GLRenderer->DeleteBuffers(1,&(v_Buffers[i].IndexBuffer));
-            }
-            if(v_Buffers[i].TexCoords){
-                m_GLRenderer->DeleteBuffers(1,&(v_Buffers[i].TexCoords));
-            }
-            if(v_Buffers[i].VertexArrayObject){
-                m_GLRenderer->DeleteVertexArrays(1,&(v_Buffers[i].VertexArrayObject));
-            }
-			v_Buffers[i].AppliedMaterialIndex = 0;
-			v_Buffers[i].numFaces = 0;
-        }
-        free(v_Buffers);
-        v_Buffers=NULL ;
-	}
+	
 	if (m_VAOforShadowcasting){
-		m_GLRenderer->DeleteVertexArrays(m_nbMeshes, m_VAOforShadowcasting);
+		m_GLRenderer->DeleteVertexArrays(m_NumMeshes, m_VAOforShadowcasting);
 		free(m_VAOforShadowcasting);
 		m_VAOforShadowcasting = NULL;
 	}
 	
-	m_nbMeshes = 0;
+	m_NumMeshes = 0;
 	if (m_ShaderProgram){
 
         m_GLRenderer->DeleteGLProgram(m_ShaderProgram);
@@ -82,11 +55,42 @@ void RGP_CORE::Model3D::Destroy(){
 	}
 	Renderable::Destroy();
 };
-
+void RGP_CORE::Model3D::DestroyBuffers()
+{
+	if (v_Buffers) {
+		for (_u32b i = 0; i< m_NumMeshes; i++) {
+			if (v_Buffers[i].VertexBuffer) {
+				m_GLRenderer->DeleteBuffers(1, &(v_Buffers[i].VertexBuffer));
+			}
+			if (v_Buffers[i].NormalBuffer) {
+				m_GLRenderer->DeleteBuffers(1, &(v_Buffers[i].NormalBuffer));
+			}
+			if (v_Buffers[i].TangentBuffer) {
+				m_GLRenderer->DeleteBuffers(1, &(v_Buffers[i].TangentBuffer));
+			}
+			if (v_Buffers[i].BitangentBuffer) {
+				m_GLRenderer->DeleteBuffers(1, &(v_Buffers[i].BitangentBuffer));
+			}
+			if (v_Buffers[i].IndexBuffer) {
+				m_GLRenderer->DeleteBuffers(1, &(v_Buffers[i].IndexBuffer));
+			}
+			if (v_Buffers[i].TexCoords) {
+				m_GLRenderer->DeleteBuffers(1, &(v_Buffers[i].TexCoords));
+			}
+			if (v_Buffers[i].VertexArrayObject) {
+				m_GLRenderer->DeleteVertexArrays(1, &(v_Buffers[i].VertexArrayObject));
+			}
+			v_Buffers[i].AppliedMaterialIndex = 0;
+			v_Buffers[i].numFaces = 0;
+		}
+		free(v_Buffers);
+		v_Buffers = NULL;
+	}
+};
 void RGP_CORE::Model3D::ClearModelLoadedData()
 {
 	if (v_Materials) {
-		for (_u32b i = 0; i< m_nbMaterials; i++) {
+		for (_u32b i = 0; i< m_NumMaterials; i++) {
 			if (v_Materials[i].DiffuseMap) {
 				if (v_Materials[i].DiffuseMap->Pixels) {
 					free(v_Materials[i].DiffuseMap->Pixels);
@@ -116,7 +120,7 @@ void RGP_CORE::Model3D::ClearModelLoadedData()
 		v_Materials = NULL;
 	}
 	if (v_Meshes) {
-		for (_u32b i = 0; i< m_nbMeshes; i++) {
+		for (_u32b i = 0; i< m_NumMeshes; i++) {
 			if (v_Meshes[i].Name) {
 				free(v_Meshes[i].Name);
 				v_Meshes[i].Name = NULL;
@@ -184,7 +188,10 @@ _s16b RGP_CORE::Model3D::LoadModelFromFile(char* filename, _bool ClearDataAfterL
   	if(!GenerateBuffers()){
         printf("could not generate vertices buffers \n");
         return 0;
-    }
+	}
+	else
+		FillBuffers();
+
 	if (!LoadShaderProg("..//Shaders//Model_Deferred.vs", "..//Shaders//Model_Deferred.fs")){
 		printf("error loading shader program\n");
 		return 0;
@@ -202,7 +209,10 @@ _s16b   RGP_CORE::Model3D::LoadShaderProg(char* VS_File,char* FS_File){
     ///Code should be changed here
     if(!m_GLRenderer)
         return 0 ;
-    m_ShaderProgram=m_GLRenderer->CreateGLProgramFromFile(VS_File,FS_File);
+	if (m_ShaderProgram) {
+		m_GLRenderer->DeleteGLProgram(m_ShaderProgram);
+	}
+	m_ShaderProgram=m_GLRenderer->CreateGLProgramFromFile(VS_File,FS_File);
     if(!m_ShaderProgram)
         return 0 ;
     return 1 ;
@@ -212,7 +222,7 @@ _s16b   RGP_CORE::Model3D::InitVAOs(){
     if(!m_ShaderProgram)
         return 0;
     glGetError();
-    for(_u32b i=0 ;i<m_nbMeshes;++i){
+    for(_u32b i=0 ;i<m_NumMeshes;++i){
         m_GLRenderer->GenVertexArrays(1,&(v_Buffers[i].VertexArrayObject));
         m_GLRenderer->BindVertexArray(v_Buffers[i].VertexArrayObject);
 
@@ -242,9 +252,9 @@ _s16b   RGP_CORE::Model3D::InitVAOs(){
 	m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER, 0);
 	m_GLRenderer->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	glGetError();
-	m_GLRenderer->GenVertexArrays(m_nbMeshes, m_VAOforShadowcasting);
+	m_GLRenderer->GenVertexArrays(m_NumMeshes, m_VAOforShadowcasting);
 
-	for (GLuint i = 0; i < m_nbMeshes; ++i){
+	for (GLuint i = 0; i < m_NumMeshes; ++i){
 		m_GLRenderer->BindVertexArray(m_VAOforShadowcasting[i]);
 		m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER, v_Buffers[i].VertexBuffer);
 		m_GLRenderer->SetVertexAttribPointer(0, 3, 0, 0);
@@ -293,7 +303,7 @@ void RGP_CORE::Model3D::Render(Camera* Selected){
 		}
 
 		
-        for(_u32b i = 0 ;i<m_nbMeshes;++i){
+        for(_u32b i = 0 ;i<m_NumMeshes;++i){
             //Textures
             m_GLRenderer->SetActiveTexture(1);
             m_GLRenderer->BindTexture(v_oglMaterials[v_Buffers[i].AppliedMaterialIndex].DiffuseMap);
@@ -338,7 +348,7 @@ void	RGP_CORE::Model3D::CastShadow()
 	}
 	//the shadow pogram is already loaded and the need FBO is Bound
 	//just need to define shader program input paramters(only VAOs)
-	for (_u32b i = 0; i < m_nbMeshes; ++i){
+	for (_u32b i = 0; i < m_NumMeshes; ++i){
 		//binding need VAO
 		m_GLRenderer->BindVertexArray(m_VAOforShadowcasting[i]);
 		//Draw
@@ -347,7 +357,7 @@ void	RGP_CORE::Model3D::CastShadow()
 	m_GLRenderer->BindVertexArray(0);
 };
 
-void RGP_CORE::Model3D::AttachReflectionProbe(EnvMapProbe* Probe)
+void RGP_CORE::Model3D::setReflectionProbe(EnvMapProbe* Probe)
 {
 	m_ReflectionProbe = Probe;
 };
@@ -356,6 +366,19 @@ RGP_CORE::EnvMapProbe*	RGP_CORE::Model3D::getReflectionProbe(EnvMapProbe* Probe)
 	return m_ReflectionProbe;
 };
 
+const RGP_CORE::pMesh		RGP_CORE::Model3D::getMesh(_u32b index)
+{
+	if (!v_Meshes)
+		return NULL;
+	if (index >= 0 && index < m_NumMeshes)
+		return &(v_Meshes[index]);
+	else
+		return NULL;
+};
+_u32b			RGP_CORE::Model3D::getNumMeshes()
+{
+	return m_NumMeshes;
+};
 
 
 _u16b RGP_CORE::Model3D::ProcessNode(aiNode* Node,const aiScene* Scene){
@@ -380,45 +403,45 @@ _u16b RGP_CORE::Model3D::ProcessNode(aiNode* Node,const aiScene* Scene){
 _u16b RGP_CORE::Model3D::AddMesh(const char* Name, _u16b MaterialID){
     ///add a mesh structure to the mesh vector
     ///initilize attibutes to 0 or NULL and init Material index
-    pMesh tmp=(pMesh)malloc((m_nbMeshes+1)*sizeof(Mesh));
+    pMesh tmp=(pMesh)malloc((m_NumMeshes+1)*sizeof(Mesh));
     if(!tmp)
         return 0;
-    for(_u32b i=0; i<m_nbMeshes;i++)
+    for(_u32b i=0; i<m_NumMeshes;i++)
         tmp[i]=v_Meshes[i];
     free(v_Meshes);
     v_Meshes=tmp;
-    m_nbMeshes++;
+    m_NumMeshes++;
 	if (Name){
-		v_Meshes[m_nbMeshes - 1].Name = (char*)malloc((strlen(Name)+1)*sizeof(char));
-		if (v_Meshes[m_nbMeshes - 1].Name){
-			strcpy(v_Meshes[m_nbMeshes - 1].Name, Name);
+		v_Meshes[m_NumMeshes - 1].Name = (char*)malloc((strlen(Name)+1)*sizeof(char));
+		if (v_Meshes[m_NumMeshes - 1].Name){
+			strcpy(v_Meshes[m_NumMeshes - 1].Name, Name);
 		}
 	}
 	else
-		v_Meshes[m_nbMeshes - 1].Name = NULL;
+		v_Meshes[m_NumMeshes - 1].Name = NULL;
 
-    v_Meshes[m_nbMeshes-1].IndexBuffer=NULL;
-    v_Meshes[m_nbMeshes-1].nbFaces=0;
-    v_Meshes[m_nbMeshes-1].VertexBuffer=NULL ;
-    v_Meshes[m_nbMeshes-1].nbVertices=0;
-    v_Meshes[m_nbMeshes-1].NormalBuffer=NULL;
-    v_Meshes[m_nbMeshes-1].TangentBuffer=NULL;
-    v_Meshes[m_nbMeshes-1].BitangentBuffer=NULL;
-    v_Meshes[m_nbMeshes-1].nbNormals=0;
-    v_Meshes[m_nbMeshes-1].AppliedMaterial=MaterialID ;
+    v_Meshes[m_NumMeshes-1].IndexBuffer=NULL;
+    v_Meshes[m_NumMeshes-1].nbFaces=0;
+    v_Meshes[m_NumMeshes-1].VertexBuffer=NULL ;
+    v_Meshes[m_NumMeshes-1].nbVertices=0;
+    v_Meshes[m_NumMeshes-1].NormalBuffer=NULL;
+    v_Meshes[m_NumMeshes-1].TangentBuffer=NULL;
+    v_Meshes[m_NumMeshes-1].BitangentBuffer=NULL;
+    v_Meshes[m_NumMeshes-1].nbNormals=0;
+    v_Meshes[m_NumMeshes-1].AppliedMaterial=MaterialID ;
 	return 1;
 };
 _u16b RGP_CORE::Model3D::CopyVertices(const aiVector3D*   buffer,_u32b nbVertices){
     ///copy vertexbuffer to the last mesh
     if(buffer && nbVertices> 0){
-        v_Meshes[m_nbMeshes-1].VertexBuffer=(_float*)malloc(nbVertices*3*sizeof(_float));
-        if(!(v_Meshes[m_nbMeshes-1].VertexBuffer))
+        v_Meshes[m_NumMeshes-1].VertexBuffer=(_float*)malloc(nbVertices*3*sizeof(_float));
+        if(!(v_Meshes[m_NumMeshes-1].VertexBuffer))
             return 0;
-        v_Meshes[m_nbMeshes-1].nbVertices=nbVertices ;
+        v_Meshes[m_NumMeshes-1].nbVertices=nbVertices ;
         for(_u32b i=0 ; i<nbVertices;i++){
-            v_Meshes[m_nbMeshes-1].VertexBuffer[i*3  ]=buffer[i].x;
-            v_Meshes[m_nbMeshes-1].VertexBuffer[i*3+1]=buffer[i].y;
-            v_Meshes[m_nbMeshes-1].VertexBuffer[i*3+2]=buffer[i].z;
+            v_Meshes[m_NumMeshes-1].VertexBuffer[i*3  ]=buffer[i].x;
+            v_Meshes[m_NumMeshes-1].VertexBuffer[i*3+1]=buffer[i].y;
+            v_Meshes[m_NumMeshes-1].VertexBuffer[i*3+2]=buffer[i].z;
         }
         return 1 ;
     }
@@ -428,14 +451,14 @@ _u16b RGP_CORE::Model3D::CopyVertices(const aiVector3D*   buffer,_u32b nbVertice
 _u16b RGP_CORE::Model3D::CopyNormals(const aiVector3D*   buffer,_u32b nbVertices){
     ///copy Normalbuffer to the last mesh
     if(buffer && nbVertices> 0){
-        v_Meshes[m_nbMeshes-1].NormalBuffer=(_float*)malloc(nbVertices*3*sizeof(_float));
-        if(!(v_Meshes[m_nbMeshes-1].NormalBuffer))
+        v_Meshes[m_NumMeshes-1].NormalBuffer=(_float*)malloc(nbVertices*3*sizeof(_float));
+        if(!(v_Meshes[m_NumMeshes-1].NormalBuffer))
             return 0;
-        v_Meshes[m_nbMeshes-1].nbNormals=nbVertices ;
+        v_Meshes[m_NumMeshes-1].nbNormals=nbVertices ;
         for(_u32b i=0 ; i<nbVertices;i++){
-            v_Meshes[m_nbMeshes-1].NormalBuffer[i*3  ]=buffer[i].x;
-            v_Meshes[m_nbMeshes-1].NormalBuffer[i*3+1]=buffer[i].y;
-            v_Meshes[m_nbMeshes-1].NormalBuffer[i*3+2]=buffer[i].z;
+            v_Meshes[m_NumMeshes-1].NormalBuffer[i*3  ]=buffer[i].x;
+            v_Meshes[m_NumMeshes-1].NormalBuffer[i*3+1]=buffer[i].y;
+            v_Meshes[m_NumMeshes-1].NormalBuffer[i*3+2]=buffer[i].z;
         }
         return 1 ;
     }
@@ -444,18 +467,18 @@ _u16b RGP_CORE::Model3D::CopyNormals(const aiVector3D*   buffer,_u32b nbVertices
 };
 _u16b RGP_CORE::Model3D::CopyTangents(const aiVector3D*   Tbuffer,const aiVector3D*   Bibuffer,_u32b nbVertices){
     if(Tbuffer && Bibuffer){
-        v_Meshes[m_nbMeshes-1].TangentBuffer=(_float*)malloc(nbVertices*3*sizeof(_float));
-        v_Meshes[m_nbMeshes-1].BitangentBuffer=(_float*)malloc(nbVertices*3*sizeof(_float));
-        if(!(v_Meshes[m_nbMeshes-1].TangentBuffer && v_Meshes[m_nbMeshes-1].BitangentBuffer))
+        v_Meshes[m_NumMeshes-1].TangentBuffer=(_float*)malloc(nbVertices*3*sizeof(_float));
+        v_Meshes[m_NumMeshes-1].BitangentBuffer=(_float*)malloc(nbVertices*3*sizeof(_float));
+        if(!(v_Meshes[m_NumMeshes-1].TangentBuffer && v_Meshes[m_NumMeshes-1].BitangentBuffer))
             return 0;
         for(_u32b i=0 ; i<nbVertices;i++){
-            v_Meshes[m_nbMeshes-1].TangentBuffer[i*3  ]=Tbuffer[i].x;
-            v_Meshes[m_nbMeshes-1].TangentBuffer[i*3+1]=Tbuffer[i].y;
-            v_Meshes[m_nbMeshes-1].TangentBuffer[i*3+2]=Tbuffer[i].z;
+            v_Meshes[m_NumMeshes-1].TangentBuffer[i*3  ]=Tbuffer[i].x;
+            v_Meshes[m_NumMeshes-1].TangentBuffer[i*3+1]=Tbuffer[i].y;
+            v_Meshes[m_NumMeshes-1].TangentBuffer[i*3+2]=Tbuffer[i].z;
 
-            v_Meshes[m_nbMeshes-1].BitangentBuffer[i*3  ]=Bibuffer[i].x;
-            v_Meshes[m_nbMeshes-1].BitangentBuffer[i*3+1]=Bibuffer[i].y;
-            v_Meshes[m_nbMeshes-1].BitangentBuffer[i*3+2]=Bibuffer[i].z;
+            v_Meshes[m_NumMeshes-1].BitangentBuffer[i*3  ]=Bibuffer[i].x;
+            v_Meshes[m_NumMeshes-1].BitangentBuffer[i*3+1]=Bibuffer[i].y;
+            v_Meshes[m_NumMeshes-1].BitangentBuffer[i*3+2]=Bibuffer[i].z;
         }
         return 1 ;
     }
@@ -464,14 +487,14 @@ _u16b RGP_CORE::Model3D::CopyTangents(const aiVector3D*   Tbuffer,const aiVector
 _u16b RGP_CORE::Model3D::CopyFaces(const aiFace* Faces, _u32b nbFaces){
     ///copy Faces
     if(Faces && nbFaces> 0){
-        v_Meshes[m_nbMeshes-1].IndexBuffer=(_u32b*)malloc(nbFaces*3*sizeof(_u32b));
-        if(!(v_Meshes[m_nbMeshes-1].IndexBuffer))
+        v_Meshes[m_NumMeshes-1].IndexBuffer=(_u32b*)malloc(nbFaces*3*sizeof(_u32b));
+        if(!(v_Meshes[m_NumMeshes-1].IndexBuffer))
             return 0;
-        v_Meshes[m_nbMeshes-1].nbFaces=nbFaces ;
+        v_Meshes[m_NumMeshes-1].nbFaces=nbFaces ;
         for(_u32b i=0 ; i<nbFaces;i++){
-            v_Meshes[m_nbMeshes-1].IndexBuffer[i*3  ]=Faces[i].mIndices[0];
-            v_Meshes[m_nbMeshes-1].IndexBuffer[i*3+1]=Faces[i].mIndices[1];
-            v_Meshes[m_nbMeshes-1].IndexBuffer[i*3+2]=Faces[i].mIndices[2];
+            v_Meshes[m_NumMeshes-1].IndexBuffer[i*3  ]=Faces[i].mIndices[0];
+            v_Meshes[m_NumMeshes-1].IndexBuffer[i*3+1]=Faces[i].mIndices[1];
+            v_Meshes[m_NumMeshes-1].IndexBuffer[i*3+2]=Faces[i].mIndices[2];
         }
         return 1 ;
     }
@@ -481,23 +504,23 @@ _u16b RGP_CORE::Model3D::CopyTextureCoords(aiVector3D** TexCoords, _u32b nbTexCo
     ///copy tecture coords
     if(TexCoords && nbTexCoords> 0){
         if(!TexCoords[0]){
-            v_Meshes[m_nbMeshes-1].TexCoords=(_float*)malloc(nbTexCoords*2*sizeof(_float));
-            if(!(v_Meshes[m_nbMeshes-1].TexCoords))
+            v_Meshes[m_NumMeshes-1].TexCoords=(_float*)malloc(nbTexCoords*2*sizeof(_float));
+            if(!(v_Meshes[m_NumMeshes-1].TexCoords))
                 return 0;
-            v_Meshes[m_nbMeshes-1].nbTexCoords=nbTexCoords ;
+            v_Meshes[m_NumMeshes-1].nbTexCoords=nbTexCoords ;
             for(_u32b i=0 ; i<nbTexCoords;i++){
-                v_Meshes[m_nbMeshes-1].TexCoords[i*2  ]= 0.0f;
-                v_Meshes[m_nbMeshes-1].TexCoords[i*2+1]= 0.0f;
+                v_Meshes[m_NumMeshes-1].TexCoords[i*2  ]= 0.0f;
+                v_Meshes[m_NumMeshes-1].TexCoords[i*2+1]= 0.0f;
             }
             return 1 ;
         }else{
-            v_Meshes[m_nbMeshes-1].TexCoords=(_float*)malloc(nbTexCoords*2*sizeof(_float));
-            if(!(v_Meshes[m_nbMeshes-1].TexCoords))
+            v_Meshes[m_NumMeshes-1].TexCoords=(_float*)malloc(nbTexCoords*2*sizeof(_float));
+            if(!(v_Meshes[m_NumMeshes-1].TexCoords))
                 return 0;
-            v_Meshes[m_nbMeshes-1].nbTexCoords=nbTexCoords ;
+            v_Meshes[m_NumMeshes-1].nbTexCoords=nbTexCoords ;
             for(_u32b i=0 ; i<nbTexCoords;i++){
-                v_Meshes[m_nbMeshes-1].TexCoords[i*2  ]= TexCoords[0][i].x;
-                v_Meshes[m_nbMeshes-1].TexCoords[i*2+1]= TexCoords[0][i].y;
+                v_Meshes[m_NumMeshes-1].TexCoords[i*2  ]= TexCoords[0][i].x;
+                v_Meshes[m_NumMeshes-1].TexCoords[i*2+1]= TexCoords[0][i].y;
             }
             return 1 ;
         }
@@ -513,15 +536,15 @@ _u16b RGP_CORE::Model3D::LoadMaterial(const aiScene* Scene){
 
 };
 _u16b RGP_CORE::Model3D::LoadMaterialstoMemory(const aiScene* Scene){
-    m_nbMaterials=Scene->mNumMaterials;
+    m_NumMaterials=Scene->mNumMaterials;
     _bool hasDiffusemap=false;
 	_bool hasNormalmap = false;
 	_bool hasSpecularmap = false;
-    this->v_Materials=(Material*)malloc(m_nbMaterials*sizeof(Material));
+    this->v_Materials=(Material*)malloc(m_NumMaterials*sizeof(Material));
     if(!v_Materials){
         return 0 ;
     }
-    for(_u32b i=0 ; i<m_nbMaterials;++i){
+    for(_u32b i=0 ; i<m_NumMaterials;++i){
         v_Materials[i].NormalsMap=NULL ;
         v_Materials[i].SpecularMap=NULL;
         v_Materials[i].DiffuseMap=NULL;
@@ -637,11 +660,11 @@ _u16b RGP_CORE::Model3D::LoadMaterialstoMemory(const aiScene* Scene){
 _u16b RGP_CORE::Model3D::GenerateOGLMaterials(){
     if(!v_Materials)
         return 0 ;
-    this->v_oglMaterials=(OGLMaterial*)malloc(m_nbMaterials*sizeof(OGLMaterial));
+    this->v_oglMaterials=(OGLMaterial*)malloc(m_NumMaterials*sizeof(OGLMaterial));
     if(!this->v_oglMaterials)
         return 0 ;
     glEnable(GL_TEXTURE_2D);
-	for(_u32b i=0 ;i<m_nbMaterials;i++){
+	for(_u32b i=0 ;i<m_NumMaterials;i++){
         v_oglMaterials[i].NormalsMap=0 ;
         v_oglMaterials[i].SpecularMap=0;
         v_oglMaterials[i].DiffuseMap=0;
@@ -670,14 +693,17 @@ _u16b RGP_CORE::Model3D::GenerateOGLMaterials(){
 }
 _u16b RGP_CORE::Model3D::GenerateBuffers(){
 
-    v_Buffers=(MeshBuffers*)malloc(m_nbMeshes*sizeof(MeshBuffers));
+	if (v_Buffers) {
+		this->DestroyBuffers();
+	}
+	v_Buffers=(MeshBuffers*)malloc(m_NumMeshes*sizeof(MeshBuffers));
     if(v_Buffers==NULL){
         return 0 ;
 	}
-	m_VAOforShadowcasting = (GLuint*)malloc(m_nbMeshes*sizeof(GLuint));
+	m_VAOforShadowcasting = (GLuint*)malloc(m_NumMeshes*sizeof(GLuint));
 	if (!m_VAOforShadowcasting)
 		return 0;
-    for(_u32b i=0; i< m_nbMeshes;++i){
+    for(_u32b i=0; i< m_NumMeshes;++i){
         v_Buffers[i].VertexArrayObject=0;
         v_Buffers[i].IndexBuffer=0;
         v_Buffers[i].VertexBuffer=0;
@@ -690,39 +716,28 @@ _u16b RGP_CORE::Model3D::GenerateBuffers(){
 		m_VAOforShadowcasting[i] = 0;
     };
 
-    for(_u32b i=0; i< m_nbMeshes;++i){
+    for(_u32b i=0; i< m_NumMeshes;++i){
 
 		v_Buffers[i].AppliedMaterialIndex = v_Meshes[i].AppliedMaterial;
         ///generating vertices buffer
         m_GLRenderer->GenBuffers(1,&(v_Buffers[i].VertexBuffer));
         if(!v_Buffers[i].VertexBuffer)
             return 0 ;
-        ///filling buffer with data code here
-        m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER, v_Buffers[i].VertexBuffer);
-        m_GLRenderer->setBufferData(GL_ARRAY_BUFFER,v_Meshes[i].nbVertices*3*sizeof(_float),v_Meshes[i].VertexBuffer,GL_STATIC_DRAW);
-        ///........
+   
+       
 
         ///generating Normals buffer
-        glGenBuffers(1,&(v_Buffers[i].NormalBuffer));
+		m_GLRenderer->GenBuffers(1,&(v_Buffers[i].NormalBuffer));
         if(!v_Buffers[i].NormalBuffer)
             return 0 ;
-        ///filling buffer with data code here
-        m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER, v_Buffers[i].NormalBuffer);
-        m_GLRenderer->setBufferData(GL_ARRAY_BUFFER, v_Meshes[i].nbNormals*3*sizeof(_float),v_Meshes[i].NormalBuffer,GL_STATIC_DRAW);
-        ///........
+       
 
         ///Generating Tangent and Bitangent
         m_GLRenderer->GenBuffers(1,&(v_Buffers[i].TangentBuffer));
         m_GLRenderer->GenBuffers(1,&(v_Buffers[i].BitangentBuffer));
         if(!(v_Buffers[i].TangentBuffer && v_Buffers[i].BitangentBuffer))
             return 0 ;
-        ///filling buffer with data
-        m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER, v_Buffers[i].TangentBuffer);
-        m_GLRenderer->setBufferData(GL_ARRAY_BUFFER, v_Meshes[i].nbNormals*3*sizeof(_float),v_Meshes[i].TangentBuffer,GL_STATIC_DRAW);
-        m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER, v_Buffers[i].BitangentBuffer);
-        m_GLRenderer->setBufferData(GL_ARRAY_BUFFER, v_Meshes[i].nbNormals*3*sizeof(_float),v_Meshes[i].BitangentBuffer,GL_STATIC_DRAW);
-        /// //////
-
+       
         ///generating texture coordinates buffer
         if(v_Meshes[i].TexCoords){
             m_GLRenderer->GenBuffers(1,&(v_Buffers[i].TexCoords));
@@ -744,9 +759,41 @@ _u16b RGP_CORE::Model3D::GenerateBuffers(){
 		v_Buffers[i].numFaces = v_Meshes[i].nbFaces;
 
     }
-    m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER,0);
-    m_GLRenderer->BindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
+   
     return 1;
+};
+_u16b RGP_CORE::Model3D::FillBuffers()
+{
+	for (_u32b i = 0; i < m_NumMeshes; ++i) {
+		//filling
+		m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER, v_Buffers[i].VertexBuffer);
+		if (m_ClearAfterLoad)
+			m_GLRenderer->setBufferData(GL_ARRAY_BUFFER, v_Meshes[i].nbVertices * 3 * sizeof(_float), v_Meshes[i].VertexBuffer, GL_STATIC_DRAW);
+		else
+			m_GLRenderer->setBufferData(GL_ARRAY_BUFFER, v_Meshes[i].nbVertices * 3 * sizeof(_float), v_Meshes[i].VertexBuffer, GL_DYNAMIC_DRAW);
+		///........
+		m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER, v_Buffers[i].NormalBuffer);
+		if (m_ClearAfterLoad)
+			m_GLRenderer->setBufferData(GL_ARRAY_BUFFER, v_Meshes[i].nbNormals * 3 * sizeof(_float), v_Meshes[i].NormalBuffer, GL_STATIC_DRAW);
+		else
+			m_GLRenderer->setBufferData(GL_ARRAY_BUFFER, v_Meshes[i].nbNormals * 3 * sizeof(_float), v_Meshes[i].NormalBuffer, GL_DYNAMIC_DRAW);
+		///........
+		m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER, v_Buffers[i].TangentBuffer);
+		if (m_ClearAfterLoad)
+			m_GLRenderer->setBufferData(GL_ARRAY_BUFFER, v_Meshes[i].nbNormals * 3 * sizeof(_float), v_Meshes[i].TangentBuffer, GL_STATIC_DRAW);
+		else
+			m_GLRenderer->setBufferData(GL_ARRAY_BUFFER, v_Meshes[i].nbNormals * 3 * sizeof(_float), v_Meshes[i].TangentBuffer, GL_DYNAMIC_DRAW);
+
+		m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER, v_Buffers[i].BitangentBuffer);
+		if (m_ClearAfterLoad)
+			m_GLRenderer->setBufferData(GL_ARRAY_BUFFER, v_Meshes[i].nbNormals * 3 * sizeof(_float), v_Meshes[i].BitangentBuffer, GL_STATIC_DRAW);
+		else
+			m_GLRenderer->setBufferData(GL_ARRAY_BUFFER, v_Meshes[i].nbNormals * 3 * sizeof(_float), v_Meshes[i].BitangentBuffer, GL_DYNAMIC_DRAW);
+		/// //////
+	}
+	m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER, 0);
+	m_GLRenderer->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	return true;
 };
  _u16b RGP_CORE::Model3D::CopyTextureData(aiTexture* Texture, Image* Dest){
     if(!Texture || ! Dest)
