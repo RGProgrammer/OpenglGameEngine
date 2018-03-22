@@ -11,8 +11,10 @@ what libraries i (will) use:
 - OpenAL for soundengine
 </p><p>
 -IMGui for UI
-</p><p>
+</p>
+<p>
 i will implement my own animation software which exports animation independantly from the model and a scene editor
 </p>
+<p>PS: the source code lacks documentation and comments because i'm working on this project alone</p>
 
 
