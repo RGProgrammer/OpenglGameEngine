@@ -158,7 +158,7 @@ void RGP_CORE::Model3D::ClearModelLoadedData()
 _s16b RGP_CORE::Model3D::LoadModelFromFile(char* filename, _bool ClearDataAfterLoad ){
 	if(!m_GLRenderer)
         return 0 ;
-	const aiScene* Scene = aiImportFile(filename, aiProcessPreset_TargetRealtime_MaxQuality);
+	const aiScene* Scene = aiImportFile(filename, aiProcessPreset_TargetRealtime_Quality |aiProcess_FlipUVs );
 	//if failed
 	if(!Scene){
         printf("error loading file\n");
@@ -276,6 +276,7 @@ void RGP_CORE::Model3D::Render(Camera* Selected){
         ///new rendering code here using the high level opengl interface(m_GLRenderer)
         //set the program to use
         int Location ;
+
         m_GLRenderer->SetShaderProgram(m_ShaderProgram);
         ///setup uniform variable
         //Matrices
@@ -324,6 +325,7 @@ void RGP_CORE::Model3D::Render(Camera* Selected){
 
             //Bind the VAO
             m_GLRenderer->BindVertexArray(v_Buffers[i].VertexArrayObject);
+			m_GLRenderer->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, v_Buffers[i].IndexBuffer);
             m_GLRenderer->DrawElements(GL_TRIANGLES,v_Buffers[i].numFaces*3,GL_UNSIGNED_INT,(void*)0  );
         }
         //after rendering

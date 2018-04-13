@@ -75,20 +75,13 @@ void RGP_CORE::PerspCamera::UpdateProjectionMtx(){
 
 
 RGP_CORE::OrthoCamera::OrthoCamera(_float Left, _float Right, _float Bottom, _float Top, _float Near, _float Far){
-    if(Left < Right){
+ 
         m_Left=Left;
         m_Right=Right ;
-    }else{
-        m_Left=0.0f;
-        m_Right=1.0f ;
-    }
-    if(Top < Bottom){
+ 
         m_Top=Top;
         m_Bottom=Bottom ;
-    }else{
-        m_Top=0.0f;
-        m_Bottom=1.0f;
-    }
+    
 };
 void RGP_CORE::OrthoCamera::setParameters(_float Left, _float Right, _float Top, _float Bottom, _float Near, _float Far){
     if(Left < Right){

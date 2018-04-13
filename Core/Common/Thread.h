@@ -21,22 +21,24 @@ namespace RGP_CORE {
         THREAD_WAITING
     };
     class Thread {
-    public:
-        Thread();
+	public :
+		Thread * CreateThread(void* (*func)(void* arg));
+    protected:
+        Thread(void* func);
         ~Thread();
-        virtual void    Function()=0;
-        void            Start();
-        void            Pause();
-        void            Stop();
+        _bool            Resume();
+        _bool            Pause();
+        _bool            Stop();
         void            Destroy();
         _u8b*           getThreadName();
+		_s32b			getThreadID();
         _ThreadStatus   getThreadStatus();
-
-    protected :
+		void*			getResultBuffer();
     private :
         _u8b*           m_ThreadName ;
         _ThreadStatus   m_Status ;
-        ///some other attributs to add
+		void*			m_ptrFunction;
+		void*			m_Buffer;
 
     };
 };

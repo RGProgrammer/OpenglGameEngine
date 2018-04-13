@@ -27,7 +27,7 @@ void main (){
 	WSFragCoord0=texture2D(PositionMap,texcoord0) ;
 	color=vec3(shadowStrengh);
 	ProjectionCoord=LightProjMatrix*LightViewMtx*WSFragCoord0 ;
-	ProjectionCoord/=ProjectionCoord.w ;
+		ProjectionCoord/=ProjectionCoord.w ;
 	ShadowMapTexCoord=ProjectionCoord*0.5+0.5;
 	
 	if((ShadowMapTexCoord.x>=0.0 && ShadowMapTexCoord.x<=1.0) &&(ShadowMapTexCoord.y>=0.0 && ShadowMapTexCoord.y<=1.0)){

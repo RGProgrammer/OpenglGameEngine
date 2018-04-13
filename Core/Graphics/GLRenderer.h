@@ -135,6 +135,7 @@ namespace RGP_CORE{
 		void	LoadShadowProgram();
 		void	UnloadShadowProgram();
 		void	UpdateEnvironmentMaps();
+		void	SwitchNoLightMode();
 		//this is for testing
 		_u32b	getLastFrameTexture();
         ///buffers manager
@@ -142,6 +143,7 @@ namespace RGP_CORE{
         _bool GenBuffers(_u32b numBuffers,GLuint*    target);
         void  DeleteBuffers(_u32b numBuffers,GLuint*    target);
         void  setBufferData(_u32b Target ,_u32b Size , void* Data, _u32b flag);
+		void  setBufferSubData(_u32b Target, _u32b Offset, _u32b Size, void* Data);
         void  BindBuffer(_u32b Bindtype,_u32b BufferID );
 
         ///VAOs
@@ -230,6 +232,7 @@ namespace RGP_CORE{
 		_u32b						m_ShadowAccumProgram;
 		GLuint						m_ShadowAccumBuffer;
 		GLuint						m_ShadowAccumTexture;
+		_bool						m_noLightMode;
 		
 
     };

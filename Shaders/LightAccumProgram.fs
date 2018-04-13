@@ -35,14 +35,14 @@ uniform mat4 LightViewMtx ;
 uniform Light Source ;
 
 in vec2 texcoord0 ;
-in vec2 texcoord1;
+
 void main()
 {
 	float Attinuation;
 	float LightFragDistance ;
 	float Intensity ;
-	vec3 FragCoord=EyeSpaceFragCoord(Depth,texcoord1,CameraProjMtx).xyz ;
-	vec3 NormalColor=texture2D(NormalMap,texcoord1).xyz;
+	vec3 FragCoord=EyeSpaceFragCoord(Depth,texcoord0,CameraProjMtx).xyz ;
+	vec3 NormalColor=texture2D(NormalMap,texcoord0).xyz;
 	vec3 LightEyeSpacePos ;
 	vec3 LightDir;
 	vec3 HalfV;

@@ -37,8 +37,8 @@ RGP_ANIMATOR::Animator* RGP_ANIMATOR::Animator::CreateAnimator()
 };
 
 RGP_ANIMATOR::Animator::Animator() : m_SceneRenderer(NULL), m_Scene(NULL),
-										m_Camera(NULL), m_Timer(NULL), m_Initialized(false),
-										m_Data(NULL),m_NumData(0), m_Mode(2), m_SelectedMesh(0),
+										m_Camera1(NULL), m_Camera2(NULL), m_Timer(NULL), m_Initialized(false),
+										m_DynamicModels(NULL),m_NumDynamicModels(0), m_Mode(2), m_SelectedMesh(0),
 										m_SelectedBone(0), m_SelectedAnimation(0)
 {
 };
@@ -61,46 +61,26 @@ void RGP_ANIMATOR::Animator::Destroy()
 		delete m_SceneRenderer;
 		m_SceneRenderer = NULL;
 	}
-	if (m_Data) {
-		for (_u32b i = 0; i < m_NumData; ++i) {
-			if (m_Data[i].skeleton) {
-				for (_u32b j = 0; j < m_Data[i].skeleton->NumParts; ++j) {
-					if (m_Data[i].skeleton->Parts[j].Name)
-						free(m_Data[i].skeleton->Parts[j].Name);
-					if (m_Data[i].skeleton->Parts[j].Indices)
-						free(m_Data[i].skeleton->Parts[j].Indices);
-					if (m_Data[i].skeleton->Parts[j].Factor)
-						free(m_Data[i].skeleton->Parts[j].Factor);
-					if (m_Data[i].skeleton->Parts[j].ChildrenIndices)
-						free(m_Data[i].skeleton->Parts[j].ChildrenIndices);
-				}
-				free(m_Data[i].skeleton->Parts);
-				free(m_Data[i].skeleton);
-			}
-			if (m_Data[i].animations) {
-				for (_u32b j = 0; j < m_Data[i].numAnimations; ++j) {
-					if (m_Data[i].animations[j].Name)
-						free(m_Data[i].animations[j].Name);
-					if (m_Data[i].animations[j].Poses) {
-						for (_u32b k = 0; k < m_Data[i].animations[j].NumPoses; ++k) 
-							free(m_Data[i].animations[j].Poses[k].Keys);
-						free(m_Data[i].animations[j].Poses);
-					}
-				}
-				free(m_Data[i].animations);
-			}
+	if (m_DynamicModels) {
+		for (_u32b i = 0; i < m_NumDynamicModels; ++i) {
+			m_DynamicModels[i]->Destroy();
+			delete (m_DynamicModels[i]);
 		}
-		free(m_Data);
-		m_Data = NULL;
-		m_NumData = 0;
+		free(m_DynamicModels);
+		m_DynamicModels = NULL;
+		m_NumDynamicModels = 0;
 	}
 	if (m_Timer) {
 		delete m_Timer;
 		m_Timer = NULL;
 	}
-	if (m_Camera) {
-		delete m_Camera;
-		m_Camera = NULL;
+	if (m_Camera1) {
+		delete m_Camera1;
+		m_Camera1 = NULL;
+	}
+	if (m_Camera2) {
+		delete m_Camera2;
+		m_Camera2 = NULL;
 	}
 	m_Initialized = false;
 };
@@ -121,28 +101,45 @@ _bool RGP_ANIMATOR::Animator::Init_RGP_Sys()
 	if (!m_Scene)
 		return false;
 	m_SceneRenderer = new GLRenderer();
-	if (!m_SceneRenderer->InitRenderer({ "Animator",1400,900,5,false ,512,false })) {
+	if (!m_SceneRenderer->InitRenderer({ "Animator",1200,900,5,false ,256,false })) {
 		return false;
 	}
-	m_Camera = new PerspCamera(M_PI_2, 1400.0f / 900.0f, 0.1f, 5000.0f);
-	m_Camera->setPosition({ 0.0f,12.0f,-10.0f });
-	m_Camera->setOrientation({ 0.0f, -0.5f, 0.5f }, { 0.0f, 0.5f, 0.5f });
-	m_Scene->setCamera(m_Camera);
+	m_Camera1 = new PerspCamera(M_PI_2, 1200.0f / 900.0f, 0.1f, 5000.0f);
+	m_Camera2 = new OrthoCamera(-1.0,1.0f,-1.0f,1.0f, 1.0f, 5000.0f);
+	m_Camera1->setPosition({ 0.0f,12.0f,-10.0f });
+	m_Camera1->setOrientation({ 0.0f, -0.5f, 0.5f }, { 0.0f, 0.5f, 0.5f });
+	m_Camera2->setPosition({ 0.0f,12.0f,-10.0f });
+	m_Camera2->setOrientation({ 0.0f, -0.5f, 0.5f }, { 0.0f, 0.5f, 0.5f });
+	m_Scene->setCamera(m_Camera1);
 
 	m_Timer = new Timer();
 
 	LightSource *	light = NULL;
 	light = new DirectionnalLight();
-	light->setOrientation({ -0.5f,-0.5f,0.0f }, { -0.5f,0.5f,1.0f });
+	light->setPosition({ 0.0f,10.0,0.0f });
+	light->setOrientation({ 0.0f,-0.5f,5.0f }, { 0.0f,0.5f,5.0f });
 	light->setLightSpecularColor({ 0.1f,0.1f,0.1f });
 	m_Scene->AddLight(light);
+
 
 	Model3D* model = new Model3D();
 	model->setRenderer(m_SceneRenderer);
 	model->LoadModelFromFile("..//test//Samples//Plane.obj");
 	m_Scene->AddActor(model);
 
-	this->ImportDynamicModel("..//test//Samples//Lightning//lightning_obj.obj");
+
+	model = new Model3D();
+	model->setRenderer(m_SceneRenderer);
+	model->LoadModelFromFile("..//test//Samples//Jill_RE3//Jill.obj");
+	model->setPosition({ 5.0,0.0,0.0 });
+	model->ScaleUniform(2.5);
+	m_Scene->AddActor(model);
+
+	model = new Model3D();
+	model->setRenderer(m_SceneRenderer);
+	model->LoadModelFromFile("..//test//Samples//Lightning//lightning_obj.obj");
+	model->setPosition({ -5.0,0.0,0.0 });
+	m_Scene->AddActor(model);
 
 	
 
@@ -172,45 +169,57 @@ void RGP_ANIMATOR::Animator::Start()
 		//UpdatePart
 		state = glfwGetKey(m_SceneRenderer->getTarget()->getglfwWindow(), GLFW_KEY_W);
 		if (state == GLFW_PRESS) {
-			m_Camera->Translate(ScaleVertex3d(m_Camera->getDirection(), 2.0));
+			m_Scene->getCamera()->Translate(ScaleVertex3d(m_Scene->getCamera()->getDirection(), 1.0));
 
 		}
 		state = glfwGetKey(m_SceneRenderer->getTarget()->getglfwWindow(), GLFW_KEY_S);
 		if (state == GLFW_PRESS) {
-			m_Camera->Translate(ScaleVertex3d(m_Camera->getDirection(), -2.0));
+			m_Scene->getCamera()->Translate(ScaleVertex3d(m_Scene->getCamera()->getDirection(), -1.0));
 		}
 		state = glfwGetKey(m_SceneRenderer->getTarget()->getglfwWindow(), GLFW_KEY_D);
 		if (state == GLFW_PRESS) {
-			m_Camera->Translate(ScaleVertex3d(m_Camera->getSide(), -2.0));
+			m_Scene->getCamera()->Translate(ScaleVertex3d(m_Scene->getCamera()->getSide(), -1.0));
 
 		}
 		state = glfwGetKey(m_SceneRenderer->getTarget()->getglfwWindow(), GLFW_KEY_A);
 		if (state == GLFW_PRESS) {
-			m_Camera->Translate(ScaleVertex3d(m_Camera->getSide(), 2.0));
+			m_Scene->getCamera()->Translate(ScaleVertex3d(m_Scene->getCamera()->getSide(), 1.0));
 
 		}
 
 
 		state = glfwGetKey(m_SceneRenderer->getTarget()->getglfwWindow(), GLFW_KEY_UP);
 		if (state == GLFW_PRESS) {
-			m_Camera->RotateViaSide(-0.05f);
-
+			m_Scene->getCamera()->RotateViaSide(-0.05f);
+			
 		}
 		state = glfwGetKey(m_SceneRenderer->getTarget()->getglfwWindow(), GLFW_KEY_DOWN);
 		if (state == GLFW_PRESS) {
-			m_Camera->RotateViaSide(0.05f);
-
+			m_Scene->getCamera()->RotateViaSide(0.05f);
+			
 		}
 		state = glfwGetKey(m_SceneRenderer->getTarget()->getglfwWindow(), GLFW_KEY_LEFT);
 		if (state == GLFW_PRESS) {
-			m_Camera->RotateViaUp(0.05f);
-
+			m_Scene->getCamera()->RotateViaUp(0.05f);
+			
 		}
 		state = glfwGetKey(m_SceneRenderer->getTarget()->getglfwWindow(), GLFW_KEY_RIGHT);
 		if (state == GLFW_PRESS) {
-			m_Camera->RotateViaUp(-0.05f);
+			m_Scene->getCamera()->RotateViaUp(-0.05f);
+			
 		}
-
+		state = glfwGetKey(m_SceneRenderer->getTarget()->getglfwWindow(), GLFW_KEY_N);
+		if (state == GLFW_PRESS) {
+			m_SceneRenderer->SwitchNoLightMode();
+		}
+		state = glfwGetKey(m_SceneRenderer->getTarget()->getglfwWindow(), GLFW_KEY_B);
+		if (state == GLFW_PRESS) {
+			m_Scene->setCamera(m_Camera1);
+		}
+		state = glfwGetKey(m_SceneRenderer->getTarget()->getglfwWindow(), GLFW_KEY_V);
+		if (state == GLFW_PRESS) {
+			m_Scene->setCamera(m_Camera2);
+		}
 
 
 
@@ -277,23 +286,22 @@ void	 RGP_ANIMATOR::Animator::AnimationEditor()
 	char name[50] = "";
 	ImGui::Begin("Animation Editor");
 	ImGui::SetWindowSize(ImVec2(200, 600));
-	if (m_Data) {
-		for (_u32b i = 0; i < m_NumData; ++i) {
+	if (m_DynamicModels) {
+		for (_u32b i = 0; i < m_NumDynamicModels; ++i) {
 			if (ImGui::TreeNode("AnimationData")) {
 				if (ImGui::TreeNode("Model")) {
-					if (m_Data[i].model) {
-						for (_u32b s = 0; s < m_Data[i].model->getNumMeshes(); ++s) {
-							sprintf(name, "%s", m_Data[i].model->getMesh(s)->Name);
-							if (ImGui::Selectable(name, m_SelectedMesh == s))
-								m_SelectedMesh = s;
-						}
+					for (_u32b s = 0; s < m_DynamicModels[i]->getNumMeshes(); ++s) {
+						sprintf(name, "%s", m_DynamicModels[i]->getMesh(s)->Name);
+						if (ImGui::Selectable(name, m_SelectedMesh == s))
+							m_SelectedMesh = s;
 					}
 					ImGui::TreePop();
 				}
+				
 				if (ImGui::TreeNode("Skeleton")) {
-					if (m_Data[i].skeleton)
-						for (_u32b s = 0; s < m_Data[i].skeleton->NumParts; ++s) {
-							sprintf(name, "%s", m_Data[i].skeleton->Parts[s].Name);
+					if (m_DynamicModels[i]->getSkeleton())
+						for (_u32b s = 0; s < m_DynamicModels[i]->getSkeleton()->NumParts; ++s) {
+							sprintf(name, "%s", m_DynamicModels[i]->getSkeleton()->Parts[s].Name);
 							ImGui::Selectable(name);
 						}
 					else
@@ -301,9 +309,9 @@ void	 RGP_ANIMATOR::Animator::AnimationEditor()
 					ImGui::TreePop();
 				}
 				if (ImGui::TreeNode("Animations")) {
-					if (m_Data[i].animations)
-						for (_u32b a = 0; a < m_Data[i].numAnimations; ++a) {
-							sprintf(name,"%s", m_Data[i].animations[a].Name);
+					if (m_DynamicModels[i]->getNumAnimations())
+						for (_u32b a = 0; a < m_DynamicModels[i]->getNumAnimations(); ++a) {
+							sprintf(name,"%s", m_DynamicModels[i]->getAnimationbyIndex(a+1)->Name);
 							ImGui::Selectable(name);
 						}
 					else
@@ -329,34 +337,14 @@ void	 RGP_ANIMATOR::Animator::KeyEditor()
 };
 
 
-_bool		RGP_ANIMATOR::Animator::ImportDynamicModel(_s8b* filename)
+_bool		RGP_ANIMATOR::Animator::ImportDynamicModel(_s8b* filename, Vertex3d Pos)
 {
-	Model3D* model = new Model3D();
-	model->setRenderer(m_SceneRenderer);
-	model->LoadModelFromFile(filename,false);
-	model->ScaleUniform(.1f);
-	AnimationData* tmp = (AnimationData*)malloc((1 + m_NumData) * sizeof(AnimationData));
-	if (!tmp) {
-		delete model;
-		return false;
-	}
-	for (_u32b i = 0; i < m_NumData; ++i)
-		tmp[i] = m_Data[i];
 	
-	tmp[m_NumData].model = model;
-	tmp[m_NumData].skeleton = NULL;
-	tmp[m_NumData].animations = NULL;
-	tmp[m_NumData].numAnimations = 0;
-	++m_NumData;
-	if (m_Data)
-		free(m_Data);
-	m_Data = tmp;
-	m_Scene->AddActor(model);
 	return true;
 };
-_bool		RGP_ANIMATOR::Animator::ImportStaticModel(_s8b* filename)
+_bool		RGP_ANIMATOR::Animator::ImportStaticModel(_s8b* filename, Vertex3d Pos)
 {
-	Model3D* model = new Model3D();
+	Model3D* model = new Model3D(Pos);
 	model->setRenderer(m_SceneRenderer);
 	model->LoadModelFromFile(filename);
 	model->ScaleUniform(.1f);

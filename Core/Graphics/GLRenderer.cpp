@@ -339,7 +339,8 @@ RGP_CORE::GLRenderer::GLRenderer(RenderMode Type):m_Target(NULL),m_isInitialized
 											m_ShadowAttachmentTexture(NULL),
 											m_ShadowAccumBuffer(0),
 											m_ShadowAccumTexture(0),
-											m_ShadowAccumProgram(0)
+											m_ShadowAccumProgram(0),
+											m_noLightMode(false)
 											
 {
     if(Type==DEFERRED_RENDERING || Type==FORWARD_RENDERING)
@@ -624,6 +625,7 @@ _bool	RGP_CORE::GLRenderer::CreateShadowsObjects()
 		m_Target->getHeight(),
 		0, GL_RGBA, GL_FLOAT, 0);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_ShadowAccumTexture, 0);
+	glViewport(0, 0, m_Target->getWidth(), m_Target->getHeight());
 	glClear(GL_COLOR_BUFFER_BIT);
 	glClearColor(1.0, 1.0, 1.0, 0.0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -672,8 +674,9 @@ _bool	RGP_CORE::GLRenderer::CreateLightObjects()
 	if (GL_FRAMEBUFFER_COMPLETE != error) {
 		printf("frameBuffer attacehment error code %x\n", error);
 	}
+	glViewport(0, 0, m_Target->getWidth(), m_Target->getHeight());
 	glClear(GL_COLOR_BUFFER_BIT);
-	glClearColor(1.0, 1.0, 1.0, 0.0);
+	glClearColor(1.0, 1.0, 1.0,0.0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glBindTexture(GL_TEXTURE_2D, 0);
 
@@ -684,10 +687,10 @@ _bool RGP_CORE::GLRenderer::InitFinalPhase(){
                                 1.0f,1.0f,
                                 1.0f,-1.0f,
                                 -1.0f,-1.0f,};
-    _float TexCoordBuffer[8]={0.0f,0.0f,
-                            1.0f,0.0f,
+    _float TexCoordBuffer[8]={0.0f,1.0f,
                             1.0f,1.0f,
-                            0.0f,1.0f};
+                            1.0f,0.0f,
+                            0.0f,0.0f};
     _u32b IndexBuffer[6]={0,2,1,
                          0,3,2};
     m_FinalRenderSurface=(MeshBuffers*)malloc(sizeof(MeshBuffers));
@@ -816,12 +819,13 @@ void	RGP_CORE::GLRenderer::RenderScene(_u32b FBO_Target,Camera* camera)
 
 	//RENDER SCENE Colors to the SelectedFBO
 	this->RenderSceneColors(m_FBOs[m_SelectedFBO],camera);
-
-	////if should draw shadows
-	if (m_Config.EnableShadows == true) {
-		this->RenderSceneShadows(m_ShadowAccumBuffer,camera);
+	if (!m_noLightMode) {
+		////if should draw shadows
+		if (m_Config.EnableShadows == true) {
+			this->RenderSceneShadows(m_ShadowAccumBuffer, camera);
+		}
+		this->RenderSceneLightAccum();
 	}
-	this->RenderSceneLightAccum();
 	///combine results and render to the screen ;
 	this->RenderToTarget(FBO_Target);
 	//this->RenderSceneUI(FBO_Target);
@@ -889,25 +893,29 @@ void RGP_CORE::GLRenderer::RenderSceneColors(_u32b FBO,Camera *camera)
 		glDisable(GL_CULL_FACE);
 		glDisable(GL_DEPTH_TEST);
 		glDisable(GL_SMOOTH);
-		//glDisable(GL_BLEND);
+		glDisable(GL_BLEND);
 		
 	}
 };
 void RGP_CORE::GLRenderer::RenderSceneShadows(_u32b FBO, Camera* camera)
 {
 	Camera* Eye = NULL ;
+	
 	if (m_SelectedScene && m_Config.EnableShadows){
+		_u32b NumActors = m_SelectedScene->getNumActors();
+		_u32b ShadowIndex = 0, numLights = m_SelectedScene->getNumLights();
+		_s32b Location1 = -1, Location2 = -1, Location3 = -1;
+		LightSource*	Source = NULL;
+		Renderable*		actor = NULL;
+		if (numLights == 0)
+			return;
 		if (camera) {
 			Eye = camera;
 		}
 		else {
 			Eye = m_SelectedScene->getCamera();
 		}
-		_u32b NumActors = m_SelectedScene->getNumActors();
-		_u32b ShadowIndex = 0, numLights=m_SelectedScene->getNumLights();
-		_s32b Location1 = -1,Location2=-1, Location3=-1;
-		LightSource*	Source = NULL;
-		Renderable*		actor = NULL;
+		
 		m_ShaderManager->BindProgram(m_ShadowRenderingProgram);
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_CULL_FACE);
@@ -1037,8 +1045,9 @@ void	RGP_CORE::GLRenderer:: RenderSceneLightAccum(Camera* camera)
 	if (!Eye)
 		Eye = m_SelectedScene->getCamera();
 	if (m_SelectedScene) {
-		if (m_SelectedScene->getNumLights() == 0)
+		if (m_SelectedScene->getNumLights() == 0) {
 			return;
+		}
 		this->BindFrameBuffer(m_LightAccumBuffer);
 		this->SetShaderProgram(m_LightAccumProgram);
 		glDrawBuffers(2, DrawBuff);
@@ -1127,7 +1136,7 @@ void RGP_CORE::GLRenderer::RenderToTarget(_u32b FBO_Target){
         ///construct and render the final result
 		m_ShaderManager->BindProgram(m_FinalRenderProgram);
 
-      
+		
         ///other uniforms
         location= this->GetUniformLocation(m_FinalRenderProgram,"Diffuse");
         glActiveTexture(GL_TEXTURE0);
@@ -1159,7 +1168,13 @@ void RGP_CORE::GLRenderer::RenderToTarget(_u32b FBO_Target){
 		glActiveTexture(GL_TEXTURE5);
 		glBindTexture(GL_TEXTURE_2D, m_LightAccumSpecularTexture);
 		glUniform1i(location, 5);
-        
+
+
+		location = this->GetUniformLocation(m_FinalRenderProgram, "noLight");
+		if (m_noLightMode)
+			glUniform1i(location, 1);
+		else
+			glUniform1i(location, 0);
         ///
         ///VAOs
         glBindVertexArray(m_FinalRenderSurface->VertexArrayObject);
@@ -1178,6 +1193,20 @@ void	RGP_CORE::GLRenderer::UpdateEnvironmentMaps()
 {
 
 };
+
+
+void	RGP_CORE::GLRenderer::SwitchNoLightMode()
+{
+	if (m_noLightMode)
+		m_noLightMode = false;
+	else
+		m_noLightMode = true;
+};
+
+
+
+
+
 
 _bool RGP_CORE::GLRenderer::GenBuffers(_u32b numBuffers,GLuint*    target){
     if(!target)
@@ -1200,6 +1229,14 @@ void  RGP_CORE::GLRenderer::setBufferData(_u32b Target,_u32b SizeinByte, void* D
     glBufferData(Target,SizeinByte,Data,flag);
     if(glGetError())
         printf("error filling buffer with Data\n");
+};
+void   RGP_CORE::GLRenderer::setBufferSubData(_u32b Target, _u32b Offset, _u32b Size, void* Data)
+{
+	int error;
+	glGetError();
+	glBufferSubData(Target, Offset, Size, Data);
+	if (error = glGetError())
+		printf("error filling buffer with sub Data %x\n", error);
 };
 void  RGP_CORE::GLRenderer::BindBuffer(_u32b Bindtype,_u32b BufferID ){
     glBindBuffer(Bindtype,BufferID);

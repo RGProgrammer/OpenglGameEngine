@@ -4,11 +4,11 @@
 #include "..//Core//AdvancedActors//DataType.h"
 #include "..//Core//Scene//GameScene.h"
 #include "..//Core//Graphics//GLRenderer.h"
-#include "..//Core//Graphics//Model3D.h"
 #include "..//Core//Common//Timer.h"
 #include "..//Core//Scene//DirectionnalLight.h"
+#include "..//Core//Scene//PointLight.h"
 #include "..//tools//imgui//imgui.h"
-
+#include ".//AnimatedModel.h"
 #define SKELETONEDITING 0
 #define WEIGHMAPPING 1
 #define ANIMATIONEDITING 2
@@ -18,12 +18,6 @@ using namespace RGP_CORE;
 
 namespace RGP_ANIMATOR
 {
-	typedef struct {
-		Model3D*		model;
-		Skeleton*		skeleton;
-		Animation*		animations;
-		_u32b			numAnimations;
-	} AnimationData;
 	class Animator {
 	public:
 		static Animator* CreateAnimator();
@@ -45,19 +39,20 @@ namespace RGP_ANIMATOR
 		~Animator();
 		void		Start();
 		void		Destroy();
-		_bool		ImportDynamicModel(_s8b* filename);
-		_bool		ImportStaticModel(_s8b* filename);
+		_bool		ImportDynamicModel(_s8b* filename, Vertex3d Pos = { 0.0,0.0,0.0 });
+		_bool		ImportStaticModel(_s8b* filename, Vertex3d Pos = { 0.0,0.0,0.0 });
 
 
 	private:
 		
 		GLRenderer *			m_SceneRenderer;
 		GameScene*				m_Scene;
-		Camera*					m_Camera;
+		Camera*					m_Camera1;
+		Camera*					m_Camera2;
 		Timer*					m_Timer;
 		_bool					m_Initialized;
-		AnimationData*			m_Data;
-		_u32b					m_NumData;
+		AnimatedModel**			m_DynamicModels;
+		_u32b					m_NumDynamicModels;
 		_s32b					m_Mode;
 		_u32b					m_SelectedMesh;//1 ---->NumMeshes
 		_u32b					m_SelectedBone;//1 ---->Numbones

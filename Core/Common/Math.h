@@ -9,6 +9,7 @@
 
 #include "BasePrimitiveTypes.h"
 #include <math.h>
+#include <stdio.h>
 
 #ifndef M_PI
     #define M_PI		3.14159265358979323846
@@ -32,8 +33,6 @@ typedef struct {
 
 inline _float Magnitude3d(Vertex3d Ver){
 	_float tmp = Ver.x*Ver.x + Ver.y*Ver.y + Ver.z*Ver.z;
-	if (tmp < 0.0f)
-		return 0;
     return (_float)sqrt(tmp);
 };
 inline Vertex3d getVertex3d(Vertex3d point1,Vertex3d point2){
@@ -56,13 +55,11 @@ inline Vertex3d ScaleVertex3d(Vertex3d Ver,_float s){
 inline _float DotProduct3d(Vertex3d Ver1 ,Vertex3d Ver2){
     return Ver1.x*Ver2.x+Ver1.y*Ver2.y+Ver1.z*Ver2.z;
 };
-inline Vertex3d CrossProduct3d(Vertex3d x,Vertex3d y){
-	Vertex3d Result;
+inline Vertex3d CrossProduct3d(Vertex3d Left,Vertex3d Right){
 
-	Result.x = x.y * y.z - y.y * x.z;
-	Result.y = x.z * y.x - y.z * x.x;
-	Result.z = x.x * y.y - y.x * x.y;
-	return Result;
+	return { Left.y * Right.z - Right.y * Left.z,
+		Left.z * Right.x - Right.z * Left.x,
+		Left.x * Right.y - Right.x * Left.y };
 };
 inline Vertex3d Normalize3d(Vertex3d Ver){
     _float d=Magnitude3d(Ver);
@@ -140,11 +137,11 @@ inline _float RadiustoDegree(_float Radius)
 inline void FillViewMatrix(Vertex3d Position, Vertex3d Direction, Vertex3d Up,_float* Dest)
 {
 	Vertex3d	Forward = Direction; 
-	Vertex3d    Side = Normalize3d(CrossProduct3d(Direction, Up));
+	Vertex3d    Side = Normalize3d(CrossProduct3d(Forward, Up));
 	Vertex3d	Upward = Normalize3d(CrossProduct3d(Side, Direction));
 	Dest[0] = Side.x;		Dest[4] = Side.y;			Dest[8]  = Side.z;			Dest[12] = -DotProduct3d(Side, Position);
 	Dest[1] = Upward.x;		Dest[5] = Upward.y;			Dest[9]  = Upward.z;		Dest[13] = -DotProduct3d(Upward, Position);
-	Dest[2] = -Forward.x;	Dest[6] = -Forward.y;		Dest[10] = -Forward.z;		Dest[14] = DotProduct3d(Direction, Position);
+	Dest[2] = -Forward.x;	Dest[6] = -Forward.y;		Dest[10] = -Forward.z;		Dest[14] = DotProduct3d(Forward, Position);
 	Dest[3] = 0.0f;			Dest[7] = 0.0f;				Dest[11] = 0.0f;			Dest[15] = 1.0f;
 }
 inline void FillPersPectiveMatrix(_float FOV, _float Aspect , _float Near, _float Far , _float* Dest)
@@ -170,14 +167,14 @@ inline void FillOrthographicsMatrix(_float left, _float right, _float top, _floa
 
 	Dest[0] = 2.0f / (right - left);
 	Dest[5] = 2.0f / (top - bottom);
-	Dest[3]= -(right + left) / (right - left);
-	Dest[7]= -(top + bottom) / (top - bottom);
-	Dest[10]=-1.0f / (Far - Near);
-	Dest[11] = - Near / (Far - Near);
+	Dest[10]=-2.0f / (Far - Near);
+	Dest[12] = -(right + left) / (right - left);
+	Dest[13] = -(top + bottom) / (top - bottom);
+	Dest[14] = -(Far+ Near) / (Far - Near);
 
-	Dest[1] = Dest[2] =  Dest[4] =  Dest[6] =  Dest[8] =0.0f ;
-	Dest[9] =  Dest[12] = Dest[13] =  Dest[14] =0.0f ; 
-	Dest[15] = 1.0f ;
+	Dest[1] = Dest[2] =  Dest[3] =  Dest[4] =  Dest[6] =0.0f ;
+	Dest[7] = Dest[8] = Dest[9] = Dest[11] = 0.0f;
+	Dest[15] = 1.0f;
 }
 #endif // PFE_MATH_H_
 

@@ -3,6 +3,8 @@
 #include "..//Core//Graphics//Model3D.h"
 #include "..//Core//BaseActors/Dynamic.h"
 #include "..//Core//AdvancedActors//DataType.h"
+
+#define MAX_NUM_BONES		50
 using namespace RGP_CORE;
 namespace RGP_ANIMATOR {
 	class AnimatedModel : public Model3D, public Dynamic 
@@ -13,7 +15,9 @@ namespace RGP_ANIMATOR {
 		void		Destroy();
 		void		Render(Camera* selected);
 		void		RenderBones(Camera * selected);
-		_bool		Init(GLRenderer* renderer);
+		void		RenderWeighMap(Camera* selected);
+		_bool		Init(GLRenderer* renderer,_s8b* modelfilename);
+		_bool		AddBone(Bone bone);
 		Bone*		getBonebyName(_s8b* bonename);
 		Bone*		getBonebyIndex(_u32b index);
 		Skeleton*	getSkeleton();
@@ -32,15 +36,21 @@ namespace RGP_ANIMATOR {
 		
 
 	private:
+		_bool			m_Initialized;
 		Skeleton		m_Skeleton;
 		Animation*		m_Animations;
 		_u32b			m_NumAnimations;
 		_u32b			m_SelectedAnimation;
 		_u32b			m_Size;
 		_u32b			m_BoneRenderingShader;
+		GLuint			m_BonesVBO;
+		GLuint			m_BonesVAO;
+
 		_u32b			m_WeighMappingShader;
-		_u32b			m_SolidModeShader;
-		_bool			m_Initialized;
+		GLuint			m_WeighMappingModeVAO;
+		GLuint			m_WeighMappingVBO;
+
+		_u8b			m_Mode;//0 solid , 1 weighmap
 
 	};
 
