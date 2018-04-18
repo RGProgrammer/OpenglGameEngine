@@ -72,6 +72,9 @@
     <ClCompile Include="..\..\Core\AdvancedActors\EnvMapProbe.cpp">
       <Filter>Fichiers sources</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Core\Common\Thread.cpp">
+      <Filter>Fichiers sources</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Core\Sound\SoundEngine.h">

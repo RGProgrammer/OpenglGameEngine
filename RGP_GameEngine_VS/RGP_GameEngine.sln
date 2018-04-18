@@ -15,10 +15,12 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TestProject", "TestProject\
 		{1BC7B856-DDAE-45C5-9506-ADDEE1EFD93E} = {1BC7B856-DDAE-45C5-9506-ADDEE1EFD93E}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Thread_Test", "Thread_Test\Thread_Test.vcxproj", "{162D6205-1CB4-48E8-A1CF-B195C3CF2A5E}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1BC7B856-DDAE-45C5-9506-ADDEE1EFD93E} = {1BC7B856-DDAE-45C5-9506-ADDEE1EFD93E}
+	EndProjectSection
+EndProject
 Global
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
 		Debug|x64 = Debug|x64
@@ -76,12 +78,31 @@ Global
 		{E331887B-805C-4AE2-B4EB-648AB0DC60C0}.RelWithDebInfo|Win32.Build.0 = Release|Win32
 		{E331887B-805C-4AE2-B4EB-648AB0DC60C0}.RelWithDebInfo|x64.ActiveCfg = Release|x64
 		{E331887B-805C-4AE2-B4EB-648AB0DC60C0}.RelWithDebInfo|x64.Build.0 = Release|x64
+		{162D6205-1CB4-48E8-A1CF-B195C3CF2A5E}.Debug|Win32.ActiveCfg = Debug|Win32
+		{162D6205-1CB4-48E8-A1CF-B195C3CF2A5E}.Debug|Win32.Build.0 = Debug|Win32
+		{162D6205-1CB4-48E8-A1CF-B195C3CF2A5E}.Debug|x64.ActiveCfg = Debug|x64
+		{162D6205-1CB4-48E8-A1CF-B195C3CF2A5E}.Debug|x64.Build.0 = Debug|x64
+		{162D6205-1CB4-48E8-A1CF-B195C3CF2A5E}.MinSizeRel|Win32.ActiveCfg = Release|Win32
+		{162D6205-1CB4-48E8-A1CF-B195C3CF2A5E}.MinSizeRel|Win32.Build.0 = Release|Win32
+		{162D6205-1CB4-48E8-A1CF-B195C3CF2A5E}.MinSizeRel|x64.ActiveCfg = Release|x64
+		{162D6205-1CB4-48E8-A1CF-B195C3CF2A5E}.MinSizeRel|x64.Build.0 = Release|x64
+		{162D6205-1CB4-48E8-A1CF-B195C3CF2A5E}.Release|Win32.ActiveCfg = Release|Win32
+		{162D6205-1CB4-48E8-A1CF-B195C3CF2A5E}.Release|Win32.Build.0 = Release|Win32
+		{162D6205-1CB4-48E8-A1CF-B195C3CF2A5E}.Release|x64.ActiveCfg = Release|x64
+		{162D6205-1CB4-48E8-A1CF-B195C3CF2A5E}.Release|x64.Build.0 = Release|x64
+		{162D6205-1CB4-48E8-A1CF-B195C3CF2A5E}.RelWithDebInfo|Win32.ActiveCfg = Release|Win32
+		{162D6205-1CB4-48E8-A1CF-B195C3CF2A5E}.RelWithDebInfo|Win32.Build.0 = Release|Win32
+		{162D6205-1CB4-48E8-A1CF-B195C3CF2A5E}.RelWithDebInfo|x64.ActiveCfg = Release|x64
+		{162D6205-1CB4-48E8-A1CF-B195C3CF2A5E}.RelWithDebInfo|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {5AAB8F99-D0C9-4F76-8841-917B2935CF66}
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
 	EndGlobalSection
 	GlobalSection(Performance) = preSolution
 		HasPerformanceSessions = true

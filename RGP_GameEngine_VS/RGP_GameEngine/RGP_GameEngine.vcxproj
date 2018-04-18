@@ -101,6 +101,7 @@
     <ClCompile Include="..\..\Core\BaseActors\Dynamic.cpp" />
     <ClCompile Include="..\..\Core\BaseActors\Physical.cpp" />
     <ClCompile Include="..\..\Core\BaseActors\Renderable.cpp" />
+    <ClCompile Include="..\..\Core\Common\Thread.cpp" />
     <ClCompile Include="..\..\Core\Common\Timer.cpp" />
     <ClCompile Include="..\..\Core\Graphics\GLRenderer.cpp" />
     <ClCompile Include="..\..\Core\Graphics\Model3D.cpp" />
