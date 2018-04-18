@@ -6,40 +6,47 @@
 
 
 #include ".//BasePrimitiveTypes.h"
-#ifdef  WIN32
-
-#elif _linux_
-
+#if defined  _WIN32
+#include <Windows.h>
+#elif defined _linux_
+#include <pthread.h>
+#include <semaphore.h>
 #endif // WIN32
 
 
 namespace RGP_CORE {
      enum _ThreadStatus{
-        THREAD_STARTED,
+		THREAD_ERROR,
+        THREAD_ACTIVE,
         THREAD_PAUSED,
-        THREAD_STOPED,
-        THREAD_WAITING
+        THREAD_STOPPED,
+		THREAD_FINISHED
     };
     class Thread {
 	public :
-		Thread * CreateThread(void* (*func)(void* arg));
-    protected:
-        Thread(void* func);
+		static Thread * Create(void* (*func)(void* arg),void* ptrParameter, _bool Suspended=false);
+		static void Sleep(_u32b millisecs);
+    private:
+        Thread(void* func, void* ptrParameter, _bool Suspended=false);
+	public:
         ~Thread();
         _bool            Resume();
         _bool            Pause();
         _bool            Stop();
+		_u32b			Join();// wait for the thread to finish and return exitCode
         void            Destroy();
-        _u8b*           getThreadName();
 		_s32b			getThreadID();
         _ThreadStatus   getThreadStatus();
-		void*			getResultBuffer();
     private :
-        _u8b*           m_ThreadName ;
-        _ThreadStatus   m_Status ;
-		void*			m_ptrFunction;
-		void*			m_Buffer;
+        _ThreadStatus			m_Status ;
+		void*					m_ptrFunction;
+		_u32b					m_ExitCode;
+		_u32b					m_ThreadID;
 
+#if defined  _WIN32
+		SECURITY_ATTRIBUTES		m_Attrib;
+		HANDLE					m_winThreadHandle;
+#endif // WIN32
     };
 };
 #endif // _RGP_THREAD_IMPL_H_
