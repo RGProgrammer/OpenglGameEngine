@@ -7,12 +7,22 @@
 #define MAX_NUM_BONES		50
 using namespace RGP_CORE;
 namespace RGP_ANIMATOR {
-	class AnimatedModel : public Model3D, public Dynamic 
+	class AnimatedModel :  public Model3D, public Dynamic 
 	{
+		enum Status {
+			STOP=0,
+			PLAY=1,
+			PAUSE=2
+		};
 	public:
+		static AnimatedModel*	CreateFromFile(GLRenderer* renderer, _s8b* filename);
 		AnimatedModel();
 		~AnimatedModel();
 		void		Destroy();
+		void		Update(_float dt);
+		void		Play();
+		void		Pause();
+		void		Stop();
 		void		Render(Camera* selected);
 		void		RenderBones(Camera * selected);
 		void		RenderWeighMap(Camera* selected);
@@ -32,6 +42,11 @@ namespace RGP_ANIMATOR {
 		void		RemoveAnimationbyName(_s8b * name);
 		void		RemoveAnimationbyIndex(_u32b index);
 		void		RemoveAll();
+	
+	private:
+		_bool		ProcessBones(aiNode* node,const aiScene* scene);
+		_bool		ProcessAnimation(const aiScene* Scene);
+
 
 		
 

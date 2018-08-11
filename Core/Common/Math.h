@@ -21,7 +21,8 @@
     #define M_PI_4		0.78539816339744830962
 #endif
 
-
+#define MAX(a,b) (a>b)?a:b
+#define MIN(a,b) (a<b)?a:b
 
 typedef struct {
     _float x,y,z ;

@@ -50,7 +50,7 @@ RGP_CORE::Thread::Thread(void* func, void* ptrParameter,_bool Suspended) :m_Stat
 
 };
 
-void  RGP_CORE::Thread::Sleep(_u32b millisecs)
+void  RGP_CORE::Thread::ThreadSleep(_u32b millisecs)
 {
 	Sleep(millisecs);
 };

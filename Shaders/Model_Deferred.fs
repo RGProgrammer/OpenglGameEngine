@@ -28,7 +28,7 @@ void main(){
 
 	gl_FragData[1]=texture2D(Specularmap,texcoord0);
 	gl_FragData[2]=ViewMtx0*vec4(normalcolor0,0.0);
-	gl_FragData[3]=vec4(0.0);
+	gl_FragData[3]=vec4(texture2D(Diffusemap,texcoord0).a,0.0,0.0,1.0);
 	gl_FragData[4]=PositionColor; 
 
 }

@@ -5,11 +5,12 @@
 /// to a high level interface to make adding another renderer
 /// type mode easier
 //////////////////////////////////////////////////////////////////////////
+#include ".//Window.h"
 #include "..//Common//BasePrimitiveTypes.h"
-#include "..//Common//StringOP.h"
+#include "..//Common//Common.h"
 #include "..//BaseActors//Renderable.h"
 #include "..//Scene//GameScene.h"
-#include ".//Window.h"
+
 #include <string.h>
 ///there are more includes here
 
@@ -64,8 +65,11 @@ namespace RGP_CORE{
 		_s32b		ShadowResolution;
 		_bool		useEnvironmentMaps;
 
+
     } gfxConfig;
 
+
+	
 
 	class GLShaderProgramsManager {
 		
@@ -124,6 +128,7 @@ namespace RGP_CORE{
         _bool isInitialized();
         RenderMode  getRenderMode();
         Window*     getTarget();
+		void		MakeContext();
         void	setScene(GameScene*   Scene);
 		void	RenderScene(_u32b FBO_Target,Camera* camera=NULL);
         void	RenderCurrentScene();

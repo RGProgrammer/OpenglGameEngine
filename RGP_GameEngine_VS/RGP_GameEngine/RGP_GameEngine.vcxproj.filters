@@ -119,9 +119,6 @@
     <ClInclude Include="..\..\Core\Common\Math.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Core\Common\StringOP.h">
-      <Filter>Fichiers d%27en-tête</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Core\Common\Thread.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
@@ -153,6 +150,9 @@
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Core\AdvancedActors\DataType.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Core\Common\Common.h">
       <Filter>Fichiers d%27en-tête</Filter>
     </ClInclude>
   </ItemGroup>

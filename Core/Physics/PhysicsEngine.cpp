@@ -13,6 +13,11 @@ void RGP_CORE::PhysicsEngine::Destroy()
 	
 	if (m_DynamicWorld) {
 
+		m_DynamicWorld->clearForces();
+		for (int i = m_DynamicWorld->getNumCollisionObjects() - 1; i >= 0; --i) {
+			btCollisionObject* object = m_DynamicWorld->getCollisionObjectArray()[i];
+			m_DynamicWorld->removeCollisionObject(object);
+		}
 		//deleting
 		delete m_DynamicWorld;
 		m_DynamicWorld = NULL;
@@ -70,7 +75,7 @@ _bool RGP_CORE::PhysicsEngine::Init(GameScene*	Scene)
 	if (!m_CollisionDispatcher)
 		return m_Initilialized;
 
-	m_BroadPhaseInterface= new btDbvtBroadphase(m_pairCache);//btSimpleBroadphase();
+	m_BroadPhaseInterface= new /*btDbvtBroadphase(m_pairCache);*/btSimpleBroadphase();
 	if (!m_BroadPhaseInterface)
 		return m_Initilialized;
 	m_ConstraintSolver=new btSequentialImpulseConstraintSolver;
@@ -104,7 +109,6 @@ void RGP_CORE::PhysicsEngine::reRegisterPhysicalActors()
 	if (m_SelectedScene && m_DynamicWorld) {
 		// clear old values 
 		m_DynamicWorld->clearForces();
-		m_DynamicWorld->getNumCollisionObjects();
 		for (int i = m_DynamicWorld->getNumCollisionObjects() - 1; i >= 0; --i) {
 			btCollisionObject* object = m_DynamicWorld->getCollisionObjectArray()[i];
 			m_DynamicWorld->removeCollisionObject(object);

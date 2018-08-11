@@ -1,5 +1,40 @@
 #include "./AnimatedModel.h"
 
+
+
+RGP_ANIMATOR::AnimatedModel*	RGP_ANIMATOR::AnimatedModel::CreateFromFile(GLRenderer* renderer, _s8b* filename)
+{
+	if (!renderer || !(renderer->isInitialized()))
+		return NULL;
+	AnimatedModel*	 am = new AnimatedModel();
+	if (!am)
+		return NULL;
+	if (!am->Init(renderer, filename)) {
+		delete am;
+		return NULL;
+	}
+	const aiScene* Scene = aiImportFile(filename, aiProcessPreset_TargetRealtime_Fast );
+	if (Scene->HasAnimations()) {
+		//copy bones data :
+		if (!am->ProcessBones(Scene->mRootNode,Scene)) {
+			delete am;
+			printf("error loading bones data\n");
+			return NULL;
+		}
+		if (!am->ProcessAnimation(Scene)) {
+			delete am;
+			printf("error loading animation data\n");
+			return NULL;
+		}
+	}
+	else {
+		printf("no animation found \n");
+	}
+	aiReleaseImport(Scene);
+	return am;
+};
+
+
 RGP_ANIMATOR::AnimatedModel::AnimatedModel() : Dynamic(),Model3D(), m_Animations(0), m_NumAnimations(0),
 												m_SelectedAnimation(0), m_Skeleton({ 0,0 }), m_Initialized(false),m_Size(0),
 												m_BoneRenderingShader(0), m_BonesVBO(0), m_BonesVAO(0),
@@ -23,8 +58,8 @@ void RGP_ANIMATOR::AnimatedModel::Destroy()
 			if (m_Skeleton.Parts[i].Indices) {
 				free(m_Skeleton.Parts[i].Indices);
 			}
-			if (m_Skeleton.Parts[i].Factor) {
-				free(m_Skeleton.Parts[i].Factor);
+			if (m_Skeleton.Parts[i].Weighs) {
+				free(m_Skeleton.Parts[i].Weighs);
 			}
 			if (m_Skeleton.Parts[i].ChildrenIndices) {
 				free(m_Skeleton.Parts[i].ChildrenIndices);
@@ -64,13 +99,169 @@ void RGP_ANIMATOR::AnimatedModel::Destroy()
 	m_Initialized = false;
 	Model3D::Destroy();
 };
+
+static _u32b meshindex = 0;
+
+_bool		RGP_ANIMATOR::AnimatedModel::ProcessBones(aiNode* node,const aiScene* scene)
+{
+	_bool ret = true;
+	aiBone* ptrBone = NULL;
+	_u32b	numBones = 0;
+	Bone bone;
+	bone.Name=NULL;
+	bone.MeshID= meshindex;
+	bone.NumIndices=0;
+	bone.Indices=0;// index of each affected vertex
+	bone.Weighs=0;
+	bone.ParentIndex=0;
+	bone.NumChildren=0;
+	bone.ChildrenIndices=0;
+	bone.LocalPostion = { 0.0f,0.0f,0.0f };
+	bone.LocalDirection = { 0.0f,0.0f,0.0f };
+	bone.LocalUp = { 0.0f,0.0f,0.0f };
+	//copy node content
+	for (_u16b i = 0; i < node->mNumMeshes; ++i) {
+		numBones = scene->mMeshes[node->mMeshes[i]]->mNumBones;
+		for (_u32b b = 0; i <numBones; ++b) {
+			ptrBone = scene->mMeshes[node->mMeshes[i]]->mBones[b];
+			bone.Name = CreateStringCopy(ptrBone->mName.C_Str());
+			bone.MeshID = meshindex;
+			bone.NumIndices = ptrBone->mNumWeights;
+			bone.Indices =(_u32b*)malloc(bone.NumIndices*sizeof(_u32b));
+			if (!bone.Indices) {
+				free(bone.Name);
+				return false;
+			}
+			bone.Weighs = (_float*)malloc(bone.NumIndices * sizeof(_float));
+			if (!bone.Weighs) {
+				free(bone.Name);
+				free(bone.Indices);
+				return false;
+			}
+			for (_u32b j = 0; j < bone.NumIndices; ++j) {
+				bone.Indices[j] = ptrBone->mWeights[j].mVertexId;
+				bone.Weighs[j] = ptrBone->mWeights[j].mWeight;
+			}
+			bone.LocalPostion = { ptrBone->mOffsetMatrix.a4 ,ptrBone->mOffsetMatrix.b4,ptrBone->mOffsetMatrix.c4 };
+			bone.LocalDirection = { ptrBone->mOffsetMatrix.a3 ,ptrBone->mOffsetMatrix.b3,ptrBone->mOffsetMatrix.c3 };
+			bone.LocalUp = { ptrBone->mOffsetMatrix.a2 ,ptrBone->mOffsetMatrix.b2,ptrBone->mOffsetMatrix.c2 };
+			if(!AddBone(bone)){
+				free(bone.Name);
+				free(bone.Indices);
+				free(bone.Weighs);
+				return false;
+			}
+		}
+		meshindex++;
+	}
+	//process children nodes
+	for (_u16b i = 0; i< node->mNumChildren && ret ; i++) {
+		ret*=ProcessNode(node->mChildren[i], scene);
+	}
+
+	meshindex = 0;
+	return ret;
+};
+_bool		RGP_ANIMATOR::AnimatedModel::ProcessAnimation(const aiScene* Scene)
+{
+	Key  key;
+	Animation* ani;
+	_double cursor;
+	Key newkey;
+	_u32b p = 0, r = 0, s = 0;
+	for (_u32b a = 0; a < Scene->mNumAnimations; ++a) {
+		//creating animation container
+		ani=this->AddAnimation((_s8b*)(Scene->mAnimations[a]->mName.C_Str()));
+		if (!ani)
+			return false;
+		ani->numChannels = 0;
+		ani->channels = NULL;
+		ani->channels = (Channel*)malloc(Scene->mAnimations[a]->mNumChannels * sizeof(Channel));
+		if (!ani->channels)
+			return false;
+		ani->numChannels = Scene->mAnimations[a]->mNumChannels;
+		for (_u32b c = 0; c < ani->numChannels; ++c) {
+			ani->channels[c].boneName = NULL;
+			ani->channels[c].Keys = NULL;
+			ani->channels[c].numKeys = 0;
+		}
+		for (_u32b c = 0; c < ani->numChannels; ++c) {
+			ani->channels[c].boneName = CreateStringCopy(Scene->mAnimations[a]->mChannels[c]->mNodeName.C_Str());
+			cursor = 1000.0f;
+			for (p = 0, r = 0, s = 0;
+					p < Scene->mAnimations[a]->mChannels[c]->mNumPositionKeys ||
+					r < Scene->mAnimations[a]->mChannels[c]->mNumRotationKeys ||
+					s < Scene->mAnimations[a]->mChannels[c]->mNumScalingKeys;
+				) {
+				//determine which is the time for the next key
+				if (p < Scene->mAnimations[a]->mChannels[c]->mNumPositionKeys) {
+					cursor = MIN(Scene->mAnimations[a]->mChannels[c]->mPositionKeys[p].mTime,cursor);
+				}
+				if (r < Scene->mAnimations[a]->mChannels[c]->mNumRotationKeys) {
+					cursor = MIN(Scene->mAnimations[a]->mChannels[c]->mRotationKeys[r].mTime, cursor);
+				}
+				if (s < Scene->mAnimations[a]->mChannels[c]->mNumScalingKeys) {
+					cursor = MIN(Scene->mAnimations[a]->mChannels[c]->mScalingKeys[s].mTime, cursor);
+				}
+				//Create a new key
+				newkey.Instance = cursor;
+				newkey.Position = { 0.0f,0.0f,0.0f };
+				newkey.Rotation = { 0.0f,0.0f,0.0f };
+				newkey.Scaling  = { 1.0f,1.0f,1.0f };
+				//////
+				if (p < Scene->mAnimations[a]->mChannels[c]->mNumPositionKeys) {
+					if (Scene->mAnimations[a]->mChannels[c]->mPositionKeys[p].mTime == cursor) {
+						//copy Values
+						newkey.Position.x = Scene->mAnimations[a]->mChannels[c]->mPositionKeys[p].mValue.x;
+						newkey.Position.y = Scene->mAnimations[a]->mChannels[c]->mPositionKeys[p].mValue.y;
+						newkey.Position.z = Scene->mAnimations[a]->mChannels[c]->mPositionKeys[p].mValue.z;
+						//increment
+						++p;
+					}
+				}
+				if (r < Scene->mAnimations[a]->mChannels[c]->mNumRotationKeys) {
+					if (Scene->mAnimations[a]->mChannels[c]->mRotationKeys[r].mTime == cursor) {
+						//copy Values
+						newkey.Rotation.x = Scene->mAnimations[a]->mChannels[c]->mRotationKeys[r].mValue.x;
+						newkey.Rotation.y = Scene->mAnimations[a]->mChannels[c]->mRotationKeys[r].mValue.y;
+						newkey.Rotation.z = Scene->mAnimations[a]->mChannels[c]->mRotationKeys[r].mValue.z;
+						//increment
+						++r;
+					}
+				}
+				if (s < Scene->mAnimations[a]->mChannels[c]->mNumScalingKeys) {
+					if (Scene->mAnimations[a]->mChannels[c]->mScalingKeys[s].mTime == cursor) {
+						//copy Values
+						newkey.Position.x = Scene->mAnimations[a]->mChannels[c]->mScalingKeys[s].mValue.x;
+						newkey.Position.y = Scene->mAnimations[a]->mChannels[c]->mScalingKeys[s].mValue.y;
+						newkey.Position.z = Scene->mAnimations[a]->mChannels[c]->mScalingKeys[s].mValue.z;
+						//increment
+						++s;
+					}
+				}
+				//add the key 
+				
+			}
+		}
+	}
+	return true;
+};
+
+
+
+void	RGP_ANIMATOR::AnimatedModel::Update(_float dt)
+{
+
+	//the behaviour of the object depends on its status( PLAYING ANIMATION, PAUSED or STOPPED)
+
+};
 void		RGP_ANIMATOR::AnimatedModel::Render(Camera* selected)
 {
 	if (m_Mode == 0)
 		Model3D::Render(selected);
 	else
 		RenderWeighMap(selected);
-	RenderBones(selected);
+	//RenderBones(selected);
 	
 };
 void		RGP_ANIMATOR::AnimatedModel::RenderBones(Camera * selected) 
@@ -110,11 +301,12 @@ _bool		RGP_ANIMATOR::AnimatedModel::Init(GLRenderer* renderer, _s8b* modelfilena
 
 
 	if(modelfilename)
-		if (!LoadModelFromFile(modelfilename))
+		if (!LoadModelFromFile(modelfilename,false))
 			return false;
 
 	return true;
 };
+
 
 _bool	RGP_ANIMATOR::AnimatedModel::AddBone(Bone bone)
 {
@@ -131,7 +323,7 @@ _bool	RGP_ANIMATOR::AnimatedModel::AddBone(Bone bone)
 		free(m_Skeleton.Parts);
 	m_Skeleton.Parts = tmp;
 	m_Skeleton.Parts[m_Skeleton.NumParts].ChildrenIndices = bone.ChildrenIndices;
-	m_Skeleton.Parts[m_Skeleton.NumParts].Factor = bone.Factor;
+	m_Skeleton.Parts[m_Skeleton.NumParts].Weighs = bone.Weighs;
 	m_Skeleton.Parts[m_Skeleton.NumParts].Indices = bone.Indices;
 	m_Skeleton.Parts[m_Skeleton.NumParts].LocalDirection = bone.LocalDirection;
 	m_Skeleton.Parts[m_Skeleton.NumParts].LocalPostion = bone.LocalPostion;
@@ -255,17 +447,16 @@ void		RGP_ANIMATOR::AnimatedModel::RemoveAll()
 		for (_u32b i = 0; i < m_NumAnimations; ++i) {
 			if (m_Animations[i].Name)
 				free(m_Animations[i].Name);
-			if (m_Animations[i].Poses) {
-				for (_u32b j = 0; j < m_Animations[i].NumPoses; ++j) {
-					if (m_Animations[i].Poses[j].Keys) {
-						for (_u32b k = 0; k < m_Animations[i].Poses[j].numKeys; ++k) {
-							if (m_Animations[i].Poses[j].Keys[k].Name)
-								free(m_Animations[i].Poses[j].Keys[k].Name);
-						}
-						free(m_Animations[i].Poses[j].Keys);
+			if (m_Animations[i].channels) {
+				for (_u32b j = 0; j < m_Animations[i].numChannels; ++j) {
+					if (m_Animations[i].channels[j].Keys) {
+						free(m_Animations[i].channels[j].Keys);
+					}
+					if (m_Animations[i].channels[j].boneName){
+						free(m_Animations[i].channels[j].boneName);
 					}
 				}
-				free(m_Animations[i].Poses);
+				free(m_Animations[i].channels);
 
 			}
 		}

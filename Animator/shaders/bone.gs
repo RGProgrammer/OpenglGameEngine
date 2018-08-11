@@ -10,8 +10,7 @@ uniform mat4 Model ;
 uniform mat4 VP ;
 
 void main(){
-	vec4 pos=gl_in[0].;
-
+	vec4 pos=gl_in[0].gl_Position;
 	gl_Position=VP*Model*(pos+vec4(1.0,0.0,0.0,0.0));
 	EmitVertex();
 

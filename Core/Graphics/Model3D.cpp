@@ -272,7 +272,7 @@ _s16b   RGP_CORE::Model3D::InitVAOs(){
 
 
 void RGP_CORE::Model3D::Render(Camera* Selected){
-    if(isVisible() && Selected && m_GLRenderer){
+    if(isVisible() && Selected && m_GLRenderer && m_GLRenderer->isInitialized() ){
         ///new rendering code here using the high level opengl interface(m_GLRenderer)
         //set the program to use
         int Location ;
@@ -370,12 +370,16 @@ RGP_CORE::EnvMapProbe*	RGP_CORE::Model3D::getReflectionProbe(EnvMapProbe* Probe)
 
 const RGP_CORE::pMesh		RGP_CORE::Model3D::getMesh(_u32b index)
 {
-	if (!v_Meshes)
+	if (!v_Meshes) {
+		printf("not initialized\n");
 		return NULL;
+	}
 	if (index >= 0 && index < m_NumMeshes)
 		return &(v_Meshes[index]);
-	else
+	else {
+		printf("out of range \n");
 		return NULL;
+	}
 };
 _u32b			RGP_CORE::Model3D::getNumMeshes()
 {
@@ -385,20 +389,31 @@ _u32b			RGP_CORE::Model3D::getNumMeshes()
 
 _u16b RGP_CORE::Model3D::ProcessNode(aiNode* Node,const aiScene* Scene){
     /// process current Node
-    for(_u16b i=0;i<Node->mNumMeshes ;i++){
-        AddMesh(Scene->mMeshes[Node->mMeshes[i]]->mName.C_Str(),Scene->mMeshes[Node->mMeshes[i]]->mMaterialIndex);
-        CopyVertices(Scene->mMeshes[Node->mMeshes[i]]->mVertices,Scene->mMeshes[Node->mMeshes[i]]->mNumVertices);
-        CopyNormals(Scene->mMeshes[Node->mMeshes[i]]->mNormals,Scene->mMeshes[Node->mMeshes[i]]->mNumVertices);
-        CopyTangents(Scene->mMeshes[Node->mMeshes[i]]->mTangents,Scene->mMeshes[Node->mMeshes[i]]->mBitangents,
-                     Scene->mMeshes[Node->mMeshes[i]]->mNumVertices);
-        CopyFaces(Scene->mMeshes[Node->mMeshes[i]]->mFaces,Scene->mMeshes[Node->mMeshes[i]]->mNumFaces );
-        CopyTextureCoords(Scene->mMeshes[Node->mMeshes[i]]->mTextureCoords,Scene->mMeshes[Node->mMeshes[i]]->mNumVertices);
-    }
+   
 
+	/*for (_u16b i = 0; i<Scene->mNumMeshes; i++) {
+		AddMesh(Scene->mMeshes[i]->mName.C_Str(), Scene->mMeshes[i]->mMaterialIndex);
+		CopyVertices(Scene->mMeshes[i]->mVertices, Scene->mMeshes[i]->mNumVertices);
+		CopyNormals(Scene->mMeshes[i]->mNormals, Scene->mMeshes[i]->mNumVertices);
+		CopyTangents(Scene->mMeshes[i]->mTangents, Scene->mMeshes[i]->mBitangents,
+			Scene->mMeshes[i]->mNumVertices);
+		CopyFaces(Scene->mMeshes[i]->mFaces, Scene->mMeshes[i]->mNumFaces);
+		CopyTextureCoords(Scene->mMeshes[i]->mTextureCoords, Scene->mMeshes[i]->mNumVertices);
+	}*/
+	//do not use this
+	for(_u16b i=0;i<Node->mNumMeshes ;i++){
+		AddMesh(Scene->mMeshes[Node->mMeshes[i]]->mName.C_Str(),Scene->mMeshes[Node->mMeshes[i]]->mMaterialIndex);
+		CopyVertices(Scene->mMeshes[Node->mMeshes[i]]->mVertices,Scene->mMeshes[Node->mMeshes[i]]->mNumVertices);
+		CopyNormals(Scene->mMeshes[Node->mMeshes[i]]->mNormals,Scene->mMeshes[Node->mMeshes[i]]->mNumVertices);
+		CopyTangents(Scene->mMeshes[Node->mMeshes[i]]->mTangents,Scene->mMeshes[Node->mMeshes[i]]->mBitangents,
+		Scene->mMeshes[Node->mMeshes[i]]->mNumVertices);
+		CopyFaces(Scene->mMeshes[Node->mMeshes[i]]->mFaces,Scene->mMeshes[Node->mMeshes[i]]->mNumFaces );
+		CopyTextureCoords(Scene->mMeshes[Node->mMeshes[i]]->mTextureCoords,Scene->mMeshes[Node->mMeshes[i]]->mNumVertices);
+	}
     ///process ChildNodes
-    for(_u16b i=0; i< Node->mNumChildren;i++ ){
-        return ProcessNode(Node->mChildren[i],Scene);
-    }
+   for(_u16b i=0; i< Node->mNumChildren;i++ ){
+        ProcessNode(Node->mChildren[i],Scene);
+   }
     return 1;
 };
 
@@ -414,10 +429,8 @@ _u16b RGP_CORE::Model3D::AddMesh(const char* Name, _u16b MaterialID){
     v_Meshes=tmp;
     m_NumMeshes++;
 	if (Name){
-		v_Meshes[m_NumMeshes - 1].Name = (char*)malloc((strlen(Name)+1)*sizeof(char));
-		if (v_Meshes[m_NumMeshes - 1].Name){
-			strcpy(v_Meshes[m_NumMeshes - 1].Name, Name);
-		}
+		
+		v_Meshes[m_NumMeshes - 1].Name = CreateStringCopy(Name);
 	}
 	else
 		v_Meshes[m_NumMeshes - 1].Name = NULL;
@@ -431,6 +444,7 @@ _u16b RGP_CORE::Model3D::AddMesh(const char* Name, _u16b MaterialID){
     v_Meshes[m_NumMeshes-1].BitangentBuffer=NULL;
     v_Meshes[m_NumMeshes-1].nbNormals=0;
     v_Meshes[m_NumMeshes-1].AppliedMaterial=MaterialID ;
+	printf("material ID = %u\n", MaterialID);
 	return 1;
 };
 _u16b RGP_CORE::Model3D::CopyVertices(const aiVector3D*   buffer,_u32b nbVertices){
@@ -719,7 +733,6 @@ _u16b RGP_CORE::Model3D::GenerateBuffers(){
     };
 
     for(_u32b i=0; i< m_NumMeshes;++i){
-
 		v_Buffers[i].AppliedMaterialIndex = v_Meshes[i].AppliedMaterial;
         ///generating vertices buffer
         m_GLRenderer->GenBuffers(1,&(v_Buffers[i].VertexBuffer));

@@ -20,6 +20,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Thread_Test", "Thread_Test\
 		{1BC7B856-DDAE-45C5-9506-ADDEE1EFD93E} = {1BC7B856-DDAE-45C5-9506-ADDEE1EFD93E}
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Level_Builder", "Level_Builder\Level_Builder.vcxproj", "{525E3409-3E88-4FB5-9045-8259BCD3513F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1BC7B856-DDAE-45C5-9506-ADDEE1EFD93E} = {1BC7B856-DDAE-45C5-9506-ADDEE1EFD93E}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -94,6 +99,22 @@ Global
 		{162D6205-1CB4-48E8-A1CF-B195C3CF2A5E}.RelWithDebInfo|Win32.Build.0 = Release|Win32
 		{162D6205-1CB4-48E8-A1CF-B195C3CF2A5E}.RelWithDebInfo|x64.ActiveCfg = Release|x64
 		{162D6205-1CB4-48E8-A1CF-B195C3CF2A5E}.RelWithDebInfo|x64.Build.0 = Release|x64
+		{525E3409-3E88-4FB5-9045-8259BCD3513F}.Debug|Win32.ActiveCfg = Debug|Win32
+		{525E3409-3E88-4FB5-9045-8259BCD3513F}.Debug|Win32.Build.0 = Debug|Win32
+		{525E3409-3E88-4FB5-9045-8259BCD3513F}.Debug|x64.ActiveCfg = Debug|x64
+		{525E3409-3E88-4FB5-9045-8259BCD3513F}.Debug|x64.Build.0 = Debug|x64
+		{525E3409-3E88-4FB5-9045-8259BCD3513F}.MinSizeRel|Win32.ActiveCfg = Release|Win32
+		{525E3409-3E88-4FB5-9045-8259BCD3513F}.MinSizeRel|Win32.Build.0 = Release|Win32
+		{525E3409-3E88-4FB5-9045-8259BCD3513F}.MinSizeRel|x64.ActiveCfg = Release|x64
+		{525E3409-3E88-4FB5-9045-8259BCD3513F}.MinSizeRel|x64.Build.0 = Release|x64
+		{525E3409-3E88-4FB5-9045-8259BCD3513F}.Release|Win32.ActiveCfg = Release|Win32
+		{525E3409-3E88-4FB5-9045-8259BCD3513F}.Release|Win32.Build.0 = Release|Win32
+		{525E3409-3E88-4FB5-9045-8259BCD3513F}.Release|x64.ActiveCfg = Release|x64
+		{525E3409-3E88-4FB5-9045-8259BCD3513F}.Release|x64.Build.0 = Release|x64
+		{525E3409-3E88-4FB5-9045-8259BCD3513F}.RelWithDebInfo|Win32.ActiveCfg = Release|Win32
+		{525E3409-3E88-4FB5-9045-8259BCD3513F}.RelWithDebInfo|Win32.Build.0 = Release|Win32
+		{525E3409-3E88-4FB5-9045-8259BCD3513F}.RelWithDebInfo|x64.ActiveCfg = Release|x64
+		{525E3409-3E88-4FB5-9045-8259BCD3513F}.RelWithDebInfo|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

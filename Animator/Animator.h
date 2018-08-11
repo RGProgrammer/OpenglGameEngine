@@ -26,6 +26,8 @@ namespace RGP_ANIMATOR
 		_bool		Init_ImGui_Sys();
 	private:
 		Animator();
+		_bool		addAnimatedModel(AnimatedModel* model);
+		_bool		removeAnimatedModel(_u32b index);
 		//UI part
 		void		RenderUI();
 		void		AnimationEditor();
@@ -34,6 +36,7 @@ namespace RGP_ANIMATOR
 		void		WeightDrawingTool();
 		void		AnimationPlayer();
 		void		KeyEditor();
+		
 		//
 	public:
 		~Animator();

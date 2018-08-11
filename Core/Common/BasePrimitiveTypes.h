@@ -12,6 +12,7 @@ typedef			 long int 		    _s32b;
 typedef unsigned long long int	    _u64b;
 typedef			 long long int	    _s64b;
 typedef btScalar					_float;
+typedef	double						_double;
 typedef bool                        _bool ;
 
 #endif

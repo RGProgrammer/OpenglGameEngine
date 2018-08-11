@@ -25,7 +25,7 @@ namespace RGP_CORE {
     class Thread {
 	public :
 		static Thread * Create(void* (*func)(void* arg),void* ptrParameter, _bool Suspended=false);
-		static void Sleep(_u32b millisecs);
+		static void ThreadSleep(_u32b millisecs);
     private:
         Thread(void* func, void* ptrParameter, _bool Suspended=false);
 	public:

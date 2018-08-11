@@ -1,5 +1,7 @@
 #include ".//GLRenderer.h"
 
+
+
 RGP_CORE::GLShaderProgramsManager::GLShaderProgramsManager(): m_LoadedProgramsList(NULL) , m_NumPrograms(0), m_Size(0),
 															m_boundProgramID(0)
 {};
@@ -319,9 +321,9 @@ _u32b	RGP_CORE::GLRenderer::getLastFrameTexture()
 
 
 
-RGP_CORE::GLRenderer::GLRenderer(RenderMode Type):m_Target(NULL),m_isInitialized(false) ,
+RGP_CORE::GLRenderer::GLRenderer(RenderMode Type):m_Target(NULL),
+											m_isInitialized(false) ,
 											m_SelectedScene(NULL),m_ShaderManager(NULL),
-
 											m_NumFBOs(0),m_FBOs(NULL),m_SelectedFBO(0),
                                             m_AttachmentTextures(NULL),
 
@@ -359,6 +361,7 @@ RGP_CORE::GLRenderer::~GLRenderer(){
     this->Destroy();
 };
 void RGP_CORE::GLRenderer::Destroy(){
+	
     if(m_FBOs){
         glDeleteFramebuffers(m_NumFBOs,m_FBOs);
         free(m_FBOs);
@@ -441,6 +444,7 @@ void RGP_CORE::GLRenderer::Destroy(){
         delete m_Target;
         m_Target=NULL ;
     }
+	
     m_SelectedScene=NULL ;
     m_isInitialized =false;
     glfwTerminate();
@@ -453,13 +457,12 @@ _bool RGP_CORE::GLRenderer::InitRenderer(gfxConfig Config){
         printf("errro initializing GLFW\n");
         return false ;
     }
-	
-    m_Target=Window::CreateWindow(Config.Title,Config.Witdh,Config.Height);
+    m_Target=Window::Create(Config.Title,Config.Witdh,Config.Height);
     if(!m_Target){
         printf("error creating Window\n");
         return false ;
     }
-    glfwMakeContextCurrent( m_Target->getglfwWindow());
+	this->MakeContext();
     ///initializing GLEW
     if(glewInit()!=GLEW_OK){
         printf("error init GLEW\n");
@@ -481,9 +484,10 @@ _bool RGP_CORE::GLRenderer::InitRenderer(gfxConfig Config){
    //final step to initialize the renderer
     if(!InitFinalPhase()){
         printf("error initializing final phase\n");
-        //return false ;
+        return false ;
     }
-    
+    //init rendering thread 
+	
     m_isInitialized=true ;
     return true ;
 };
@@ -749,6 +753,14 @@ _bool RGP_CORE::GLRenderer::InitFinalPhase(){
 _bool RGP_CORE::GLRenderer::isInitialized(){ return m_isInitialized ;};
 RGP_CORE::RenderMode  RGP_CORE::GLRenderer::getRenderMode(){ return m_Mode ;};
 RGP_CORE::Window*   RGP_CORE::GLRenderer::getTarget(){ return m_Target ;};
+
+
+void		RGP_CORE::GLRenderer::MakeContext()
+{
+	glfwMakeContextCurrent(m_Target->getglfwWindow());
+};
+
+
 void  RGP_CORE::GLRenderer::setScene(GameScene*   Scene){ 
 	m_SelectedScene= Scene ;
 	_u32b NumShadowmaps = 0;

@@ -5,6 +5,7 @@ uniform sampler2D Diffuse ;
 uniform sampler2D Shadow ;
 uniform sampler2D LightDiffuse ;
 uniform sampler2D LightSpecular ;
+uniform sampler2D MaterialID ;
 uniform int noLight ;
 
 in vec2 texcoord0 ;

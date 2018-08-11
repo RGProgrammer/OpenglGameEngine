@@ -6,7 +6,7 @@
 #include "..//..//tools//assimp3//scene.h"
 #include "..//..//tools//assimp3//cimport.h"
 #include "..//..//tools//assimp3//postprocess.h"
-#include "..//Common//StringOP.h"
+#include "..//Common//Common.h"
 #include "..//BaseActors//Renderable.h"
 #include ".//GLRenderer.h"
 

@@ -9,7 +9,7 @@ struct Bone {
 	_u32b			MeshID;
 	_u32b			NumIndices;
 	_u32b*			Indices;// index of each affected vertex
-	_u32b*			Factor;
+	_float*			Weighs;
 	_u32b			ParentIndex;
 	_u32b			NumChildren;
 	_u32b*			ChildrenIndices;
@@ -28,25 +28,26 @@ typedef struct {
 } Skeleton;
 
 typedef struct {
-	//BoneName
-	_s8b*			Name;
+	
+	_double			Instance;
+	_u32b			BlendFunc;///blend function code
 	//transformation keys(translation , rotation , Scaling)
-	Vertex3d	Tanslation;
+	Vertex3d	Position;
 	Vertex3d	Rotation;
 	Vertex3d	Scaling;
 } Key ;
+
 typedef struct {
-	_u32b		Instance;
+	_s8b*		boneName;
 	_u32b		numKeys;
 	Key*		Keys;
-	_u32b		BlendFunc;///blend function code
-
-} Pose;
+} Channel;//Bone channel
 
 typedef struct {
 	_s8b*	Name;
-	_u32b	NumPoses;
-	Pose*	Poses;
+	_u32b	numChannels;
+	Channel*	channels;
 } Animation;
+
 
 #endif

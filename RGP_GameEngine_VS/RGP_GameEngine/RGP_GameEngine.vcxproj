@@ -127,7 +127,7 @@
     <ClInclude Include="..\..\Core\BaseActors\Renderable.h" />
     <ClInclude Include="..\..\Core\Common\BasePrimitiveTypes.h" />
     <ClInclude Include="..\..\Core\Common\Math.h" />
-    <ClInclude Include="..\..\Core\Common\StringOP.h" />
+    <ClInclude Include="..\..\Core\Common\Common.h" />
     <ClInclude Include="..\..\Core\Common\Thread.h" />
     <ClInclude Include="..\..\Core\Common\Timer.h" />
     <ClInclude Include="..\..\Core\Graphics\glHeaders.h" />

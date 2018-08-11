@@ -62,10 +62,6 @@ void RGP_ANIMATOR::Animator::Destroy()
 		m_SceneRenderer = NULL;
 	}
 	if (m_DynamicModels) {
-		for (_u32b i = 0; i < m_NumDynamicModels; ++i) {
-			m_DynamicModels[i]->Destroy();
-			delete (m_DynamicModels[i]);
-		}
 		free(m_DynamicModels);
 		m_DynamicModels = NULL;
 		m_NumDynamicModels = 0;
@@ -119,29 +115,7 @@ _bool RGP_ANIMATOR::Animator::Init_RGP_Sys()
 	light->setPosition({ 0.0f,10.0,0.0f });
 	light->setOrientation({ 0.0f,-0.5f,5.0f }, { 0.0f,0.5f,5.0f });
 	light->setLightSpecularColor({ 0.1f,0.1f,0.1f });
-	m_Scene->AddLight(light);
-
-
-	Model3D* model = new Model3D();
-	model->setRenderer(m_SceneRenderer);
-	model->LoadModelFromFile("..//test//Samples//Plane.obj");
-	m_Scene->AddActor(model);
-
-
-	model = new Model3D();
-	model->setRenderer(m_SceneRenderer);
-	model->LoadModelFromFile("..//test//Samples//Jill_RE3//Jill.obj");
-	model->setPosition({ 5.0,0.0,0.0 });
-	model->ScaleUniform(2.5);
-	m_Scene->AddActor(model);
-
-	model = new Model3D();
-	model->setRenderer(m_SceneRenderer);
-	model->LoadModelFromFile("..//test//Samples//Lightning//lightning_obj.obj");
-	model->setPosition({ -5.0,0.0,0.0 });
-	m_Scene->AddActor(model);
-
-	
+	m_Scene->AddLight(light);	
 
 	return true;
 };
@@ -158,6 +132,11 @@ void RGP_ANIMATOR::Animator::Start()
 {
 	if (!m_Initialized)
 		return;
+
+	//this->ImportStaticModel("..//test//Samples//Plane.obj");
+	//this->ImportStaticModel("..//test//Samples//Lightning//lightning_obj.obj", { -6.0,0.0,0.0 });
+	//this->ImportStaticModel("..//test//Samples//rex//rex.obj", { 10.0,0.0,0.0 });
+	this->ImportDynamicModel("..//test//Samples//skeleton//skeleton.3ds");
 	m_SceneRenderer->setScene(m_Scene);
 	int state;
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
@@ -234,6 +213,20 @@ void RGP_ANIMATOR::Animator::Start()
 		m_SceneRenderer->SwapBuffers();
 	}
 };
+_bool		RGP_ANIMATOR::Animator::addAnimatedModel(AnimatedModel* model)
+{
+	AnimatedModel **tmp = (AnimatedModel**)malloc((m_NumDynamicModels + 1) * sizeof(AnimatedModel*));
+	if (!tmp)
+		return false;
+	for (_u32b i = 0; i<m_NumDynamicModels; i++)
+		tmp[i] = m_DynamicModels[i];
+	free(m_DynamicModels);
+	m_DynamicModels = tmp;
+	m_DynamicModels[m_NumDynamicModels] = model;
+	m_NumDynamicModels++;
+	return true;
+};
+
 void RGP_ANIMATOR::Animator::RenderUI()
 {
 	this->AnimationEditor();
@@ -291,7 +284,10 @@ void	 RGP_ANIMATOR::Animator::AnimationEditor()
 			if (ImGui::TreeNode("AnimationData")) {
 				if (ImGui::TreeNode("Model")) {
 					for (_u32b s = 0; s < m_DynamicModels[i]->getNumMeshes(); ++s) {
-						sprintf(name, "%s", m_DynamicModels[i]->getMesh(s)->Name);
+						if(m_DynamicModels[i]->getMesh(s))
+							sprintf(name, "%s", m_DynamicModels[i]->getMesh(s)->Name);
+						else
+							sprintf(name, "error");
 						if (ImGui::Selectable(name, m_SelectedMesh == s))
 							m_SelectedMesh = s;
 					}
@@ -299,7 +295,7 @@ void	 RGP_ANIMATOR::Animator::AnimationEditor()
 				}
 				
 				if (ImGui::TreeNode("Skeleton")) {
-					if (m_DynamicModels[i]->getSkeleton())
+					if (m_DynamicModels[i]->getSkeleton()->NumParts)
 						for (_u32b s = 0; s < m_DynamicModels[i]->getSkeleton()->NumParts; ++s) {
 							sprintf(name, "%s", m_DynamicModels[i]->getSkeleton()->Parts[s].Name);
 							ImGui::Selectable(name);
@@ -339,15 +335,20 @@ void	 RGP_ANIMATOR::Animator::KeyEditor()
 
 _bool		RGP_ANIMATOR::Animator::ImportDynamicModel(_s8b* filename, Vertex3d Pos)
 {
-	
+	AnimatedModel *model = NULL;
+	if (!(model=AnimatedModel::CreateFromFile(m_SceneRenderer, filename)))
+		return false;
+	model->setPosition(Pos);
+	m_Scene->AddActor(model);
+	addAnimatedModel(model);
 	return true;
 };
 _bool		RGP_ANIMATOR::Animator::ImportStaticModel(_s8b* filename, Vertex3d Pos)
 {
-	Model3D* model = new Model3D(Pos);
+	Model3D* model = new Model3D();
 	model->setRenderer(m_SceneRenderer);
 	model->LoadModelFromFile(filename);
-	model->ScaleUniform(.1f);
+	model->setPosition(Pos);
 	m_Scene->AddActor(model);
 	return true;
 };
