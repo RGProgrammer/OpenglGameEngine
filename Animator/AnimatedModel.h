@@ -67,6 +67,9 @@ namespace RGP_ANIMATOR {
 
 		_u8b			m_Mode;//0 solid , 1 weighmap
 
+		_double			m_Cursor;
+		Status			m_Status;
+
 	};
 
 }

@@ -39,7 +39,7 @@ RGP_ANIMATOR::AnimatedModel::AnimatedModel() : Dynamic(),Model3D(), m_Animations
 												m_SelectedAnimation(0), m_Skeleton({ 0,0 }), m_Initialized(false),m_Size(0),
 												m_BoneRenderingShader(0), m_BonesVBO(0), m_BonesVAO(0),
 												m_WeighMappingShader(0),m_WeighMappingModeVAO(0),m_WeighMappingVBO(0),
-												m_Mode(0)
+												m_Mode(0), m_Cursor(0.0),m_Status(STOP)
 {
 	
 };
@@ -68,6 +68,9 @@ void RGP_ANIMATOR::AnimatedModel::Destroy()
 		free(m_Skeleton.Parts);
 		m_Skeleton.Parts = NULL;
 		m_Skeleton.NumParts = 0;
+
+		m_Cursor = 0.0;
+		m_Status = STOP;
 
 	}
 	if (m_GLRenderer) {
@@ -168,6 +171,7 @@ _bool		RGP_ANIMATOR::AnimatedModel::ProcessAnimation(const aiScene* Scene)
 	Animation* ani;
 	_double cursor;
 	Key newkey;
+	Key*  tmp;
 	_u32b p = 0, r = 0, s = 0;
 	for (_u32b a = 0; a < Scene->mNumAnimations; ++a) {
 		//creating animation container
@@ -188,6 +192,7 @@ _bool		RGP_ANIMATOR::AnimatedModel::ProcessAnimation(const aiScene* Scene)
 		for (_u32b c = 0; c < ani->numChannels; ++c) {
 			ani->channels[c].boneName = CreateStringCopy(Scene->mAnimations[a]->mChannels[c]->mNodeName.C_Str());
 			cursor = 1000.0f;
+		
 			for (p = 0, r = 0, s = 0;
 					p < Scene->mAnimations[a]->mChannels[c]->mNumPositionKeys ||
 					r < Scene->mAnimations[a]->mChannels[c]->mNumRotationKeys ||
@@ -203,6 +208,7 @@ _bool		RGP_ANIMATOR::AnimatedModel::ProcessAnimation(const aiScene* Scene)
 				if (s < Scene->mAnimations[a]->mChannels[c]->mNumScalingKeys) {
 					cursor = MIN(Scene->mAnimations[a]->mChannels[c]->mScalingKeys[s].mTime, cursor);
 				}
+		
 				//Create a new key
 				newkey.Instance = cursor;
 				newkey.Position = { 0.0f,0.0f,0.0f };
@@ -240,6 +246,16 @@ _bool		RGP_ANIMATOR::AnimatedModel::ProcessAnimation(const aiScene* Scene)
 					}
 				}
 				//add the key 
+				//Dynamic allocation and copy old keys content 
+				tmp = (Key*)malloc((ani->channels[c].numKeys + 1) * sizeof(Key));
+				if (!tmp)
+					return false;
+				for (_u32b i = 0; i < ani->channels[c].numKeys; ++i) {
+					tmp[i] = ani->channels[c].Keys[i];
+				}
+				free(ani->channels[c].Keys);
+				ani->channels[c].numKeys++;
+				ani->channels[c].Keys = tmp;
 				
 			}
 		}
@@ -255,6 +271,17 @@ void	RGP_ANIMATOR::AnimatedModel::Update(_float dt)
 	//the behaviour of the object depends on its status( PLAYING ANIMATION, PAUSED or STOPPED)
 
 };
+
+void		RGP_ANIMATOR::AnimatedModel::Play()
+{
+};
+void		RGP_ANIMATOR::AnimatedModel::Pause()
+{
+};
+void		RGP_ANIMATOR::AnimatedModel::Stop()
+{
+};
+
 void		RGP_ANIMATOR::AnimatedModel::Render(Camera* selected)
 {
 	if (m_Mode == 0)

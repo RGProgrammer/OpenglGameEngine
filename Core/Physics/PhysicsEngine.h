@@ -3,10 +3,11 @@
 #include "..//Scene//GameScene.h"
 #include "..//..//tools//bullet3//btBulletCollisionCommon.h"
 #include "..//..//tools//bullet3//btBulletDynamicsCommon.h"
-
-
 #include "..//BaseActors//Physical.h"
 
+
+//hiding the Bullet physics API behind a simpler API 
+//this interface is not complete yet, it's mostly usable.
 
 
 
