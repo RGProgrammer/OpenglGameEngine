@@ -74,24 +74,25 @@ void RGP_CORE::PerspCamera::UpdateProjectionMtx(){
 
 
 
-RGP_CORE::OrthoCamera::OrthoCamera(_float Left, _float Right, _float Bottom, _float Top, _float Near, _float Far){
+RGP_CORE::OrthoCamera::OrthoCamera(_float Left, _float Top, _float Right, _float Bottom, _float Near, _float Far){
  
         m_Left=Left;
         m_Right=Right ;
  
         m_Top=Top;
         m_Bottom=Bottom ;
-    
+		this->UpdateProjectionMtx();
 };
-void RGP_CORE::OrthoCamera::setParameters(_float Left, _float Right, _float Top, _float Bottom, _float Near, _float Far){
+void RGP_CORE::OrthoCamera::setParameters(_float Left, _float Top, _float Right, _float Bottom, _float Near, _float Far){
     if(Left < Right){
         m_Left=Left;
         m_Right=Right ;
     }
-    if(Top < Bottom){
+    if(Top > Bottom){
         m_Top=Top;
         m_Bottom=Bottom ;
     }
+	this->UpdateProjectionMtx();
 };
 _float RGP_CORE::OrthoCamera::getLeftValue(){ return m_Left ;};
 _float RGP_CORE::OrthoCamera::getRightValue(){ return m_Right ;};
@@ -99,6 +100,6 @@ _float RGP_CORE::OrthoCamera::getBottomValue(){ return m_Bottom ;};
 _float RGP_CORE::OrthoCamera::getTopValue(){ return m_Top ; };
 void RGP_CORE::OrthoCamera::UpdateProjectionMtx()
 {
-	FillOrthographicsMatrix(m_Left, m_Right, m_Top, m_Bottom, m_Near, m_Far,m_ProjectionMtx);
+	FillOrthographicsMatrix(m_Left, m_Top, m_Right, m_Bottom, m_Near, m_Far,m_ProjectionMtx);
 };
 

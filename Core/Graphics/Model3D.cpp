@@ -444,7 +444,6 @@ _u16b RGP_CORE::Model3D::AddMesh(const char* Name, _u16b MaterialID){
     v_Meshes[m_NumMeshes-1].BitangentBuffer=NULL;
     v_Meshes[m_NumMeshes-1].nbNormals=0;
     v_Meshes[m_NumMeshes-1].AppliedMaterial=MaterialID ;
-	printf("material ID = %u\n", MaterialID);
 	return 1;
 };
 _u16b RGP_CORE::Model3D::CopyVertices(const aiVector3D*   buffer,_u32b nbVertices){

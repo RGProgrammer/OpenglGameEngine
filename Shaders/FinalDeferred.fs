@@ -15,7 +15,6 @@ in vec2 texcoord0 ;
 
 void main(){
 	
-	vec3 FinalColor=vec3(0.0);
 	vec3 DiffuseColor1=texture2D(Diffuse1,texcoord0).rgb;
 	vec3 DiffuseColor2=texture2D(Diffuse2,texcoord0).rgb;
 	vec3 DiffuseColor=mix(DiffuseColor1,DiffuseColor2,texture2D(Transparency,texcoord0).rgb);

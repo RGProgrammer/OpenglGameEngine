@@ -46,8 +46,8 @@ namespace RGP_CORE{
 
 	class OrthoCamera : virtual public Camera{
     public:
-        OrthoCamera(_float Left, _float Right, _float Bottom, _float Top, _float Near, _float Far);
-        inline void setParameters(_float Left, _float Right, _float Bottom, _float Top, _float Near, _float Far);
+        OrthoCamera(_float Left, _float Top, _float Right, _float Bottom,  _float Near, _float Far);
+        inline void setParameters(_float Left, _float Top, _float Right, _float Bottom, _float Near, _float Far);
         _float getLeftValue();
         _float getRightValue();
         _float getBottomValue();
