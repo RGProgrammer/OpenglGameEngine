@@ -314,9 +314,9 @@ RGP_CORE::GLShaderProgramsManager::ShaderProgram*
 _u32b	RGP_CORE::GLRenderer::getLastFrameTexture()
 {
 	if (m_SelectedFBO - 1 < 0)
-		return m_AttachmentTextures[0][DIFFUSE_TEXTURE];
+		return m_AttachmentTextures[0][DIFFUSE_TEXTURE1];
 	else
-		return m_AttachmentTextures[m_SelectedFBO - 1][DIFFUSE_TEXTURE];
+		return m_AttachmentTextures[m_SelectedFBO - 1][DIFFUSE_TEXTURE1];
 };
 
 
@@ -355,6 +355,8 @@ RGP_CORE::GLRenderer::GLRenderer(RenderMode Type):m_Target(NULL),
 	DrawBuff[2] = GL_COLOR_ATTACHMENT2;
 	DrawBuff[3] = GL_COLOR_ATTACHMENT3;
 	DrawBuff[4] = GL_COLOR_ATTACHMENT4;
+	DrawBuff[5] = GL_COLOR_ATTACHMENT5;
+	DrawBuff[6] = GL_COLOR_ATTACHMENT6;
 
 };
 RGP_CORE::GLRenderer::~GLRenderer(){
@@ -373,7 +375,7 @@ void RGP_CORE::GLRenderer::Destroy(){
         for(_s16b i=0; i < m_NumFBOs;++i){
             if(m_AttachmentTextures[i]==NULL)
                 continue ;
-            glDeleteTextures(6,m_AttachmentTextures[i]);
+            glDeleteTextures(8,m_AttachmentTextures[i]);
             free(m_AttachmentTextures[i]);
         }
         free(m_AttachmentTextures);
@@ -514,12 +516,12 @@ _bool	RGP_CORE::GLRenderer::CreateColorsObjects()
 		m_AttachmentTextures[i] = NULL;
 	///generating textures for each FBO
 	for (_s16b i = 0; i<m_NumFBOs; ++i) {
-		m_AttachmentTextures[i] = (GLuint*)malloc(6 * sizeof(GLuint));
+		m_AttachmentTextures[i] = (GLuint*)malloc(8 * sizeof(GLuint));
 		if (!m_AttachmentTextures[i]) {
 			printf("error allocation 2 \n");
 			return false;
 		}
-		for (_s16b k = 0; k<6; ++k) {
+		for (_s16b k = 0; k<8; ++k) {
 			m_AttachmentTextures[i][k] = 0;
 		}
 		glGetError();
@@ -583,11 +585,13 @@ _bool RGP_CORE::GLRenderer::AttachColorsTextures() {
 			printf("error binding framebuffer = %u error %d\n", m_FBOs[i], error);
 			continue;
 		}
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_AttachmentTextures[i][DIFFUSE_TEXTURE], 0);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, m_AttachmentTextures[i][SPECULAR_TEXTURE], 0);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, m_AttachmentTextures[i][NORMAL_TEXTURE], 0);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, m_AttachmentTextures[i][MATERIAL_TEXTURE], 0);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT4, GL_TEXTURE_2D, m_AttachmentTextures[i][POSITION_TEXTURE], 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_AttachmentTextures[i][DIFFUSE_TEXTURE1], 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, m_AttachmentTextures[i][DIFFUSE_TEXTURE2], 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, m_AttachmentTextures[i][SPECULAR_TEXTURE], 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, m_AttachmentTextures[i][NORMAL_TEXTURE], 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT4, GL_TEXTURE_2D, m_AttachmentTextures[i][MATERIAL_TEXTURE], 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT5, GL_TEXTURE_2D, m_AttachmentTextures[i][POSITION_TEXTURE], 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT6, GL_TEXTURE_2D, m_AttachmentTextures[i][TRANSPARENCY_TEXTURE], 0);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_AttachmentTextures[i][DEPTH_TEXTURE], 0);
 		error = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 		if (GL_FRAMEBUFFER_COMPLETE != error) {
@@ -882,14 +886,13 @@ void RGP_CORE::GLRenderer::RenderSceneColors(_u32b FBO,Camera *camera)
 		glBindFramebuffer(GL_FRAMEBUFFER, FBO);
 
 		glViewport(0, 0, m_Target->getWidth(), m_Target->getHeight());
-		glDrawBuffers(5, DrawBuff);
+		glDrawBuffers(7, DrawBuff);
 		
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
 		glEnable(GL_DEPTH_TEST);
-		glDisable(GL_BLEND);
-		//glEnable(GL_BLEND);
-		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		///glClear attachements
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -1150,36 +1153,46 @@ void RGP_CORE::GLRenderer::RenderToTarget(_u32b FBO_Target){
 
 		
         ///other uniforms
-        location= this->GetUniformLocation(m_FinalRenderProgram,"Diffuse");
+        location= this->GetUniformLocation(m_FinalRenderProgram,"Diffuse1");
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D,m_AttachmentTextures[m_SelectedFBO][DIFFUSE_TEXTURE]);
+        glBindTexture(GL_TEXTURE_2D,m_AttachmentTextures[m_SelectedFBO][DIFFUSE_TEXTURE1]);
         glUniform1i(location,0);
+		
+		location = this->GetUniformLocation(m_FinalRenderProgram, "Diffuse2");
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, m_AttachmentTextures[m_SelectedFBO][DIFFUSE_TEXTURE2]);
+		glUniform1i(location, 1);
 
         location= this->GetUniformLocation(m_FinalRenderProgram,"Specular");
-        glActiveTexture(GL_TEXTURE1);
+        glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D,m_AttachmentTextures[m_SelectedFBO][SPECULAR_TEXTURE]);
-        glUniform1i(location,1);
+        glUniform1i(location,2);
 
 
         location= this->GetUniformLocation(m_FinalRenderProgram,"Depth");
-        glActiveTexture(GL_TEXTURE2);
+        glActiveTexture(GL_TEXTURE3);
         glBindTexture(GL_TEXTURE_2D,m_AttachmentTextures[m_SelectedFBO][DEPTH_TEXTURE]);
-        glUniform1i(location,2);
+        glUniform1i(location,3);
 
 		location = this->GetUniformLocation(m_FinalRenderProgram, "Shadow");
-		glActiveTexture(GL_TEXTURE3);
+		glActiveTexture(GL_TEXTURE4);
 		glBindTexture(GL_TEXTURE_2D, m_ShadowAccumTexture);
-		glUniform1i(location,3);
+		glUniform1i(location,4);
 
 		location = this->GetUniformLocation(m_FinalRenderProgram, "LightDiffuse");
-		glActiveTexture(GL_TEXTURE4);
+		glActiveTexture(GL_TEXTURE5);
 		glBindTexture(GL_TEXTURE_2D, m_LightAccumDiffuseTexture);
-		glUniform1i(location, 4);
+		glUniform1i(location, 5);
 
 		location = this->GetUniformLocation(m_FinalRenderProgram, "LightSpecular");
-		glActiveTexture(GL_TEXTURE5);
+		glActiveTexture(GL_TEXTURE6);
 		glBindTexture(GL_TEXTURE_2D, m_LightAccumSpecularTexture);
-		glUniform1i(location, 5);
+		glUniform1i(location, 6);
+		
+		location = this->GetUniformLocation(m_FinalRenderProgram, "LightSpecular");
+		glActiveTexture(GL_TEXTURE7);
+		glBindTexture(GL_TEXTURE_2D, m_LightAccumSpecularTexture);
+		glUniform1i(location, 7);
 
 
 		location = this->GetUniformLocation(m_FinalRenderProgram, "noLight");

@@ -1,10 +1,16 @@
 #ifndef _RGP_GL_RENDERER_H_
 #define _RGP_GL_RENDERER_H_
-//////////////////////////////////////////////////////////////////////////
-/// GL_Renderer is like a transformation of Opengl low level
-/// to a high level interface to make adding another renderer
-/// type mode easier
-//////////////////////////////////////////////////////////////////////////
+
+
+//////////////////////////////////////////////////////////////////////////////////
+//  GL_Renderer is like a transformation of Opengl low level					//
+//  to a high level interface to make adding another renderer					//
+//  type mode easier															//
+// PS: this is not the final code structure(mames , atributs and methodes)		//
+//////////////////////////////////////////////////////////////////////////////////
+
+
+
 #include ".//Window.h"
 #include "..//Common//BasePrimitiveTypes.h"
 #include "..//Common//Common.h"
@@ -109,15 +115,17 @@ namespace RGP_CORE{
 
     class GLRenderer{
     private:
-		GLenum DrawBuff[6];
+		GLenum DrawBuff[7];
 
         enum TextureOrder {
-            DEPTH_TEXTURE=0,
-            DIFFUSE_TEXTURE=1,
-            SPECULAR_TEXTURE=2,///+roughness in alpha channel
-            NORMAL_TEXTURE=3,
-			MATERIAL_TEXTURE=4,
-			POSITION_TEXTURE=5
+            DEPTH_TEXTURE		= 0,
+            DIFFUSE_TEXTURE1	= 1, //Base color with transparent material 
+			DIFFUSE_TEXTURE2	= 2,//Base color without transparent material
+            SPECULAR_TEXTURE	= 3,
+            NORMAL_TEXTURE		= 4,
+			MATERIAL_TEXTURE	= 5,
+			POSITION_TEXTURE	= 6,
+			TRANSPARENCY_TEXTURE= 7 //define transparent spots in the scene
 
         };
 	public:
