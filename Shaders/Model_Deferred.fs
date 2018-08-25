@@ -25,7 +25,7 @@ void main(){
 	if(basecolor.a==1.0)
 		gl_FragData[1]=basecolor	;				//basecolor without transprent material
 	gl_FragData[2]=texture2D(Specularmap,texcoord0);//
-	gl_FragData[3]=ViewMtx0*vec4(normalcolor0,0.0);
+	gl_FragData[3]=vec4(normalcolor0,1.0);
 	gl_FragData[4]=vec4(texture2D(Diffusemap,texcoord0).a,0.0,0.0,1.0);
 	gl_FragData[5]=PositionColor;
 	gl_FragData[6]= vec4(vec3(texture2D(Diffusemap,texcoord0).a),1.0); 

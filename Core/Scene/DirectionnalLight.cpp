@@ -20,5 +20,5 @@ void RGP_CORE::DirectionnalLight:: UpdateLightViewMtx()
 };
 void RGP_CORE::DirectionnalLight::UpdateLightProjectionMtx(Camera * Selected)
 {
-	FillOrthographicsMatrix(-10.0f, 10.0f, 10.0f, -10.0f, 1.0, 5000.0f, m_LightProjectionMtx);
+	FillOrthographicsMatrix(-20.0f,20.0f,20.0f,-20.0f, 1.0, 5000.0f, m_LightProjectionMtx);
 };

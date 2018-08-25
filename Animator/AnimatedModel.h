@@ -46,7 +46,7 @@ namespace RGP_ANIMATOR {
 	private:
 		_bool		ProcessBones(aiNode* node,const aiScene* scene);
 		_bool		ProcessAnimation(const aiScene* Scene);
-
+		void		InterpolateBonesTransformation();
 
 		
 

@@ -1,25 +1,7 @@
 #version 410 
 
 
-float unpack (vec4 colour)
-{
-	return colour.r ;
-}
-vec4 EyeSpaceFragCoord(sampler2D Depthtex,vec2 texCoord,mat4 projMtx){
-	float DepthValue=unpack(texture2D(Depthtex,texCoord));
-	vec3 NDC ;
-	NDC.xy=2.0*texCoord-1.0 ;
-	NDC.z=(2.0 * texture2D(Depthtex,texCoord).r-1.0);
-	vec4 clipPos;
-	if(projMtx[3][3]==0.0){
-		clipPos.w=projMtx[3][2]/(NDC.z-(projMtx[2][2]/projMtx[2][3]));
-		
-	}else {
-		clipPos.w=1.0;
-	}
-	clipPos.xyz=NDC*clipPos.w ;
-	return inverse(projMtx)*clipPos ;
-}
+
 
 struct Light {
 	mat4	WorldMtx ;
@@ -31,12 +13,8 @@ struct Light {
 };
 
 uniform sampler2D NormalMap;
-uniform sampler2D Depth ;
-
-uniform mat4 CameraViewMtx;
-uniform mat4 CameraProjMtx ;
-uniform mat4 LightProjMatrix ;
-uniform mat4 LightViewMtx ;
+uniform sampler2D PositionMap ;
+uniform vec3 	  CameraPos ;
 uniform Light Source ;
 
 in vec2 texcoord0 ;
@@ -45,11 +23,11 @@ void main()
 {
 	float Attinuation;
 	float LightFragDistance ;
-	float Intensity ;
-	vec3 FragCoord=EyeSpaceFragCoord(Depth,texcoord0,CameraProjMtx).xyz ;
+	float Intensity=0.0 ;
+	vec3 FragCoord= texture2D(PositionMap,texcoord0).xyz ;
 	vec3 NormalColor=texture2D(NormalMap,texcoord0).xyz;
-	vec3 LightEyeSpacePos ;
-	vec3 LightDir;
+	vec3 LightPos=Source.WorldMtx[3].xyz ;
+	vec3 LightDir=Source.WorldMtx[2].xyz*(-1);
 	vec3 HalfV;
 	vec3 SpotDirection ;
 	vec3 DiffuseColor=vec3(0.0) ;
@@ -57,34 +35,32 @@ void main()
 
 
 	if(Source.Distance < 0.0){ //is a Directionnal light
-		LightDir=(CameraViewMtx*Source.WorldMtx[2]).xyz*(-1);
 		Intensity=max(dot(NormalColor,LightDir),0.0);
 		if(Intensity>0.0){
-			HalfV=normalize(LightDir+normalize(-FragCoord));
+			HalfV= normalize(LightDir)+normalize(CameraPos-FragCoord);
 			SpecularColor=pow(dot(NormalColor,HalfV),Source.Shininess)*Source.SpecularColor;
 			DiffuseColor=Intensity*Source.DiffuseColor.rgb;
 		}
 	}else{
-		LightEyeSpacePos=(CameraViewMtx*Source.WorldMtx[3]).xyz;
-		LightFragDistance=distance(FragCoord,LightEyeSpacePos);
+		LightFragDistance=distance(FragCoord,LightPos);
 		Attinuation=1.0/(LightFragDistance/Source.Distance) ;
 		Attinuation*=Attinuation;
-		LightDir=normalize(LightEyeSpacePos-FragCoord);
+		LightDir=normalize(LightPos-FragCoord);
 					
 		if(Source.CutoffAngle < 0.0){// is a Point light
 			Intensity=max(dot(NormalColor,LightDir),0.0);
 			if(Intensity > 0.0){
-				HalfV=normalize(LightDir+normalize(-FragCoord));
+				HalfV= normalize(LightDir)+normalize(CameraPos-FragCoord);
 				SpecularColor=pow(dot(NormalColor,HalfV),Source.Shininess)*Source.SpecularColor;
 				DiffuseColor= Attinuation*Intensity*Source.DiffuseColor;
 			}
 
 		}else{// is a SpotLight
-			SpotDirection=normalize(CameraViewMtx*Source.WorldMtx[2]).xyz*(-1);
+			SpotDirection=normalize(Source.WorldMtx[2]).xyz*(-1);
 			if(acos(dot(SpotDirection,LightDir))<= Source.CutoffAngle){
 				Intensity=max(dot(NormalColor,LightDir),0.0);
 				if(Intensity > 0.0){
-					HalfV=normalize(LightDir+normalize(-FragCoord));
+					HalfV= normalize(LightDir)+normalize(CameraPos-FragCoord);
 					SpecularColor=pow(dot(NormalColor,HalfV),Source.Shininess)*Source.SpecularColor;
 					DiffuseColor= Attinuation*Intensity*Source.DiffuseColor;
 				}

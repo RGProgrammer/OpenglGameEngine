@@ -313,10 +313,8 @@ RGP_CORE::GLShaderProgramsManager::ShaderProgram*
 
 _u32b	RGP_CORE::GLRenderer::getLastFrameTexture()
 {
-	if (m_SelectedFBO - 1 < 0)
-		return m_AttachmentTextures[0][DIFFUSE_TEXTURE1];
-	else
-		return m_AttachmentTextures[m_SelectedFBO - 1][DIFFUSE_TEXTURE1];
+	//TODO
+	return 0;
 };
 
 
@@ -324,7 +322,8 @@ _u32b	RGP_CORE::GLRenderer::getLastFrameTexture()
 RGP_CORE::GLRenderer::GLRenderer(RenderMode Type):m_Target(NULL),
 											m_isInitialized(false) ,
 											m_SelectedScene(NULL),m_ShaderManager(NULL),
-											m_NumFBOs(0),m_FBOs(NULL),m_SelectedFBO(0),
+
+											m_FBO(0),
                                             m_AttachmentTextures(NULL),
 
                                             m_FinalRenderSurface(NULL),
@@ -364,20 +363,12 @@ RGP_CORE::GLRenderer::~GLRenderer(){
 };
 void RGP_CORE::GLRenderer::Destroy(){
 	
-    if(m_FBOs){
-        glDeleteFramebuffers(m_NumFBOs,m_FBOs);
-        free(m_FBOs);
-        m_FBOs=NULL ;
-        m_NumFBOs=0 ;
+    if(m_FBO){
+        glDeleteFramebuffers(1,&m_FBO);
+        m_FBO=0 ;
     }
-    m_SelectedFBO=0;
     if(m_AttachmentTextures){
-        for(_s16b i=0; i < m_NumFBOs;++i){
-            if(m_AttachmentTextures[i]==NULL)
-                continue ;
-            glDeleteTextures(8,m_AttachmentTextures[i]);
-            free(m_AttachmentTextures[i]);
-        }
+         glDeleteTextures(8,m_AttachmentTextures);
         free(m_AttachmentTextures);
         m_AttachmentTextures=NULL ;
     }
@@ -477,7 +468,6 @@ _bool RGP_CORE::GLRenderer::InitRenderer(gfxConfig Config){
 		return false;
 	}
 	m_Config = Config;
-    m_NumFBOs=Config.NumBackBuffers;
      if(!CreateNeededObjects()){
         printf("error Creating FBOs and Render Textures\n");
         return false ;
@@ -506,43 +496,34 @@ _bool RGP_CORE::GLRenderer::CreateNeededObjects(){
 _bool	RGP_CORE::GLRenderer::CreateColorsObjects()
 {
 	int error;
-	///generating textures(Diffuse,Specular+Roughness(RGBA),Normal,Depth+Stencil,shadow,trancprency)==>6maps;
-	m_AttachmentTextures = (GLuint**)malloc(m_NumFBOs * sizeof(GLuint*));
+	//generating textures(Diffuse1,Diffuse2,Specular+Roughness(RGBA),Normal,Depth+Stencil,Material ID,position,trancprency)==>8maps;
+	m_AttachmentTextures = (GLuint*)malloc(8 * sizeof(GLuint));
 	if (!m_AttachmentTextures) {
-		printf("allocation error \n");
-		return false;
-	}
-	for (_s16b i = 0; i<m_NumFBOs; ++i)
-		m_AttachmentTextures[i] = NULL;
-	///generating textures for each FBO
-	for (_s16b i = 0; i<m_NumFBOs; ++i) {
-		m_AttachmentTextures[i] = (GLuint*)malloc(8 * sizeof(GLuint));
-		if (!m_AttachmentTextures[i]) {
-			printf("error allocation 2 \n");
+			printf("error allocation \n");
 			return false;
-		}
-		for (_s16b k = 0; k<8; ++k) {
-			m_AttachmentTextures[i][k] = 0;
-		}
-		glGetError();
-		glGenTextures(6, m_AttachmentTextures[i]);
-		if (error = glGetError())
-			printf("error generating textures %u\n", i);
-		///Depth texture+stencil
-		glBindTexture(GL_TEXTURE_2D, m_AttachmentTextures[i][0]);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glGetError();
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24,
+	}
+	for (_s16b k = 0; k<8; ++k) {
+		m_AttachmentTextures[k] = 0;
+	}
+	glGetError();// emptying the error log
+	glGenTextures(8, m_AttachmentTextures);
+	if (error = glGetError())
+		printf("error generating textures for GBbuffer\n");
+	//Depth texture+stencil
+	glBindTexture(GL_TEXTURE_2D, m_AttachmentTextures[0]);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glGetError();
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24,
 			m_Target->getWidth(),
 			m_Target->getHeight(),
 			0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 
 		///THE OTHER TEXTURES
-		for (_s16b k = 1; k<6; ++k) {
-			glBindTexture(GL_TEXTURE_2D, m_AttachmentTextures[i][k]);
+	for (_s16b k = 1; k<8; ++k) {
+			glBindTexture(GL_TEXTURE_2D, m_AttachmentTextures[k]);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
@@ -551,25 +532,16 @@ _bool	RGP_CORE::GLRenderer::CreateColorsObjects()
 				m_Target->getWidth(),
 				m_Target->getHeight(),
 				0, GL_RGBA, GL_FLOAT, 0);
-		}
+	}
 		glBindTexture(GL_TEXTURE_2D, 0);
-	}
-	///create FBO and their render Buffer(Textures : Deffuse, Normal, Depth,Sepecular, Transparency(nOT YET) )
-	///generating FBOs
-	m_FBOs = (GLuint*)malloc(m_NumFBOs * sizeof(GLuint));
-	if (!m_FBOs) {
-		printf("error allcation memory for FBOs\n");
-		return false;
-	}
+
+	//generating Colors FBO
 	glGetError();
-	glGenFramebuffers(m_NumFBOs, m_FBOs);
+	glGenFramebuffers(1, &m_FBO);
 	if (error = glGetError()) {
 		printf("error generating Framebuffers %d\n", error);
 		return false;
 	}
-	for (int m = 0; m < m_NumFBOs; m++)
-		if (m_FBOs[m] == 0)
-			printf("error geerating Frame bufferss \n");
 	if (!AttachColorsTextures())
 		return false;
 	return true;
@@ -578,26 +550,24 @@ _bool	RGP_CORE::GLRenderer::CreateColorsObjects()
 _bool RGP_CORE::GLRenderer::AttachColorsTextures() {
 	int error;
 	///attaching texture to its FBO
-	for (_s16b i = 0; i < m_NumFBOs; ++i) {
-		glGetError();
-		glBindFramebuffer(GL_FRAMEBUFFER, m_FBOs[i]);
-		if (error = glGetError()) {
-			printf("error binding framebuffer = %u error %d\n", m_FBOs[i], error);
-			continue;
-		}
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_AttachmentTextures[i][DIFFUSE_TEXTURE1], 0);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, m_AttachmentTextures[i][DIFFUSE_TEXTURE2], 0);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, m_AttachmentTextures[i][SPECULAR_TEXTURE], 0);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, m_AttachmentTextures[i][NORMAL_TEXTURE], 0);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT4, GL_TEXTURE_2D, m_AttachmentTextures[i][MATERIAL_TEXTURE], 0);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT5, GL_TEXTURE_2D, m_AttachmentTextures[i][POSITION_TEXTURE], 0);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT6, GL_TEXTURE_2D, m_AttachmentTextures[i][TRANSPARENCY_TEXTURE], 0);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_AttachmentTextures[i][DEPTH_TEXTURE], 0);
-		error = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-		if (GL_FRAMEBUFFER_COMPLETE != error) {
-			printf("frameBuffer attacehment error code %x\n", error);
-		}
+	glGetError();
+	glBindFramebuffer(GL_FRAMEBUFFER, m_FBO);
+	if (error = glGetError()) {
+		printf("error binding framebuffer = %u error %d\n", m_FBO, error);
 	}
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_AttachmentTextures[DIFFUSE_TEXTURE1], 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, m_AttachmentTextures[DIFFUSE_TEXTURE2], 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, m_AttachmentTextures[SPECULAR_TEXTURE], 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, m_AttachmentTextures[NORMAL_TEXTURE], 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT4, GL_TEXTURE_2D, m_AttachmentTextures[MATERIAL_TEXTURE], 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT5, GL_TEXTURE_2D, m_AttachmentTextures[POSITION_TEXTURE], 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT6, GL_TEXTURE_2D, m_AttachmentTextures[TRANSPARENCY_TEXTURE], 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_AttachmentTextures[DEPTH_TEXTURE], 0);
+	error = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+	if (GL_FRAMEBUFFER_COMPLETE != error) {
+		printf("frameBuffer attacehment error code %x\n", error);
+	}
+	
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	return true;
 };
@@ -834,7 +804,7 @@ void	RGP_CORE::GLRenderer::RenderScene(_u32b FBO_Target,Camera* camera)
 {
 
 	//RENDER SCENE Colors to the SelectedFBO
-	this->RenderSceneColors(m_FBOs[m_SelectedFBO],camera);
+	this->RenderSceneColors(m_FBO,camera);
 	if (!m_noLightMode) {
 		////if should draw shadows
 		if (m_Config.EnableShadows == true) {
@@ -844,13 +814,6 @@ void	RGP_CORE::GLRenderer::RenderScene(_u32b FBO_Target,Camera* camera)
 	}
 	///combine results and render to the screen ;
 	this->RenderToTarget(FBO_Target);
-	//this->RenderSceneUI(FBO_Target);
-	//Next frame
-	if (m_NumFBOs - 1 == m_SelectedFBO)
-		m_SelectedFBO = 0;
-	else
-		++m_SelectedFBO;
-
 };
 
 void  RGP_CORE::GLRenderer::RenderCurrentScene()
@@ -889,12 +852,12 @@ void RGP_CORE::GLRenderer::RenderSceneColors(_u32b FBO,Camera *camera)
 		glDrawBuffers(7, DrawBuff);
 		
 		glDisable(GL_CULL_FACE);
-		//glEnable(GL_CULL_FACE);
-		//glCullFace(GL_BACK);
+		
 		glEnable(GL_DEPTH_TEST);
-		glDisable(GL_BLEND);
-		//glEnable(GL_BLEND);
-		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		//glDisable(GL_BLEND);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+		glBlendEquation(GL_SUBTRACT);
 		///glClear attachements
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
@@ -993,7 +956,7 @@ void RGP_CORE::GLRenderer::RenderSceneShadows(_u32b FBO, Camera* camera)
 		ShadowIndex = 0;
 		Location1 = this->GetUniformLocation(m_ShadowAccumProgram, "PositionMap");
 		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, m_AttachmentTextures[m_SelectedFBO][POSITION_TEXTURE]);
+		glBindTexture(GL_TEXTURE_2D, m_AttachmentTextures[POSITION_TEXTURE]);
 		glUniform1i(Location1, 0);
 
 		for (_u32b Index = 0; Index < numLights; ++Index) {
@@ -1081,16 +1044,12 @@ void	RGP_CORE::GLRenderer:: RenderSceneLightAccum(Camera* camera)
 		//common uniform variables
 		Location = this->GetUniformLocation(m_LightAccumProgram, "NormalMap");
 		this->SetActiveTexture(0);
-		this->BindTexture(m_AttachmentTextures[m_SelectedFBO][NORMAL_TEXTURE]);
+		this->BindTexture(m_AttachmentTextures[NORMAL_TEXTURE]);
 		this->SetUniformSample(Location, 0);
-		Location = this->GetUniformLocation(m_LightAccumProgram, "Depth");
+		Location = this->GetUniformLocation(m_LightAccumProgram, "PositionMap");
 		this->SetActiveTexture(1);
-		this->BindTexture(m_AttachmentTextures[m_SelectedFBO][DEPTH_TEXTURE]);
+		this->BindTexture(m_AttachmentTextures[POSITION_TEXTURE]);
 		this->SetUniformSample(Location, 1);
-		Location = this->GetUniformLocation(m_LightAccumProgram, "CameraViewMtx");
-		this->SetUniformvMtx(Location, Eye->getViewMtx());
-		Location = this->GetUniformLocation(m_LightAccumProgram, "CameraProjMtx");
-		this->SetUniformvMtx(Location, Eye->getProjectionMtx());
 		Location = this->GetUniformLocation(m_LightAccumProgram, "CameraPos");
 		this->SetUniform3F(Location, Eye->getPosition().x,
 			Eye->getPosition().y,
@@ -1158,23 +1117,23 @@ void RGP_CORE::GLRenderer::RenderToTarget(_u32b FBO_Target){
         ///other uniforms
         location= this->GetUniformLocation(m_FinalRenderProgram,"Diffuse1");
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D,m_AttachmentTextures[m_SelectedFBO][DIFFUSE_TEXTURE1]);
+        glBindTexture(GL_TEXTURE_2D,m_AttachmentTextures[DIFFUSE_TEXTURE1]);
         glUniform1i(location,0);
 		
 		location = this->GetUniformLocation(m_FinalRenderProgram, "Diffuse2");
 		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, m_AttachmentTextures[m_SelectedFBO][DIFFUSE_TEXTURE2]);
+		glBindTexture(GL_TEXTURE_2D, m_AttachmentTextures[DIFFUSE_TEXTURE2]);
 		glUniform1i(location, 1);
 
         location= this->GetUniformLocation(m_FinalRenderProgram,"Specular");
         glActiveTexture(GL_TEXTURE2);
-        glBindTexture(GL_TEXTURE_2D,m_AttachmentTextures[m_SelectedFBO][SPECULAR_TEXTURE]);
+        glBindTexture(GL_TEXTURE_2D,m_AttachmentTextures[SPECULAR_TEXTURE]);
         glUniform1i(location,2);
 
 
         location= this->GetUniformLocation(m_FinalRenderProgram,"Depth");
         glActiveTexture(GL_TEXTURE3);
-        glBindTexture(GL_TEXTURE_2D,m_AttachmentTextures[m_SelectedFBO][DEPTH_TEXTURE]);
+        glBindTexture(GL_TEXTURE_2D,m_AttachmentTextures[DEPTH_TEXTURE]);
         glUniform1i(location,3);
 
 		location = this->GetUniformLocation(m_FinalRenderProgram, "Shadow");

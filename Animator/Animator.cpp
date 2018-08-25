@@ -97,11 +97,11 @@ _bool RGP_ANIMATOR::Animator::Init_RGP_Sys()
 	if (!m_Scene)
 		return false;
 	m_SceneRenderer = new GLRenderer();
-	if (!m_SceneRenderer->InitRenderer({ "Animator",1200,900,5,false ,256,false })) {
+	if (!m_SceneRenderer->InitRenderer({ "Animator",1200,900,false ,1024,false })) {
 		return false;
 	}
 	m_Camera1 = new PerspCamera(M_PI_2, 1200.0f / 900.0f, 0.1f, 5000.0f);
-	m_Camera2 = new OrthoCamera(-1.0,1.0f,-1.0f,1.0f, 1.0f, 5000.0f);
+	m_Camera2 = new OrthoCamera(-20.0f,20.0f,20.0f,-20.0f, 1.0f, 5000.0f);
 	m_Camera1->setPosition({ 0.0f,12.0f,-10.0f });
 	m_Camera1->setOrientation({ 0.0f, -0.5f, 0.5f }, { 0.0f, 0.5f, 0.5f });
 	m_Camera2->setPosition({ 0.0f,12.0f,-10.0f });
@@ -112,9 +112,9 @@ _bool RGP_ANIMATOR::Animator::Init_RGP_Sys()
 
 	LightSource *	light = NULL;
 	light = new DirectionnalLight();
-	light->setPosition({ 0.0f,10.0,0.0f });
+	light->setLightSpecularColor({ 0.3f,0.3f,0.3f });
+	light->setPosition({ 0.0f,20.0,-20.0f });
 	light->setOrientation({ 0.0f,-0.5f,5.0f }, { 0.0f,0.5f,5.0f });
-	light->setLightSpecularColor({ 0.1f,0.1f,0.1f });
 	m_Scene->AddLight(light);	
 
 	return true;
@@ -133,11 +133,12 @@ void RGP_ANIMATOR::Animator::Start()
 	if (!m_Initialized)
 		return;
 
-	//this->ImportStaticModel("..//test//Samples//Plane.obj");
-	//this->ImportStaticModel("..//test//Samples//Lightning//lightning_obj.obj", { -6.0,0.0,0.0 });
-	//this->ImportStaticModel("..//test//Samples//rex//rex.obj", { 10.0,0.0,0.0 });
+	this->ImportStaticModel("..//test//Samples//Plane.obj");
+	this->ImportStaticModel("..//test//Samples//Cube.obj", { -10.0,5.0,0.0 });
+	this->ImportStaticModel("..//test//Samples//rex//rex.obj", { 15.0,0.0,0.0 });
 	this->ImportDynamicModel("..//test//Samples//skeleton//skeleton.3ds");
 	m_SceneRenderer->setScene(m_Scene);
+
 	int state;
 	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 	while (true) {

@@ -263,23 +263,52 @@ _bool		RGP_ANIMATOR::AnimatedModel::ProcessAnimation(const aiScene* Scene)
 	return true;
 };
 
+void		RGP_ANIMATOR::AnimatedModel::InterpolateBonesTransformation()
+{
+	Animation* ani = this->getAnimationbyIndex(m_SelectedAnimation);
 
+	//find the right transformation instance using the cursor for each bone(channel), calculate the right keys and apply 
+	//for each channel
+	for (_u32b channel = 0; channel < ani->numChannels; ++channel) {
+		for (_u32b key = 0; key < ani->channels[channel].numKeys; ++key) {
+			if (m_Cursor > (ani->channels[channel].Keys[key].Instance) ){
+				continue;
+			}
+			else {
+				//interpolate the value 
+				
+
+				//and stop
+				break; 
+			}
+		}
+	}
+
+	
+};
 
 void	RGP_ANIMATOR::AnimatedModel::Update(_float dt)
 {
-
 	//the behaviour of the object depends on its status( PLAYING ANIMATION, PAUSED or STOPPED)
+	if (m_Status == PLAY) {
+		m_Cursor += dt;
+		this->InterpolateBonesTransformation();
 
+	}
 };
 
 void		RGP_ANIMATOR::AnimatedModel::Play()
 {
+	m_Status = PLAY;
 };
 void		RGP_ANIMATOR::AnimatedModel::Pause()
 {
+	m_Status = PAUSE;
 };
 void		RGP_ANIMATOR::AnimatedModel::Stop()
 {
+	m_Status = STOP;
+	m_Cursor = 0.0;
 };
 
 void		RGP_ANIMATOR::AnimatedModel::Render(Camera* selected)

@@ -66,7 +66,6 @@ namespace RGP_CORE{
         _s8b*       Title ;
         _s32b       Witdh;
         _s32b       Height ;
-        _u16b       NumBackBuffers;///max 5
 		_bool		EnableShadows;
 		_s32b		ShadowResolution;
 		_bool		useEnvironmentMaps;
@@ -223,12 +222,13 @@ namespace RGP_CORE{
 		//scene to render
 		GameScene*					m_SelectedScene;
 		
+		//_s16b						m_SelectedFBO;
+		//_s16b						m_NumFBOs;
 
 		//colors
-        _s16b						m_NumFBOs;
-        GLuint*						m_FBOs;
-        GLuint**					m_AttachmentTextures;
-        _s16b						m_SelectedFBO;
+        GLuint						m_FBO;
+        GLuint*						m_AttachmentTextures;
+        
 
 		//light
 		_u32b						m_LightAccumProgram;
