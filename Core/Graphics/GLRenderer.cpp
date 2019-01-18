@@ -1,4 +1,62 @@
-#include ".//GLRenderer.h"
+﻿#include ".//GLRenderer.h"
+
+RGP_CORE::Image* RGP_CORE::LoadImageFromFile(const _s8b* filename)
+{
+	Image *Output = NULL;
+	//image format
+	FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
+	//pointer to the image, once loaded
+	FIBITMAP *dib(0);
+	FIBITMAP *dib32(0);
+	//pointer to the image data
+	BYTE* bits(0);
+	//image width and height
+	unsigned int width(0), height(0);
+
+	//check the file signature and deduce its format
+	fif = FreeImage_GetFileType(filename, 0);
+	//if still unknown, try to guess the file format from the file extension
+	if (fif == FIF_UNKNOWN)
+		fif = FreeImage_GetFIFFromFilename(filename);
+	//if still unkown, return failure
+	if (fif == FIF_UNKNOWN)
+		return Output;
+
+	//check that the plugin has reading capabilities and load the file
+	if (FreeImage_FIFSupportsReading(fif))
+		dib = FreeImage_Load(fif, filename, FIT_UINT32);
+	//if the image failed to load, return failure
+	if (!dib)
+		return Output;
+	
+	//retrieve the image data
+	dib32 = FreeImage_ConvertTo32Bits(dib);
+	bits = FreeImage_GetBits(dib32);
+	//get the image width and height
+	width = FreeImage_GetWidth(dib32);
+	height = FreeImage_GetHeight(dib32);
+	//if this somehow one of these failed (they shouldn't), return failure
+	if ((bits == 0) || (width == 0) || (height == 0)) {
+		FreeImage_Unload(dib);
+		return Output;
+	}
+	
+	
+	//Copy Data to our own data structure 
+
+	Output = (Image*)malloc(sizeof(Image));
+	if (!Output) {
+		FreeImage_Unload(dib);
+		return Output;
+	}
+	Output->Height = height;
+	Output->Width = width;
+	Output->Pixels = (_u8b*)malloc(width*height*4*sizeof(_u8b));
+	for (_u32b i = 0; i < width*height * 4; ++i) {
+		Output->Pixels[i] = bits[i];
+	}
+	return Output;
+};
 
 
 
@@ -341,7 +399,8 @@ RGP_CORE::GLRenderer::GLRenderer(RenderMode Type):m_Target(NULL),
 											m_ShadowAccumBuffer(0),
 											m_ShadowAccumTexture(0),
 											m_ShadowAccumProgram(0),
-											m_noLightMode(false)
+											m_noLightMode(false),
+											m_BoundShaderProgram(0)
 											
 {
     if(Type==DEFERRED_RENDERING || Type==FORWARD_RENDERING)
@@ -410,18 +469,8 @@ void RGP_CORE::GLRenderer::Destroy(){
 	}
 
     if(m_FinalRenderSurface){
-        if(m_FinalRenderSurface->IndexBuffer){
-            glDeleteBuffers(1,&(m_FinalRenderSurface->IndexBuffer));
-        }
-        if(m_FinalRenderSurface->NormalBuffer){
-            glDeleteBuffers(1,&(m_FinalRenderSurface->NormalBuffer));
-        }
-        if(m_FinalRenderSurface->TexCoords){
-            glDeleteBuffers(1,&(m_FinalRenderSurface->TexCoords));
-        }
-        if(m_FinalRenderSurface->VertexBuffer){
-            glDeleteBuffers(1,&(m_FinalRenderSurface->VertexBuffer));
-        }
+		
+        glDeleteBuffers(3,m_FinalRenderSurface->Wrappers);
         if(m_FinalRenderSurface->VertexArrayObject){
             glDeleteVertexArrays(1,&(m_FinalRenderSurface->VertexArrayObject));
         }
@@ -440,7 +489,9 @@ void RGP_CORE::GLRenderer::Destroy(){
 	
     m_SelectedScene=NULL ;
     m_isInitialized =false;
-    glfwTerminate();
+	FreeImage_DeInitialise();
+	glfwTerminate();
+
 
 };
 _bool RGP_CORE::GLRenderer::InitRenderer(gfxConfig Config){
@@ -450,18 +501,25 @@ _bool RGP_CORE::GLRenderer::InitRenderer(gfxConfig Config){
         printf("errro initializing GLFW\n");
         return false ;
     }
-    m_Target=Window::Create(Config.Title,Config.Witdh,Config.Height);
+	//glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+	//glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+	//glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // To make MacOS happy; should not be needed
+	//glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    m_Target=RGP_CORE::Window::Create(Config.Title,Config.Witdh,Config.Height);
     if(!m_Target){
         printf("error creating Window\n");
         return false ;
     }
+	
 	this->MakeContext();
+
     ///initializing GLEW
     if(glewInit()!=GLEW_OK){
         printf("error init GLEW\n");
         return false ;
 	}
 	glfwSwapInterval(0);
+	FreeImage_Initialise();
 	m_ShaderManager = new GLShaderProgramsManager();
 	if (!m_ShaderManager) {
 		printf("Fatal error\n");
@@ -675,38 +733,29 @@ _bool RGP_CORE::GLRenderer::InitFinalPhase(){
     if(!m_FinalRenderSurface)
         return false ;
     m_FinalRenderSurface->VertexArrayObject=0;
-    m_FinalRenderSurface->VertexBuffer=0;
-    m_FinalRenderSurface->NormalBuffer=0;
-    m_FinalRenderSurface->TexCoords=0;
-    m_FinalRenderSurface->IndexBuffer=0;
+	m_FinalRenderSurface->Wrappers[0]=0;
+    m_FinalRenderSurface->Wrappers[1] =0;
+    m_FinalRenderSurface->Wrappers[2] =0;
     glGetError();
 
-    glGenBuffers(1,&( m_FinalRenderSurface->VertexBuffer));
-    glBindBuffer(GL_ARRAY_BUFFER, m_FinalRenderSurface->VertexBuffer);
+    glGenBuffers(3, m_FinalRenderSurface-> Wrappers);
+    glBindBuffer(GL_ARRAY_BUFFER, m_FinalRenderSurface-> Wrappers[0]);
     glBufferData(GL_ARRAY_BUFFER,8*sizeof(_float),vertexBuffer,GL_STATIC_DRAW);
-
-
-    glGenBuffers(1,&(m_FinalRenderSurface->TexCoords));
-    glBindBuffer(GL_ARRAY_BUFFER, m_FinalRenderSurface->TexCoords);
+    glBindBuffer(GL_ARRAY_BUFFER, m_FinalRenderSurface-> Wrappers[1]);
     glBufferData(GL_ARRAY_BUFFER,8*sizeof(_float),TexCoordBuffer,GL_STATIC_DRAW);
-
-
-    glGenBuffers(1,&(m_FinalRenderSurface->IndexBuffer));
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,m_FinalRenderSurface->IndexBuffer);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,m_FinalRenderSurface->Wrappers[2]);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6*sizeof(_u32b) , IndexBuffer, GL_STATIC_DRAW);
 
 
     glGenVertexArrays(1,&(m_FinalRenderSurface->VertexArrayObject));
     glBindVertexArray(m_FinalRenderSurface->VertexArrayObject);
-    glBindBuffer(GL_ARRAY_BUFFER,m_FinalRenderSurface->VertexBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER,m_FinalRenderSurface->Wrappers[0]);
     glVertexAttribPointer(0,2,GL_FLOAT,GL_FALSE,0,0);
     glEnableVertexAttribArray(0);
-
-
-    glBindBuffer(GL_ARRAY_BUFFER,m_FinalRenderSurface->TexCoords);
+    glBindBuffer(GL_ARRAY_BUFFER,m_FinalRenderSurface->Wrappers[1]);
     glVertexAttribPointer(1,2,GL_FLOAT,GL_FALSE,0,0);
     glEnableVertexAttribArray(1);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,m_FinalRenderSurface->IndexBuffer);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,m_FinalRenderSurface->Wrappers[2]);
 
 
     glBindVertexArray(0);
@@ -737,32 +786,38 @@ void		RGP_CORE::GLRenderer::MakeContext()
 
 void  RGP_CORE::GLRenderer::setScene(GameScene*   Scene){ 
 	m_SelectedScene= Scene ;
+	reRegisterLightSources();
+};
+
+_bool RGP_CORE::GLRenderer::reRegisterLightSources()
+{
+
 	_u32b NumShadowmaps = 0;
 	GLuint* tmp = NULL;
 	LightSource* Source = NULL;
-	if (m_SelectedScene){
-		NumShadowmaps= m_SelectedScene->getNumLights();
-		
+	if (m_SelectedScene) {
+		NumShadowmaps = m_SelectedScene->getNumLights();
+
 		int error;
 		_u32b numLights = m_SelectedScene->getNumLights();
 		for (_u32b i = 0; i < numLights; ++i) {
-			Source=m_SelectedScene->getLight(i);
+			Source = m_SelectedScene->getLight(i);
 			if (Source->getLightCutoffAngle() < 0.0)
 				NumShadowmaps += 5;
 		}
 
-		if (NumShadowmaps > m_ShadowVectorSize){
-			tmp = (GLuint*)malloc(NumShadowmaps *sizeof(GLuint));//first we need new FBos
+		if (NumShadowmaps > m_ShadowVectorSize) {
+			tmp = (GLuint*)malloc(NumShadowmaps * sizeof(GLuint));//first we need new FBos
 			if (!tmp)
-				return;
+				return false;
 			for (_u32b i = 0; i < m_NumShadowFBOs; ++i)
 				tmp[i] = m_ShadowFBOs[i];
 			free(m_ShadowFBOs);
 			m_ShadowFBOs = tmp;
 
-			tmp = (GLuint*)malloc(NumShadowmaps *sizeof(GLuint));//next Attachent texture for eac fbo
+			tmp = (GLuint*)malloc(NumShadowmaps * sizeof(GLuint));//next Attachent texture for eac fbo
 			if (!tmp)
-				return;
+				return false;
 			for (_u32b i = 0; i < m_NumShadowFBOs; ++i)
 				tmp[i] = m_ShadowAttachmentTexture[i];
 			free(m_ShadowAttachmentTexture);
@@ -771,8 +826,8 @@ void  RGP_CORE::GLRenderer::setScene(GameScene*   Scene){
 			//generate and attach
 			glGenFramebuffers(NumShadowmaps - m_NumShadowFBOs, &m_ShadowFBOs[m_NumShadowFBOs]);
 			glGenTextures(NumShadowmaps - m_NumShadowFBOs, &m_ShadowAttachmentTexture[m_NumShadowFBOs]);
-			
-			for (_u32b i = m_NumShadowFBOs; i < NumShadowmaps; ++i){
+
+			for (_u32b i = m_NumShadowFBOs; i < NumShadowmaps; ++i) {
 				glBindFramebuffer(GL_FRAMEBUFFER, m_ShadowFBOs[i]);
 				glBindTexture(GL_TEXTURE_2D, m_ShadowAttachmentTexture[i]);
 				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -783,11 +838,11 @@ void  RGP_CORE::GLRenderer::setScene(GameScene*   Scene){
 					m_Config.ShadowResolution,
 					m_Config.ShadowResolution,
 					0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
-				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_ShadowAttachmentTexture[i],0);
+				glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_ShadowAttachmentTexture[i], 0);
 				glDrawBuffer(GL_NONE);
 				glReadBuffer(GL_NONE);
 				error = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-				if (GL_FRAMEBUFFER_COMPLETE != error){
+				if (GL_FRAMEBUFFER_COMPLETE != error) {
 					printf("frameBuffer attacehment error code %x\n", error);
 				}
 				glClear(GL_DEPTH_BUFFER_BIT);
@@ -798,7 +853,8 @@ void  RGP_CORE::GLRenderer::setScene(GameScene*   Scene){
 		}
 		m_NumShadowFBOs = NumShadowmaps;
 	}
-};
+	return true;
+}
 
 void	RGP_CORE::GLRenderer::RenderScene(_u32b FBO_Target,Camera* camera)
 {
@@ -851,17 +907,27 @@ void RGP_CORE::GLRenderer::RenderSceneColors(_u32b FBO,Camera *camera)
 		glViewport(0, 0, m_Target->getWidth(), m_Target->getHeight());
 		glDrawBuffers(7, DrawBuff);
 		
-		glDisable(GL_CULL_FACE);
-		
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK);
 		glEnable(GL_DEPTH_TEST);
+		
 		//glDisable(GL_BLEND);
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-		glBlendEquation(GL_SUBTRACT);
+		//glEnable(GL_BLEND);
+		//glBlendEquation(GL_FUNC_ADD);
+		//glBlendFunci(0, GL_ONE, GL_ZERO);
+		//glBlendFunci(1, GL_ONE, GL_ONE);
+		//glBlendFunci(2, GL_ONE, GL_ZERO);
+		//glBlendFunci(3, GL_ONE, GL_ZERO);
+		//glBlendFunci(4, GL_ONE, GL_ZERO);
+		//glBlendFunci(5, GL_ONE, GL_ZERO);
+		//glBlendFunci(6, GL_ONE, GL_SRC_COLOR);
 		///glClear attachements
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-	
+		_float Ones[4] = { 1.0f,1.0f,1.0f,1.0f };
+		_float Zeros[4] = { 0.0f,0.0f,0.0f,0.0f };
+		glClearBufferfv(GL_COLOR, 0, Zeros);
+		glClearBufferfv(GL_COLOR, 1, Zeros);
+		glClearBufferfv(GL_COLOR, 6, Ones);
 		///start searching for renderable objects and rendering
 		for (_u32b i = 0; i < nbActors; ++i){
 			actor = m_SelectedScene->getActor(i);
@@ -871,10 +937,7 @@ void RGP_CORE::GLRenderer::RenderSceneColors(_u32b FBO,Camera *camera)
 		}
 		//glFinish();
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glDisable(GL_CULL_FACE);
-		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_SMOOTH);
-		glDisable(GL_BLEND);
+		
 		
 	}
 };
@@ -953,6 +1016,7 @@ void RGP_CORE::GLRenderer::RenderSceneShadows(_u32b FBO, Camera* camera)
 		glViewport(0, 0, m_Target->getWidth(), m_Target->getHeight());
 		glEnable(GL_BLEND);
 		glBlendEquation(GL_MAX);
+
 		ShadowIndex = 0;
 		Location1 = this->GetUniformLocation(m_ShadowAccumProgram, "PositionMap");
 		glActiveTexture(GL_TEXTURE0);
@@ -1034,7 +1098,6 @@ void	RGP_CORE::GLRenderer:: RenderSceneLightAccum(Camera* camera)
 		glDrawBuffers(2, DrawBuff);
 		glDisable(GL_DEPTH_TEST);
 		glEnable(GL_BLEND);
-		glBlendFunc(GL_ONE, GL_ONE);
 		glBlendEquation(GL_FUNC_ADD);
 		glViewport(0, 0, m_Target->getWidth(), m_Target->getHeight());
 		glClear(GL_COLOR_BUFFER_BIT);
@@ -1198,7 +1261,8 @@ void	RGP_CORE::GLRenderer::SwitchNoLightMode()
 _bool RGP_CORE::GLRenderer::GenBuffers(_u32b numBuffers,GLuint*    target){
     if(!target)
         return false ;
-    glGenBuffers(numBuffers,target);
+	glGetError();
+	glGenBuffers(numBuffers,target);
     if(glGetError()){
         printf("error generating Buffers\n");
         return false ;
@@ -1212,8 +1276,11 @@ void  RGP_CORE::GLRenderer::DeleteBuffers(_u32b numBuffers,GLuint*    target){
     for(_u32b i=0 ; i<numBuffers;++i)
         target[i]=0;
 };
-void  RGP_CORE::GLRenderer::setBufferData(_u32b Target,_u32b SizeinByte, void* Data, _u32b flag){
-    glBufferData(Target,SizeinByte,Data,flag);
+void  RGP_CORE::GLRenderer::setBufferData(_u32b Target,_u32b SizeinByte, void* Data, _u32b flag, _u32b bufferwrapper){
+	if (bufferwrapper)
+		glNamedBufferData(bufferwrapper, SizeinByte, Data, flag);
+	else
+		glBufferData(Target,SizeinByte,Data,flag);
     if(glGetError())
         printf("error filling buffer with Data\n");
 };
@@ -1226,7 +1293,11 @@ void   RGP_CORE::GLRenderer::setBufferSubData(_u32b Target, _u32b Offset, _u32b 
 		printf("error filling buffer with sub Data %x\n", error);
 };
 void  RGP_CORE::GLRenderer::BindBuffer(_u32b Bindtype,_u32b BufferID ){
+	int error;
+	glGetError();
     glBindBuffer(Bindtype,BufferID);
+	if (error = glGetError())
+		printf("error filling buffer with sub Data %x\n", error);
 };
 
 ///VAOs
@@ -1252,12 +1323,12 @@ _bool  RGP_CORE::GLRenderer::BindVertexArray(_u32b BufferID){
         return false ;
     return true ;
 };
-void RGP_CORE::GLRenderer::DrawElements(GLenum mode,_u32b Count,GLenum Type,void* Offset){
-    glDrawElements(mode,Count,Type,Offset);
+void RGP_CORE::GLRenderer::DrawElements(GLenum mode,_u32b Count,GLenum Type,void* Offset,_u32b numInstances){
+    glDrawElementsInstanced(mode,Count,Type,Offset,numInstances);
 };
-void RGP_CORE::GLRenderer::DrawArrays(GLenum mode, _u32b first, _u32b count)
+void RGP_CORE::GLRenderer::DrawArrays(GLenum mode, _u32b first, _u32b count,  _u32b numInstances)
 {
-	glDrawArrays(mode, first, count);
+	glDrawArraysInstanced(mode, first, count,numInstances);
 };
 ///Textures
 _bool RGP_CORE::GLRenderer::GenTextures2D(_u32b numTextures,GLuint*    target){
@@ -1304,7 +1375,7 @@ void  RGP_CORE::GLRenderer::SetImageData2D(RGP_CORE::Image* ImageSource){
     if(ImageSource)
 	glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA8,
                  ImageSource->Width,ImageSource->Height,
-                 0,GL_RGBA,GL_UNSIGNED_BYTE,ImageSource->Pixels);
+                 0,GL_BGRA,GL_UNSIGNED_BYTE,ImageSource->Pixels);
 
 };
 void  RGP_CORE::GLRenderer::SetImageDataCube(RGP_CORE::Image* right , RGP_CORE::Image* left, RGP_CORE::Image* front,
@@ -1334,6 +1405,28 @@ _bool RGP_CORE::GLRenderer::BindTexture(_u32b textureID,_bool Texture2D){
         return false ;
     return true ;
 };
+
+
+_u64b RGP_CORE::GLRenderer::GetTextureHandle(_u32b textureID)
+{
+	if (glGetTextureHandleARB != NULL)
+		return  glGetTextureHandleARB(textureID);
+	else
+		return 0;
+};
+void  RGP_CORE::GLRenderer::MakeTextureHandleResidant(_u64b texHandle,_bool makeResidant )
+{
+	if (glMakeTextureHandleResidentARB == NULL)
+		return;
+	if (makeResidant) {
+		 glMakeTextureHandleResidentARB(texHandle);
+	}
+	else {
+		glMakeTextureHandleNonResidentARB(texHandle);
+	}
+	
+};
+
 
 //FBOs
 _bool RGP_CORE::GLRenderer::GenFrameBuffers(_u32b numFrameBuffers, GLuint* target)
@@ -1446,6 +1539,22 @@ _bool   RGP_CORE::GLRenderer::SetUniformSample(_s32b Location, _u32b TextureUnit
      }
     return true ;
 };
+_bool	RGP_CORE::GLRenderer::SetUniformHandleu64(_s32b Location, _u64b Handle)
+{
+	if(glUniformHandleui64ARB == NULL)
+		return false;
+	glUniformHandleui64ARB(Location, Handle);
+	return true;
+};
+_bool	RGP_CORE::GLRenderer::SetUniformHandleu64v(_s32b Location, _u32b Count, _u64b* Handle) 
+{
+	if (glUniformHandleui64ARB == NULL)
+		return false;
+	glUniformHandleui64vARB(Location, Count, Handle);
+	return true;
+};
+
+
 _bool   RGP_CORE::GLRenderer::SetVertexAttribPointer(_u32b Index,_u32b NumElemntsPerVertex,
                                _u32b offsetBetweenElements,void* offsetFromFirst)
 {
@@ -1467,7 +1576,10 @@ _bool   RGP_CORE::GLRenderer::DisableVertexAttribArray(_u32b index){
     return true ;
 };
 void    RGP_CORE::GLRenderer::SetShaderProgram(_u32b programID){
-	m_ShaderManager->BindProgram(programID);
+	if (m_BoundShaderProgram != programID) {
+		m_BoundShaderProgram = programID;
+		m_ShaderManager->BindProgram(programID);
+	}
 };
 
  

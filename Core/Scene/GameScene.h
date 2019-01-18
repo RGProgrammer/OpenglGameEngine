@@ -28,6 +28,7 @@ namespace RGP_CORE {
     	BaseActor*					getActor(_u32b index);
     	_u32b						getNumActors();
     	void						RemoveActorAt(_u32b index);
+		void						RemoveActor(BaseActor* actor);
 
     	_s16b						AddLight(LightSource* Source);
     	LightSource*				getLight(_u32b index);

@@ -17,9 +17,9 @@ class GLRenderer ;
 ///Renderable Type
 class Renderable: public virtual BaseActor {
 	protected:
-		Renderable();
-		Renderable(Vertex3d Pos);
-		Renderable(Vertex3d Pos,Vertex3d Dir,Vertex3d Up);
+		Renderable(const _s8b* name = "Rendrable");
+		Renderable(Vertex3d Pos, const _s8b* name = "Rendrable");
+		Renderable(Vertex3d Pos,Vertex3d Dir,Vertex3d Up, const _s8b* name = "Rendrable");
 	public:
 		virtual ~Renderable();
 		virtual void Destroy();
@@ -27,14 +27,18 @@ class Renderable: public virtual BaseActor {
 		virtual void CastShadow() = 0;
 		void	setShadowCast(_bool Value);
 		_bool   doesShadowCast();
-		void	setRenderer(GLRenderer* renderer);
-		void	setVisible(_bool visible=true);
+		void	setVisible(_bool visible = true);
 		_bool	isVisible();
+		void	setEffectedByLight(_bool value = true);
+		_bool	isEffectedByLight();
+		void	setRenderer(GLRenderer* renderer);
+		
 		//virtual _bool isEnvMap() = 0;
 		
     protected:
         GLRenderer*             m_GLRenderer ;
 		_bool					m_DoesCastShadow;
+		_bool					m_EffectByLight;
     private:
         _bool                   m_Visible ;
 	};

@@ -6,6 +6,7 @@
 namespace RGP_CORE {
     class SpotLight : virtual public LightSource {
     public:
+		static BaseActor*	Create(void ** args);
         SpotLight();
         SpotLight(Vertex3d Pos);
         SpotLight(Vertex3d Pos, Vertex3d Dir, Vertex3d Up);

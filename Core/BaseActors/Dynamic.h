@@ -10,9 +10,9 @@ namespace RGP_CORE{
 ///Dynamic Type
 	class Dynamic: public virtual BaseActor {
 	protected:
-		Dynamic();
-		Dynamic(Vertex3d Pos);
-		Dynamic(Vertex3d Pos, Vertex3d Dir, Vertex3d Up);
+		Dynamic(const _s8b* name = "Actor");
+		Dynamic(Vertex3d Pos,const _s8b* name = "Actor");
+		Dynamic(Vertex3d Pos, Vertex3d Dir, Vertex3d Up,const _s8b* name = "Actor");
 	public:
 		virtual ~Dynamic();
 		virtual void Update(_float dt)=0;

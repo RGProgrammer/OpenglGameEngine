@@ -1,7 +1,7 @@
 #include ".//Physical.h"
 
 
-RGP_CORE::Physical::Physical(_float mass):Dynamic(),m_nbCollisionShapes(NULL),m_CollisionShapes(NULL), m_Collider(NULL),
+RGP_CORE::Physical::Physical(const _s8b* name,_float mass):Dynamic(name),m_nbCollisionShapes(NULL),m_CollisionShapes(NULL), m_Collider(NULL),
 m_Rigidbody(NULL), m_Velocity({0.0f,0.0f,0.0f}), m_Mass(mass)//, m_SoftBody(NULL)
 {
 	m_ID |= PHYSICAL ;
@@ -20,7 +20,7 @@ m_Rigidbody(NULL), m_Velocity({0.0f,0.0f,0.0f}), m_Mass(mass)//, m_SoftBody(NULL
 	m_Rigidbody = new btRigidBody(info);
 	
 };
-RGP_CORE::Physical::Physical(Vertex3d Pos, _float mass):Dynamic(Pos), m_nbCollisionShapes(NULL), m_CollisionShapes(NULL), m_Collider(NULL),
+RGP_CORE::Physical::Physical(Vertex3d Pos, const _s8b* name, _float mass):Dynamic(Pos,name), m_nbCollisionShapes(NULL), m_CollisionShapes(NULL), m_Collider(NULL),
 m_Rigidbody(NULL), m_Velocity({ 0.0f,0.0f,0.0f }), m_Mass(mass)//, m_SoftBody(NULL)
 {
 	m_ID |= PHYSICAL ;
@@ -38,7 +38,7 @@ m_Rigidbody(NULL), m_Velocity({ 0.0f,0.0f,0.0f }), m_Mass(mass)//, m_SoftBody(NU
 
 	m_Rigidbody = new btRigidBody(info);
 };
-RGP_CORE::Physical::Physical(Vertex3d Pos, Vertex3d Dir, Vertex3d Up, _float mass):Dynamic(Pos,Dir,Up), m_nbCollisionShapes(NULL), m_CollisionShapes(NULL), m_Collider(NULL),
+RGP_CORE::Physical::Physical(Vertex3d Pos, Vertex3d Dir, Vertex3d Up, const _s8b* name, _float mass):Dynamic(Pos,Dir,Up,name), m_nbCollisionShapes(NULL), m_CollisionShapes(NULL), m_Collider(NULL),
 m_Rigidbody(NULL), m_Velocity({ 0.0f,0.0f,0.0f }), m_Mass(mass)//, m_SoftBody(NULL)
 {
 	m_ID |= PHYSICAL ;

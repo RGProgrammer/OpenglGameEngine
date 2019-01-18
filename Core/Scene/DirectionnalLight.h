@@ -7,6 +7,7 @@ namespace RGP_CORE {
 
     class DirectionnalLight : public LightSource {
     public:
+		static BaseActor*	Create(void ** args);
         DirectionnalLight();
         DirectionnalLight(Vertex3d Pos);
         DirectionnalLight(Vertex3d Pos, Vertex3d Dir, Vertex3d Up);

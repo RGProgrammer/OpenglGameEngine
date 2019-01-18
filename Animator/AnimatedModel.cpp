@@ -9,11 +9,46 @@ RGP_ANIMATOR::AnimatedModel*	RGP_ANIMATOR::AnimatedModel::CreateFromFile(GLRende
 	AnimatedModel*	 am = new AnimatedModel();
 	if (!am)
 		return NULL;
-	if (!am->Init(renderer, filename)) {
-		delete am;
-		return NULL;
+	am->setRenderer(renderer);
+	const aiScene* Scene = aiImportFile(filename, aiProcessPreset_TargetRealtime_Quality );
+	if (!Scene) {
+		printf("error loading file\n");
+		return 0;
 	}
-	const aiScene* Scene = aiImportFile(filename, aiProcessPreset_TargetRealtime_Fast );
+	if (Scene->mFlags == AI_SCENE_FLAGS_INCOMPLETE || Scene->mRootNode == NULL) {
+		printf("error laoding scene\n");
+		aiReleaseImport(Scene);
+		return 0;
+	}
+	//else succes
+	///init m_FileDirectory value
+	am->m_FileDirectory = ExtractDirectory(filename);
+	//some other code here(copying useful contents)
+	if (!am->LoadMaterial(Scene)) {
+		printf("Could not load material \n");
+		aiReleaseImport(Scene);
+		return 0;
+	}
+	if (!am->ProcessNode(Scene->mRootNode, Scene)) {
+		printf("Could not load Meshes \n");
+		aiReleaseImport(Scene);
+		return 0;
+	}
+	// We're done. Release all resources associated with this import
+	if (!am->GenerateBuffers()) {
+		printf("could not generate vertices buffers \n");
+		return 0;
+	}
+	else
+		am->FillBuffers();
+
+	if (!am->LoadShaderProg("..//Shaders//Model_Deferred.vs", "..//Shaders//Model_Deferred.fs")) {
+		printf("error loading shader program\n");
+		return 0;
+	}
+	if (!am->InitVAOs())
+		return 0;
+	
 	if (Scene->HasAnimations()) {
 		//copy bones data :
 		if (!am->ProcessBones(Scene->mRootNode,Scene)) {
@@ -125,7 +160,7 @@ _bool		RGP_ANIMATOR::AnimatedModel::ProcessBones(aiNode* node,const aiScene* sce
 	//copy node content
 	for (_u16b i = 0; i < node->mNumMeshes; ++i) {
 		numBones = scene->mMeshes[node->mMeshes[i]]->mNumBones;
-		for (_u32b b = 0; i <numBones; ++b) {
+		for (_u32b b = 0; b <numBones; ++b) {
 			ptrBone = scene->mMeshes[node->mMeshes[i]]->mBones[b];
 			bone.Name = CreateStringCopy(ptrBone->mName.C_Str());
 			bone.MeshID = meshindex;
@@ -157,16 +192,20 @@ _bool		RGP_ANIMATOR::AnimatedModel::ProcessBones(aiNode* node,const aiScene* sce
 		}
 		meshindex++;
 	}
+	
 	//process children nodes
 	for (_u16b i = 0; i< node->mNumChildren && ret ; i++) {
-		ret*=ProcessNode(node->mChildren[i], scene);
+		ret*=ProcessBones(node->mChildren[i], scene);
 	}
-
+	
 	meshindex = 0;
 	return ret;
 };
 _bool		RGP_ANIMATOR::AnimatedModel::ProcessAnimation(const aiScene* Scene)
 {
+	
+	//TODO 
+	//Remove the infinite loop
 	Key  key;
 	Animation* ani;
 	_double cursor;
@@ -313,10 +352,10 @@ void		RGP_ANIMATOR::AnimatedModel::Stop()
 
 void		RGP_ANIMATOR::AnimatedModel::Render(Camera* selected)
 {
-	if (m_Mode == 0)
+	//if (m_Mode == 0)
 		Model3D::Render(selected);
-	else
-		RenderWeighMap(selected);
+	//else
+	//	RenderWeighMap(selected);
 	//RenderBones(selected);
 	
 };
@@ -338,7 +377,7 @@ _bool		RGP_ANIMATOR::AnimatedModel::Init(GLRenderer* renderer, _s8b* modelfilena
 	//defining renderer
 	if (!(renderer && renderer->isInitialized()))
 		return false;
-	this->setRenderer(renderer);
+	this->Model3D::setRenderer(renderer);
 	//Init bone related objects
 	if (!(m_BoneRenderingShader = m_GLRenderer->CreateGLProgramFromFile("..//Animator//shaders//bone.vs",
 		"..//Animator//shaders//bone.gs",
@@ -357,7 +396,7 @@ _bool		RGP_ANIMATOR::AnimatedModel::Init(GLRenderer* renderer, _s8b* modelfilena
 
 
 	if(modelfilename)
-		if (!LoadModelFromFile(modelfilename,false))
+		if (!Model3D::LoadModelFromFile(modelfilename,false))
 			return false;
 
 	return true;
@@ -366,6 +405,8 @@ _bool		RGP_ANIMATOR::AnimatedModel::Init(GLRenderer* renderer, _s8b* modelfilena
 
 _bool	RGP_ANIMATOR::AnimatedModel::AddBone(Bone bone)
 {
+	
+	
 	if (!(bone.Name))
 		return false;
 	if (getBonebyName(bone.Name))
@@ -390,9 +431,9 @@ _bool	RGP_ANIMATOR::AnimatedModel::AddBone(Bone bone)
 	m_Skeleton.Parts[m_Skeleton.NumParts].NumIndices = bone.NumIndices;
 	m_Skeleton.Parts[m_Skeleton.NumParts].ParentIndex = bone.ParentIndex;
 	m_Skeleton.NumParts++;
-
+	//TODO
 	// updating VBO ;
-	_float vertices[MAX_NUM_BONES * 3];
+	/*_float vertices[MAX_NUM_BONES * 3];
 	for (_u32b i = 0; i < m_Skeleton.NumParts; ++i) {
 		vertices[i * 3  ] = m_Skeleton.Parts[i].LocalPostion.x;
 		vertices[i * 3+1] = m_Skeleton.Parts[i].LocalPostion.y;
@@ -400,7 +441,7 @@ _bool	RGP_ANIMATOR::AnimatedModel::AddBone(Bone bone)
 	}
 	m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER, m_BonesVBO);
 	m_GLRenderer->setBufferSubData(GL_ARRAY_BUFFER, 0, m_Skeleton.NumParts * 3 * sizeof(_float), vertices);
-	m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER, 0);
+	m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER, 0);*/
 
 	return true;
 };

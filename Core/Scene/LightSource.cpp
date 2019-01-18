@@ -112,8 +112,3 @@ _float*	RGP_CORE::LightSource::getLightViewMtx(){
 _float*	RGP_CORE::LightSource::getLightProjectionMtx(Camera*	selected){
 	UpdateLightProjectionMtx(selected);
 	return m_LightProjectionMtx; };
-
-//void RGP_CORE::LightSource::UpdateLightViewMtx()
-//{
-//	FillViewMatrix(m_Position, m_Direction, m_Up, m_LightViewMtx);
-//};

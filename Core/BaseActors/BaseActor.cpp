@@ -1,20 +1,27 @@
 #include "BaseActor.h"
 
-RGP_CORE::BaseActor::BaseActor():m_ID(UNKNOWN),  m_Position({0.0f,0.0f,0.0f}), m_Direction({0.0f,0.0f,-1.0f}),
+RGP_CORE::BaseActor::BaseActor(const _s8b* name ):m_ID(UNKNOWN),  m_Position({0.0f,0.0f,0.0f}), m_Direction({0.0f,0.0f,-1.0f}),
                             m_Up({0.0f,1.0f,0.0f}),  m_TransMtx(NULL),m_Scale({1.0f,1.0f,1.0f})
 {
-    m_TransMtx=(_float*)malloc(16*sizeof(_float));
+	if(name)
+		strcpy(m_Name, name);
+	m_TransMtx=(_float*)malloc(16*sizeof(_float));
 	UpdateTransMtx();
+	
 };
-RGP_CORE::BaseActor::BaseActor(Vertex3d Pos):m_ID(UNKNOWN),  m_Position(Pos), m_Direction({0.0f,0.0f,-1.0f}),
+RGP_CORE::BaseActor::BaseActor(Vertex3d Pos, const _s8b* name):m_ID(UNKNOWN),  m_Position(Pos), m_Direction({0.0f,0.0f,-1.0f}),
                                         m_Up({0.0f,1.0f,0.0f}),  m_TransMtx(NULL),m_Scale({1.0f,1.0f,1.0f})
 {
+	if (name)
+		strcpy(m_Name, name);
     m_TransMtx=(_float*)malloc(16*sizeof(_float));
 	UpdateTransMtx();
 };
-RGP_CORE::BaseActor::BaseActor(Vertex3d Pos,Vertex3d Dir,Vertex3d Up):m_ID(UNKNOWN),  m_Position(Pos), m_Direction(Dir),
+RGP_CORE::BaseActor::BaseActor(Vertex3d Pos,Vertex3d Dir,Vertex3d Up, const _s8b* name):m_ID(UNKNOWN),  m_Position(Pos), m_Direction(Dir),
                                                                 m_Up(Up),  m_TransMtx(NULL),m_Scale({1.0f,1.0f,1.0f})
 {
+	if (name)
+		strcpy(m_Name, name);
 	m_TransMtx=(_float*)malloc(16*sizeof(_float));
 	UpdateTransMtx();
 };
@@ -26,6 +33,14 @@ void RGP_CORE::BaseActor::Destroy(){
 		free(m_TransMtx);
 	}
 	m_TransMtx=NULL ;
+};
+
+_bool		RGP_CORE::BaseActor::setName(const _s8b* name)
+{
+	if (strcpy(m_Name, name))
+		return true;
+	else
+		return false;
 };
 _u32b RGP_CORE::BaseActor::getID(){
     return m_ID;
@@ -94,6 +109,22 @@ void RGP_CORE::BaseActor::RotateViaSide      (_float Angle){
 };
 void RGP_CORE::BaseActor::Translate          (Vertex3d ver){
     m_Position=AddVertex3d(m_Position,ver);
+	this->UpdateTransMtx();
+};
+void RGP_CORE::BaseActor::TranslateViaSide(_float value)
+{
+	Vertex3d Side = Normalize3d(CrossProduct3d(m_Up, m_Direction));
+	m_Position = AddVertex3d(m_Position, ScaleVertex3d(Side, value));
+	this->UpdateTransMtx();
+};
+void RGP_CORE::BaseActor::TranslateViaUp(_float value)
+{
+	m_Position = AddVertex3d(m_Position, ScaleVertex3d(m_Up,value));
+	this->UpdateTransMtx();
+};
+void RGP_CORE::BaseActor::TranslateViaDirection(_float value)
+{
+	m_Position = AddVertex3d(m_Position, ScaleVertex3d(m_Direction, value));
 	this->UpdateTransMtx();
 };
 void RGP_CORE::BaseActor::ScaleUniform(_float value) 

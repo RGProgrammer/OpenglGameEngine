@@ -11,14 +11,15 @@
 
 
 
-#include ".//Window.h"
+#include ".//MyWindow.h"
 #include "..//Common//BasePrimitiveTypes.h"
 #include "..//Common//Common.h"
 #include "..//BaseActors//Renderable.h"
 #include "..//Scene//GameScene.h"
-
+#include "..//..//tools//freeimage//include//FreeImage.h"
 #include <string.h>
-///there are more includes here
+
+
 
 
 namespace RGP_CORE{
@@ -29,12 +30,15 @@ namespace RGP_CORE{
 		_u8b*		Pixels ;
 	} Image;/// we only accepts RGBA format
 
+	Image* LoadImageFromFile(const _s8b* filename);
+
 
 	typedef struct{
 		Image*			DiffuseMap;
 		Image*			SpecularMap;
 		Image*			NormalsMap;
 		_float			IOR;
+		_float			Opacity;
 	} Material ;
 
 	typedef struct {
@@ -42,17 +46,14 @@ namespace RGP_CORE{
 		GLuint			SpecularMap;
 		GLuint			NormalsMap;
 		_float			IOR;
+		_float			Opacity;
+		_u64b			Handles[3];
 	} OGLMaterial ;
 
     ///mesh structure for openGL
 	typedef struct {
+		GLuint			Wrappers[6];
 	    GLuint          VertexArrayObject ;
-        GLuint          VertexBuffer ;
-		GLuint		    NormalBuffer;
-		GLuint          TangentBuffer ;
-		GLuint          BitangentBuffer ;
-		GLuint          TexCoords ;
-		GLuint          IndexBuffer ;
 		_u32b			AppliedMaterialIndex;
 		_u32b			numFaces;
     } MeshBuffers ;
@@ -137,6 +138,7 @@ namespace RGP_CORE{
         Window*     getTarget();
 		void		MakeContext();
         void	setScene(GameScene*   Scene);
+		_bool	reRegisterLightSources();
 		void	RenderScene(_u32b FBO_Target,Camera* camera=NULL);
         void	RenderCurrentScene();
 		void	RenderToTarget(_u32b FBO_Target=0);
@@ -151,10 +153,10 @@ namespace RGP_CORE{
 		//this is for testing
 		_u32b	getLastFrameTexture();
         ///buffers manager
-        ///VBOs
+        ///Buffer Objects
         _bool GenBuffers(_u32b numBuffers,GLuint*    target);
         void  DeleteBuffers(_u32b numBuffers,GLuint*    target);
-        void  setBufferData(_u32b Target ,_u32b Size , void* Data, _u32b flag);
+        void  setBufferData(_u32b Target ,_u32b Size , void* Data, _u32b flag,_u32b bufferwrapper=0);
 		void  setBufferSubData(_u32b Target, _u32b Offset, _u32b Size, void* Data);
         void  BindBuffer(_u32b Bindtype,_u32b BufferID );
 
@@ -163,8 +165,8 @@ namespace RGP_CORE{
         void  DeleteVertexArrays(_u32b numBuffers,GLuint*    target);
         _bool BindVertexArray(_u32b BufferID);
         ///VBO and VAO
-        void DrawElements(GLenum mode,_u32b Count,GLenum type,void* Offset);
-		void DrawArrays(GLenum mode, _u32b first, _u32b Count);
+        void DrawElements(GLenum mode,_u32b Count,GLenum type,void* Offset,_u32b numInstances=1);
+		void DrawArrays(GLenum mode, _u32b first, _u32b Count,  _u32b numInstances=1);
         ///Textures
         _bool GenTextures2D(_u32b numTexture,GLuint*    target);
 		_bool GenTexturesCube(_u32b numTexture, GLuint* target);
@@ -175,6 +177,8 @@ namespace RGP_CORE{
 		void  SetImageDataCube(_s32b Width, _s32b Height);
         void  SetActiveTexture(_u16b index);///starts from GL_TEXTURE0
         _bool BindTexture(_u32b textureID,_bool Texture2D=true);
+		_u64b GetTextureHandle(_u32b textureID);
+		void  MakeTextureHandleResidant(_u64b texHandle, _bool makeResidant = true);
 		
 		///FBOs
 		_bool GenFrameBuffers(_u32b numFrameBuffers, GLuint* target);
@@ -196,6 +200,8 @@ namespace RGP_CORE{
         _bool   SetUniformSample(_s32b Location, _u32b TextureUnit);
         _bool   SetVertexAttribPointer(_u32b Index,_u32b NumElemntsPerVertex,
                                             _u32b offsetBetweenElements=0,void* offsetFromFirst=0);
+		_bool	SetUniformHandleu64(_s32b Location, _u64b Handle);
+		_bool	SetUniformHandleu64v(_s32b Location, _u32b Count , _u64b* Handle);
         _bool   EnableVertexAttribArray(_u32b index);
         _bool   DisableVertexAttribArray(_u32b index);
         void    SetShaderProgram(_u32b programID);
@@ -247,7 +253,8 @@ namespace RGP_CORE{
 		GLuint						m_ShadowAccumTexture;
 		_bool						m_noLightMode;
 		
-
+		_u16b						m_BoundShaderProgram;
+		
     };
 };
 #endif // _RGP_GL_RENDERER_H_

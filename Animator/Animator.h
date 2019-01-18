@@ -1,20 +1,25 @@
 #ifndef _RGP_ANIMATOR_MASTER_H_
 #define _RGP_ANIMATOR_MASTER_H_
 
+#include "..//Core//Common//Timer.h"
+#include "..//Core//Graphics//GLRenderer.h"
 #include "..//Core//AdvancedActors//DataType.h"
 #include "..//Core//Scene//GameScene.h"
-#include "..//Core//Graphics//GLRenderer.h"
-#include "..//Core//Common//Timer.h"
 #include "..//Core//Scene//DirectionnalLight.h"
 #include "..//Core//Scene//PointLight.h"
 #include "..//tools//imgui//imgui.h"
 #include ".//AnimatedModel.h"
+#include "..//Core//ClassesDB//ClassesDB.h"
+
 #define SKELETONEDITING 0
 #define WEIGHMAPPING 1
 #define ANIMATIONEDITING 2
 
 
 using namespace RGP_CORE;
+
+static _float			CONSTSTEP = 15.0f;
+static Vertex3d			InsertionOffset = { 0.0f,0.0f,20.0f };
 
 namespace RGP_ANIMATOR
 {
@@ -36,6 +41,9 @@ namespace RGP_ANIMATOR
 		void		WeightDrawingTool();
 		void		AnimationPlayer();
 		void		KeyEditor();
+
+		//callback
+		void				ReactToEvents();
 		
 		//
 	public:
@@ -60,6 +68,7 @@ namespace RGP_ANIMATOR
 		_u32b					m_SelectedMesh;//1 ---->NumMeshes
 		_u32b					m_SelectedBone;//1 ---->Numbones
 		_u32b					m_SelectedAnimation;//1 ---->NumAnimations
+		Vertex2d				m_CursorPos;
 	};
 
 }

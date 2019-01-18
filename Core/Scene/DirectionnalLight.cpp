@@ -1,5 +1,16 @@
 #include ".//DirectionnalLight.h"
 
+RGP_CORE::BaseActor*	RGP_CORE::DirectionnalLight::Create(void ** args)
+{
+	DirectionnalLight* light = new DirectionnalLight();
+	if (!light)
+		return NULL;
+	light->setLightSpecularColor({ 0.2f,0.2f,0.2f });
+	light->setOrientation({ 0.0f, -0.5f, 0.5f }, { 0.0f, 0.5f, 0.5f });
+	return light;
+
+};
+
 RGP_CORE::DirectionnalLight::DirectionnalLight(): RGP_CORE::LightSource()
 {m_Distance =-1.0f ;
 m_LightViewMtx = (_float*)malloc(16 * sizeof(_float));

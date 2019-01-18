@@ -13,9 +13,9 @@ namespace RGP_CORE {
 	//Physical type(for physics engine)
 	class Physical : public virtual Dynamic{
 	protected:
-		Physical(_float mass = 1.0);
-		Physical(Vertex3d Pos, _float mass = 1.0);
-		Physical(Vertex3d Pos, Vertex3d Dir, Vertex3d Up, _float mass = 1.0);
+		Physical(const _s8b* name = "Actor",_float mass = 1.0);
+		Physical(Vertex3d Pos, const _s8b* name = "Actor", _float mass = 1.0);
+		Physical(Vertex3d Pos, Vertex3d Dir, Vertex3d Up, const _s8b* name = "Actor", _float mass = 1.0);
 	public:
 		virtual ~Physical();
 		virtual void 				Destroy();

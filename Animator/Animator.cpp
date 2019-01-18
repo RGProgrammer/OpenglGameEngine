@@ -1,8 +1,7 @@
 #include ".//Animator.h"
-
 #include "..//tools//glfw//glfw3.h"
-#ifdef _WIN32
-	#define	GLFW_EXPOSE_NATIVE_WIN32
+#ifdef _WIN32	
+#define	GLFW_EXPOSE_NATIVE_WIN32
 	#include "..//tools//glfw//glfw3native.h"
 #endif
 
@@ -108,15 +107,19 @@ _bool RGP_ANIMATOR::Animator::Init_RGP_Sys()
 	m_Camera2->setOrientation({ 0.0f, -0.5f, 0.5f }, { 0.0f, 0.5f, 0.5f });
 	m_Scene->setCamera(m_Camera1);
 
+	LightSource* light = NULL;
+	light = new DirectionnalLight();
+	light->setPosition({ 0.0f,12.0f,-10.0f });
+	light->setOrientation({ 0.0f, -0.5f, 0.5f }, { 0.0f, 0.5f, 0.5f });
+	light->setLightSpecularColor({ 0.2f,0.2f,0.2f });
+
+	m_Scene->AddLight(light);
+
 	m_Timer = new Timer();
 
-	LightSource *	light = NULL;
-	light = new DirectionnalLight();
-	light->setLightSpecularColor({ 0.3f,0.3f,0.3f });
-	light->setPosition({ 0.0f,20.0,-20.0f });
-	light->setOrientation({ 0.0f,-0.5f,5.0f }, { 0.0f,0.5f,5.0f });
-	m_Scene->AddLight(light);	
-
+	//creating classes data base 
+	Class_DB::addClass("Model3D", (void*(*)(void** args)) (&Model3D::Create), 2);
+	
 	return true;
 };
 _bool RGP_ANIMATOR::Animator::Init_ImGui_Sys()
@@ -134,75 +137,18 @@ void RGP_ANIMATOR::Animator::Start()
 		return;
 
 	this->ImportStaticModel("..//test//Samples//Plane.obj");
-	this->ImportStaticModel("..//test//Samples//Cube.obj", { -10.0,5.0,0.0 });
-	this->ImportStaticModel("..//test//Samples//rex//rex.obj", { 15.0,0.0,0.0 });
-	this->ImportDynamicModel("..//test//Samples//skeleton//skeleton.3ds");
+	//this->ImportDynamicModel("..//test//Samples//skeleton//skeleton.fbx");
 	m_SceneRenderer->setScene(m_Scene);
+	//m_SceneRenderer->SwitchNoLightMode();
+	m_SceneRenderer->reRegisterLightSources();
 
 	int state;
-	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+	//ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 	while (true) {
 		glfwPollEvents();
 		if (glfwWindowShouldClose(m_SceneRenderer->getTarget()->getglfwWindow()))
 			break;
-
-		//UpdatePart
-		state = glfwGetKey(m_SceneRenderer->getTarget()->getglfwWindow(), GLFW_KEY_W);
-		if (state == GLFW_PRESS) {
-			m_Scene->getCamera()->Translate(ScaleVertex3d(m_Scene->getCamera()->getDirection(), 1.0));
-
-		}
-		state = glfwGetKey(m_SceneRenderer->getTarget()->getglfwWindow(), GLFW_KEY_S);
-		if (state == GLFW_PRESS) {
-			m_Scene->getCamera()->Translate(ScaleVertex3d(m_Scene->getCamera()->getDirection(), -1.0));
-		}
-		state = glfwGetKey(m_SceneRenderer->getTarget()->getglfwWindow(), GLFW_KEY_D);
-		if (state == GLFW_PRESS) {
-			m_Scene->getCamera()->Translate(ScaleVertex3d(m_Scene->getCamera()->getSide(), -1.0));
-
-		}
-		state = glfwGetKey(m_SceneRenderer->getTarget()->getglfwWindow(), GLFW_KEY_A);
-		if (state == GLFW_PRESS) {
-			m_Scene->getCamera()->Translate(ScaleVertex3d(m_Scene->getCamera()->getSide(), 1.0));
-
-		}
-
-
-		state = glfwGetKey(m_SceneRenderer->getTarget()->getglfwWindow(), GLFW_KEY_UP);
-		if (state == GLFW_PRESS) {
-			m_Scene->getCamera()->RotateViaSide(-0.05f);
-			
-		}
-		state = glfwGetKey(m_SceneRenderer->getTarget()->getglfwWindow(), GLFW_KEY_DOWN);
-		if (state == GLFW_PRESS) {
-			m_Scene->getCamera()->RotateViaSide(0.05f);
-			
-		}
-		state = glfwGetKey(m_SceneRenderer->getTarget()->getglfwWindow(), GLFW_KEY_LEFT);
-		if (state == GLFW_PRESS) {
-			m_Scene->getCamera()->RotateViaUp(0.05f);
-			
-		}
-		state = glfwGetKey(m_SceneRenderer->getTarget()->getglfwWindow(), GLFW_KEY_RIGHT);
-		if (state == GLFW_PRESS) {
-			m_Scene->getCamera()->RotateViaUp(-0.05f);
-			
-		}
-		state = glfwGetKey(m_SceneRenderer->getTarget()->getglfwWindow(), GLFW_KEY_N);
-		if (state == GLFW_PRESS) {
-			m_SceneRenderer->SwitchNoLightMode();
-		}
-		state = glfwGetKey(m_SceneRenderer->getTarget()->getglfwWindow(), GLFW_KEY_B);
-		if (state == GLFW_PRESS) {
-			m_Scene->setCamera(m_Camera1);
-		}
-		state = glfwGetKey(m_SceneRenderer->getTarget()->getglfwWindow(), GLFW_KEY_V);
-		if (state == GLFW_PRESS) {
-			m_Scene->setCamera(m_Camera2);
-		}
-
-
-
+		ReactToEvents();
 		//rendering part
 		m_SceneRenderer->RenderCurrentScene();
 		ImGui_ImplGlfwGL3_NewFrame();
@@ -253,13 +199,18 @@ void RGP_ANIMATOR::Animator::ModeSelector()
 void RGP_ANIMATOR::Animator::BoneTool()
 {
 	ImGui::Begin("Bone Tool");
-	ImGui::Text("Not yet Implemented");
+	if (m_SelectedBone) {
+
+	}
+	else {
+		ImGui::Text("Empty");
+	}
 	ImGui::End();
 };
 void RGP_ANIMATOR::Animator::WeightDrawingTool()
 {
 	ImGui::Begin("Drawing Tool");
-	ImGui::Text("Not yet Implemented");
+	ImGui::Text("Empty");
 	ImGui::End();
 };
 
@@ -344,17 +295,65 @@ _bool		RGP_ANIMATOR::Animator::ImportDynamicModel(_s8b* filename, Vertex3d Pos)
 	addAnimatedModel(model);
 	return true;
 };
+#include "..//Core//ClassesDB//ClassesDB.h"
 _bool		RGP_ANIMATOR::Animator::ImportStaticModel(_s8b* filename, Vertex3d Pos)
 {
 	Model3D* model = new Model3D();
 	model->setRenderer(m_SceneRenderer);
 	model->LoadModelFromFile(filename);
-	model->setPosition(Pos);
-	m_Scene->AddActor(model);
+	BaseActor* (*ptr)(void**) = ((BaseActor*(*)(void** args))RGP_CORE::Class_DB::getCreateMethod("Model3D"));
+	if (ptr) {
+		BaseActor* model = NULL;
+		void* args[2] = { m_SceneRenderer,filename };
+		model = (*ptr)(args);
+		model->setPosition(Pos);
+		m_Scene->AddActor(model);
+	}
+	else {
+		printf("null pointer \n");
+	}
 	return true;
 };
 
 
+void RGP_ANIMATOR::Animator::ReactToEvents()
+{
+
+	_double CursorPosx;
+	_double CursorPosy;
+	Vertex3d ver = { 0.0f,0.0f,0.0f };
+	RGP_CORE::Window* window = this->m_SceneRenderer->getTarget();
+	//Mouse Events(+shift)
+	if (glfwGetMouseButton(window->getglfwWindow(), GLFW_MOUSE_BUTTON_2) == GLFW_PRESS) {
+		glfwGetCursorPos(window->getglfwWindow(), &CursorPosx, &CursorPosy);
+		if (glfwGetKey(window->getglfwWindow(), GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS ||
+			glfwGetKey(window->getglfwWindow(), GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {//shift key is pressed
+			ver.x = ((CursorPosx - m_CursorPos.u) / window->getWidth())* CONSTSTEP;
+			ver.y = ((CursorPosy - m_CursorPos.v) / window->getHeight())* CONSTSTEP;
+			m_Scene->getCamera()->TranslateViaSide(ver.x);
+			m_Scene->getCamera()->TranslateViaUp(ver.y);
+
+		}
+		else if (glfwGetKey(window->getglfwWindow(), GLFW_KEY_RIGHT_CONTROL) == GLFW_PRESS ||
+			glfwGetKey(window->getglfwWindow(), GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
+			ver.y = ((CursorPosy - m_CursorPos.v) / window->getHeight())* CONSTSTEP;
+			m_Scene->getCamera()->TranslateViaDirection(ver.y*(1.0f));
+
+		}
+		else {
+			ver.x = ((CursorPosx - m_CursorPos.u) / window->getWidth());
+			ver.y = ((CursorPosy - m_CursorPos.v) / window->getHeight());
+			m_Scene->getCamera()->RotateViaUp(ver.x*(-0.2f));
+			m_Scene->getCamera()->RotateViaSide(ver.y*0.2f);
+		}
+	}
+	//else {
+	glfwGetCursorPos(window->getglfwWindow(), &CursorPosx, &CursorPosy);
+	m_CursorPos.u = (_float)CursorPosx;
+	m_CursorPos.v = (_float)CursorPosy;
+	//}
+	//keyboard shortcuts 
+};
 
 
 
@@ -492,7 +491,7 @@ static void ImGui_ImplGlfwGL3_SetClipboardText(void* user_data, const char* text
 	glfwSetClipboardString((GLFWwindow*)user_data, text);
 }
 
-void ImGui_ImplGlfw_MouseButtonCallback(GLFWwindow*, int button, int action, int /*mods*/)
+void ImGui_ImplGlfw_MouseButtonCallback(GLFWwindow*, int button, int action, int mods)
 {
 	if (action == GLFW_PRESS && button >= 0 && button < 3)
 		g_MouseJustPressed[button] = true;

@@ -2,17 +2,18 @@
 #define _RGP_MODEL_3D_H_
 
 
-#include "..//..//tools//SOIL//SOIL.h"
-#include "..//..//tools//assimp3//scene.h"
-#include "..//..//tools//assimp3//cimport.h"
-#include "..//..//tools//assimp3//postprocess.h"
+
+#include "..//..//tools//assimp//include//scene.h"
+#include "..//..//tools//assimp//include//cimport.h"
+#include "..//..//tools//assimp//include//postprocess.h"
 #include "..//Common//Common.h"
 #include "..//BaseActors//Renderable.h"
 #include ".//GLRenderer.h"
 
 
 namespace RGP_CORE {
-    ///Mesh structure
+
+	///Mesh structure
     typedef struct {
 		char*			Name;
 		_float*		    VertexBuffer ;//each 3 floats form a vertex(x,y,z)
@@ -30,9 +31,10 @@ namespace RGP_CORE {
 
 	class Model3D : public virtual Renderable {
 	public:
-		Model3D();
-		Model3D(Vertex3d Pos);
-		Model3D(Vertex3d Pos, Vertex3d Dir, Vertex3d Up);
+		static BaseActor*	Create(void ** args);//args is the list of argment needed for the object
+		Model3D(const _s8b* name = "Actor");
+		Model3D(Vertex3d Pos, const _s8b* name = "Actor");
+		Model3D(Vertex3d Pos, Vertex3d Dir, Vertex3d Up, const _s8b* name = "Actor");
 		virtual ~Model3D() ;
 		virtual void 	Destroy() ;
 		void			DestroyBuffers();
@@ -46,14 +48,14 @@ namespace RGP_CORE {
 		_u32b			getNumMeshes();
 		void			setReflectionProbe(EnvMapProbe* Probe);
 		EnvMapProbe*	getReflectionProbe(EnvMapProbe* Probe);
-
+	
 	protected:
 		_u16b ProcessNode(aiNode* Node,const aiScene* Scene);/// currently this function copy only a static model
         _u16b AddMesh(const char* Name,_u16b MaterialID);
         _u16b CopyVertices(const aiVector3D*   buffer,_u32b nbVertices);
         _u16b CopyNormals(const aiVector3D*   buffer,_u32b nbVertices);
         _u16b CopyTangents(const aiVector3D*   Tbuffer,const aiVector3D*   Bibuffer,_u32b nbVertices);
-        _u16b CopyFaces(const aiFace* Faces, _u32b nbFaces);
+        _u16b CopyFaces(const aiFace* Faces, _u32b nbFaces,_u32b add= 0);
         _u16b CopyTextureCoords(aiVector3D** TexCoords, _u32b nbTexCoords);
         _u16b LoadMaterial(const aiScene* Scene);
         _u16b CopyTextureData(aiTexture* Texture, Image* Dest);
@@ -63,11 +65,11 @@ namespace RGP_CORE {
 		_u16b FillBuffers();
 	protected:
 		_s8b*					m_FileDirectory;
-		pMesh					v_Meshes ;
-		MeshBuffers*            v_Buffers ;
+		pMesh					m_Meshes ;
+		MeshBuffers*            m_Buffers ;
 		GLuint*					m_VAOforShadowcasting;
-		Material*               v_Materials;
-		OGLMaterial*            v_oglMaterials;
+		Material*               m_Materials;
+		OGLMaterial*            m_oglMaterials;
 		EnvMapProbe*			m_ReflectionProbe;
 		_u32b					m_NumMeshes;
 		_u32b                   m_NumMaterials;
