@@ -14,6 +14,7 @@
     <ProjectGuid>{1BC7B856-DDAE-45C5-9506-ADDEE1EFD93E}</ProjectGuid>
     <RootNamespace>RGP_GameEngine</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
+    <ProjectName>RGP_Core</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -64,7 +65,7 @@
       <AdditionalDependencies>../../tools/glew/lib/Release/Win32/glew32s.lib;../../tools/bullet3/lib/Bullet3Common_Debug.lib;../../tools/bullet3/lib/LinearMath_Debug.lib;../../tools/bullet3/lib/BulletCollision_Debug.lib;../../tools/bullet3/lib/BulletDynamics_Debug.lib;../../tools/assimp/lib/assimp.lib;../../tools/glfw/VClibs/glfw3dll.lib;../../tools/openal/libs/Win32/OpenAL32.lib;../../tools/SOIL/lib/SOIL.lib;opengl32.lib;msvcrt.lib;msvcmrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Lib>
-      <AdditionalDependencies>../../tools/glew/lib/Release/Win32/glew32s.lib;../../tools/bullet3/lib/Bullet3Common_Debug.lib;../../tools/bullet3/lib/LinearMath_Debug.lib;../../tools/bullet3/lib/BulletCollision_Debug.lib;../../tools/bullet3/lib/BulletDynamics_Debug.lib;../../tools/assimp3/lib/Debug/assimp-vc140-mt.lib;../../tools/assimp3/lib/Debug/zlibstaticd.lib;../../tools/glfw/VClibs/glfw3dll.lib;../../tools/openal/libs/Win32/OpenAL32.lib;../../tools/SOIL/lib/SOIL.lib;opengl32.lib;msvcrt.lib;msvcmrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>../../tools/glew/lib/Release/Win32/glew32s.lib;../../tools/assimp/lib-md/Debug/assimp-vc140-mt.lib;../../tools/freeimage/lib/Debug/FreeImaged.lib;../../tools/bullet3/lib/Bullet3Common_Debug.lib;../../tools/bullet3/lib/LinearMath_Debug.lib;../../tools/bullet3/lib/BulletCollision_Debug.lib;../../tools/bullet3/lib/BulletDynamics_Debug.lib;../../tools/glfw/VClibs/glfw3dll.lib;../../tools/openal/libs/Win32/OpenAL32.lib;opengl32.lib;msvcrt.lib;msvcmrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -90,7 +91,7 @@
       <UseLibraryDependencyInputs>true</UseLibraryDependencyInputs>
     </ProjectReference>
     <Lib>
-      <AdditionalDependencies>../../tools/glew/lib/Release/Win32/glew32s.lib;../../tools/bullet3/lib/Bullet3Common.lib;../../tools/bullet3/lib/LinearMath.lib;../../tools/bullet3/lib/BulletCollision.lib;../../tools/bullet3/lib/BulletDynamics.lib;../../tools/assimp3/lib/Release/assimp-vc140-mt.lib;../../tools/assimp3/lib/Release/zlibstatic.lib;../../tools/glfw/VClibs/glfw3dll.lib;../../tools/openal/libs/Win32/OpenAL32.lib;../../tools/SOIL/lib/SOIL.lib;opengl32.lib;msvcrt.lib;msvcmrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>../../tools/glew/lib/Release/Win32/glew32s.lib;../../tools/assimp/lib-md/Release/assimp-vc140-mt.lib;../../tools/freeimage/lib/Release/FreeImage.lib;../../tools/bullet3/lib/Bullet3Common.lib;../../tools/bullet3/lib/LinearMath.lib;../../tools/bullet3/lib/BulletCollision.lib;../../tools/bullet3/lib/BulletDynamics.lib;../../tools/glfw/VClibs/glfw3dll.lib;../../tools/openal/libs/Win32/OpenAL32.lib;opengl32.lib;msvcrt.lib;msvcmrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -101,11 +102,12 @@
     <ClCompile Include="..\..\Core\BaseActors\Dynamic.cpp" />
     <ClCompile Include="..\..\Core\BaseActors\Physical.cpp" />
     <ClCompile Include="..\..\Core\BaseActors\Renderable.cpp" />
+    <ClCompile Include="..\..\Core\ClassesDB\ClassesDB.cpp" />
     <ClCompile Include="..\..\Core\Common\Thread.cpp" />
     <ClCompile Include="..\..\Core\Common\Timer.cpp" />
     <ClCompile Include="..\..\Core\Graphics\GLRenderer.cpp" />
     <ClCompile Include="..\..\Core\Graphics\Model3D.cpp" />
-    <ClCompile Include="..\..\Core\Graphics\Window.cpp" />
+    <ClCompile Include="..\..\Core\Graphics\MyWindow.cpp" />
     <ClCompile Include="..\..\Core\Physics\PhysicsEngine.cpp" />
     <ClCompile Include="..\..\Core\Scene\Camera.cpp" />
     <ClCompile Include="..\..\Core\Scene\DirectionnalLight.cpp" />
@@ -125,6 +127,7 @@
     <ClInclude Include="..\..\Core\BaseActors\Dynamic.h" />
     <ClInclude Include="..\..\Core\BaseActors\Physical.h" />
     <ClInclude Include="..\..\Core\BaseActors\Renderable.h" />
+    <ClInclude Include="..\..\Core\ClassesDB\ClassesDB.h" />
     <ClInclude Include="..\..\Core\Common\BasePrimitiveTypes.h" />
     <ClInclude Include="..\..\Core\Common\Math.h" />
     <ClInclude Include="..\..\Core\Common\Common.h" />
@@ -133,7 +136,8 @@
     <ClInclude Include="..\..\Core\Graphics\glHeaders.h" />
     <ClInclude Include="..\..\Core\Graphics\GLRenderer.h" />
     <ClInclude Include="..\..\Core\Graphics\Model3D.h" />
-    <ClInclude Include="..\..\Core\Graphics\Window.h" />
+    <ClInclude Include="..\..\Core\Graphics\MyWindow.h" />
+    <ClInclude Include="..\..\Core\Input\InputHandler.h" />
     <ClInclude Include="..\..\Core\Physics\PhysicsEngine.h" />
     <ClInclude Include="..\..\Core\Scene\Camera.h" />
     <ClInclude Include="..\..\Core\Scene\DirectionnalLight.h" />

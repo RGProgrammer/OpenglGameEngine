@@ -4,9 +4,9 @@
 #include "..//Core//Graphics//GLRenderer.h"
 #include "..//Core//Physics//PhysicsEngine.h"
 #include "..//Core//Sound//SoundEngine.h"
-#include "..//Core//Scene//GameScene.h"
 #include "..//Core//Common//Thread.h"
 #include "..//tools//imgui//imgui.h"
+#include "CustomGameScene.h"
 using namespace RGP_CORE;
 
 
@@ -35,6 +35,19 @@ namespace RGP_LEVELBUILDER {
 	class LevelBuilder {
 	private:
 		static const _u32b			MAXSELECTION=20;
+		enum EditCommands {
+			COMMAND_NONE=0,
+			COMMAND_GRAB,
+			COMMAND_SCALE,
+			COMMAND_ROTATE
+		};
+		enum TransformConstraint {
+			TRANSFORM_ON_ALL = 0,
+			TRANSFORM_ON_X,
+			TRANSFORM_ON_Y,
+			TRANSFORM_ON_Z
+		};
+
 	public:
 		static LevelBuilder* Create();
 		static void			Release();
@@ -58,10 +71,6 @@ namespace RGP_LEVELBUILDER {
 		_bool				ImportScene(_u8b* filename);
 		_bool				ExportScene();
 
-		//Ops on Actors :
-		void				SelectOneActor(BaseActor* actor);
-		void				SelectAnotherActor(BaseActor* actor);
-		void				UnSelectAll();
 		void				TranslateSelected(Vertex3d translation);
 		void				RotateSelected(Vertex3d rotation);//Quat 
 
@@ -74,22 +83,22 @@ namespace RGP_LEVELBUILDER {
 		void				ActorsListingToolBox();
 		void				BaseActorToolBox();
 	private :
-		//callback
+		//
 		void				ReactToEvents();
-
+		
 	private :
-		_bool				m_isInitilized;
-		GLRenderer*			m_RendererInstance;
-		PhysicsEngine*		m_PhysicsEngineInstance;
-		SoundEngine*		m_SoundEngineInstance;
-		GameScene*			m_SceneInstance;
-		Camera*				m_Camera;
-		Thread*				m_RenderThread;
+		_bool					m_isInitilized;
+		GLRenderer*				m_RendererInstance;
+		PhysicsEngine*			m_PhysicsEngineInstance;
+		SoundEngine*			m_SoundEngineInstance;
+		CustomScene*			m_SceneInstance;
+		Camera*					m_Camera;
+		Thread*					m_RenderThread;
 
-
-		BaseActor**			m_SelectedItems;
-		_u32b				m_NumSelectedItems;
-		Vertex2d			m_CursorPos;
+		
+		Vertex2d				m_CursorPos;
+		EditCommands			m_CurrentCommand;
+		TransformConstraint		m_SelectedAxis;
 
 
 		/*TODO: Class Database provier*/

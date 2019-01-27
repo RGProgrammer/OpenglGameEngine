@@ -22,7 +22,7 @@
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{525E3409-3E88-4FB5-9045-8259BCD3513F}</ProjectGuid>
     <RootNamespace>LevelBuilder</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -78,11 +78,14 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <Optimization>MaxSpeed</Optimization>
+      <Optimization>Full</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <ConformanceMode>true</ConformanceMode>
+      <ConformanceMode>false</ConformanceMode>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <PreprocessorDefinitions>_MBCS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
@@ -95,7 +98,9 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <ConformanceMode>true</ConformanceMode>
+      <ConformanceMode>false</ConformanceMode>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PreprocessorDefinitions>_MBCS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <AdditionalDependencies>../../bin/Core_debug.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -124,6 +129,24 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\LevelBuilder\CustomGameScene.cpp" />
+    <ClCompile Include="..\..\LevelBuilder\LevelBuider_main.cpp" />
+    <ClCompile Include="..\..\LevelBuilder\LevelBuilder.cpp" />
+    <ClCompile Include="..\..\tools\imgui\imgui.cpp" />
+    <ClCompile Include="..\..\tools\imgui\imgui_demo.cpp" />
+    <ClCompile Include="..\..\tools\imgui\imgui_draw.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\LevelBuilder\CustomGameScene.h" />
+    <ClInclude Include="..\..\LevelBuilder\Grid.h" />
+    <ClInclude Include="..\..\LevelBuilder\InitDatabase.h" />
+    <ClInclude Include="..\..\LevelBuilder\LevelBuilder.h" />
+    <ClInclude Include="..\..\tools\imgui\imconfig.h" />
+    <ClInclude Include="..\..\tools\imgui\imgui.h" />
+    <ClInclude Include="..\..\tools\imgui\imgui_internal.h" />
+    <ClInclude Include="..\..\tools\imgui\stb_rect_pack.h" />
+    <ClInclude Include="..\..\tools\imgui\stb_textedit.h" />
+    <ClInclude Include="..\..\tools\imgui\stb_truetype.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

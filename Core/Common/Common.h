@@ -89,5 +89,6 @@ namespace RGP_CORE {
 	{
 		return (_s8b*)CopyBuffer(s,strlen(s)+1);
 	};
+	
 }
 #endif

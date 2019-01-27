@@ -20,15 +20,14 @@ namespace RGP_CORE {
 	class GameScene {
 	public:
     	GameScene();
-    	~GameScene() ;
+    	virtual ~GameScene() ;
     	void						FreeVector();
-    	void						Destroy() ;
-
-    	_s16b						AddActor(BaseActor* actor);
-    	BaseActor*					getActor(_u32b index);
-    	_u32b						getNumActors();
-    	void						RemoveActorAt(_u32b index);
-		void						RemoveActor(BaseActor* actor);
+    	virtual void				Destroy() ;
+		_u32b						getNumActors();
+		BaseActor*					getActor(_u32b index);
+    	virtual _s16b				AddActor(BaseActor* actor);		
+		virtual _bool				RemoveActorAt(_u32b index);
+		virtual _bool				RemoveActor(BaseActor* actor);
 
     	_s16b						AddLight(LightSource* Source);
     	LightSource*				getLight(_u32b index);
@@ -50,9 +49,9 @@ namespace RGP_CORE {
     	
     	void						setGravity(Vertex3d force);
     	Vertex3d					getGravity();
-	private:
+	protected:
     	_u32b        		Size ;
-
+	private :
     	_u32b        		m_NumActors ;
     	BaseActor**         v_Actors ;
 

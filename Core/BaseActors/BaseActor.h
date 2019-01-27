@@ -42,6 +42,7 @@ namespace RGP_CORE {
 		void		 TranslateViaUp(_float value);
 		void		 TranslateViaDirection(_float value);
 		void 		 ScaleUniform(_float value) ;
+		void 		 ScaleUniformAdd(_float value);
 		void 		 Scale(Vertex3d scale);
 		
 

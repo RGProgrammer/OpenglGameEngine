@@ -40,7 +40,6 @@ void RGP_LEVELBUILDER::LevelBuilder::StartLoop()
 		if (glfwWindowShouldClose(m_RendererInstance->getTarget()->getglfwWindow()))
 			break;
 		ReactToEvents();
-		//TODO : implement mouse event callback :scroll
 		//TODO : implement select item function
 		//TODO : add select item window
 
@@ -60,7 +59,7 @@ RGP_LEVELBUILDER::LevelBuilder::LevelBuilder():m_isInitilized(false),
 												m_RendererInstance(NULL), m_PhysicsEngineInstance(NULL),
 												m_SoundEngineInstance(NULL), m_SceneInstance(NULL),
 												m_RenderThread(NULL), m_Camera(NULL),
-												m_SelectedItems(NULL),m_NumSelectedItems(NULL)
+												m_CurrentCommand(COMMAND_NONE), m_SelectedAxis(TRANSFORM_ON_ALL)
 {
 
 };
@@ -95,7 +94,7 @@ void				RGP_LEVELBUILDER::LevelBuilder::Destroy()
 _bool				RGP_LEVELBUILDER::LevelBuilder::Init()
 {
 	
-	m_SceneInstance = new GameScene();
+	m_SceneInstance = new CustomScene();
 	if (!m_SceneInstance) {
 		this->Destroy();
 		return false;
@@ -197,34 +196,21 @@ _bool				RGP_LEVELBUILDER::LevelBuilder::ExportScene()
 	return false;
 };
 
-void				RGP_LEVELBUILDER::LevelBuilder::SelectOneActor(BaseActor* actor)
-{
-	m_SelectedItems[0] = actor;
-	m_NumSelectedItems = 1;
-};
-void				RGP_LEVELBUILDER::LevelBuilder::SelectAnotherActor(BaseActor* actor)
-{
-	if (m_NumSelectedItems < MAXSELECTION) {
-		m_SelectedItems[m_NumSelectedItems] = actor;
-		++m_NumSelectedItems;
-	}
-};
-void				RGP_LEVELBUILDER::LevelBuilder::UnSelectAll()
-{
-	m_NumSelectedItems = 0;
-};
 void				RGP_LEVELBUILDER::LevelBuilder::TranslateSelected(Vertex3d translation)
 {
-	for (_u32b i = 0; i < m_NumSelectedItems; ++i) {
-		m_SelectedItems[i]->Translate(translation);
+	for (_u32b i = 0; i < m_SceneInstance->getNumActors(); ++i) {
+		if(m_SceneInstance->isActorSelected(i))
+			m_SceneInstance->getActor(i)->Translate(translation);
 	}
 };
 void				RGP_LEVELBUILDER::LevelBuilder::RotateSelected(Vertex3d rotation)
 {
-	for (_u32b i = 0; i < m_NumSelectedItems; ++i) {
-		m_SelectedItems[i]->RotateViaDirection(rotation.z);
-		m_SelectedItems[i]->RotateViaUp(rotation.y);
-		m_SelectedItems[i]->RotateViaSide(rotation.x);
+	for (_u32b i = 0; i < m_SceneInstance->getNumActors(); ++i) {
+		if (m_SceneInstance->isActorSelected(i)){
+			m_SceneInstance->getActor(i)->RotateViaDirection(rotation.z);
+			m_SceneInstance->getActor(i)->RotateViaUp(rotation.y);
+			m_SceneInstance->getActor(i)->RotateViaSide(rotation.x);
+		}
 	}
 }; 
 
@@ -236,7 +222,7 @@ void	 RGP_LEVELBUILDER::LevelBuilder::ActorsListingToolBox()
 	ImGui::SetWindowSize(ImVec2(200, 600));
 	if (m_SceneInstance->getNumActors()) {
 		for (_u32b i = 0; i < m_SceneInstance->getNumActors(); ++i) {
-			ImGui::Selectable(m_SceneInstance->getActor(i )->getName());
+			ImGui::Selectable(m_SceneInstance->getActor(i )->getName(),m_SceneInstance->getMemoryCase(i));
 		}
 	}
 	else {
@@ -248,7 +234,7 @@ void	 RGP_LEVELBUILDER::LevelBuilder::ActorsListingToolBox()
 void	RGP_LEVELBUILDER::LevelBuilder::BaseActorToolBox()
 {
 	
-	if (m_SelectedItems) {
+/*	if (m_NumSelectedItems) {
 		char name[50] = "";
 		ImGui::Begin("Transform");
 		ImGui::SetWindowSize(ImVec2(400, 400));
@@ -274,7 +260,7 @@ void	RGP_LEVELBUILDER::LevelBuilder::BaseActorToolBox()
 		ImGui::InputText("z", NULL, NULL);
 
 		ImGui::End();
-	}
+	}*/
 };
 
 
@@ -285,38 +271,188 @@ void RGP_LEVELBUILDER::LevelBuilder::ReactToEvents()
 	_double CursorPosx; 
 	_double CursorPosy;
 	Vertex3d ver = { 0.0f,0.0f,0.0f };
+	Vertex3d transformHelper;
 	RGP_CORE::Window* window= this->m_RendererInstance->getTarget();
-	//Mouse Events(+shift)
-	if (glfwGetMouseButton(window->getglfwWindow(), GLFW_MOUSE_BUTTON_2)==GLFW_PRESS) {
-		glfwGetCursorPos(window->getglfwWindow(), &CursorPosx, &CursorPosy);
-		if (glfwGetKey(window->getglfwWindow(), GLFW_KEY_RIGHT_SHIFT)==GLFW_PRESS ||
-			glfwGetKey(window->getglfwWindow(), GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {//shift key is pressed
-			ver.x = ((CursorPosx - m_CursorPos.u) / window->getWidth())* CONSTSTEP;
-			ver.y = ((CursorPosy - m_CursorPos.v) / window->getHeight())* CONSTSTEP;
-			m_SceneInstance->getCamera()->TranslateViaSide(ver.x);
-			m_SceneInstance->getCamera()->TranslateViaUp(ver.y);
+	glfwGetCursorPos(window->getglfwWindow(), &CursorPosx, &CursorPosy);
+	ver.x = ((CursorPosx - m_CursorPos.u) / window->getWidth());
+	ver.y = ((CursorPosy - m_CursorPos.v) / window->getHeight());
+
+	
+	
+	if (m_CurrentCommand == COMMAND_NONE) {//if no command 
+		//Mouse Events(+shift)
+		if (glfwGetMouseButton(window->getglfwWindow(), GLFW_MOUSE_BUTTON_2) == GLFW_PRESS) {
+			
+			if (glfwGetKey(window->getglfwWindow(), GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS ||
+				glfwGetKey(window->getglfwWindow(), GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) {//shift key is pressed
+				ver.x *= CONSTSTEP;
+				ver.y *= CONSTSTEP;
+				m_SceneInstance->getCamera()->TranslateViaSide(ver.x);
+				m_SceneInstance->getCamera()->TranslateViaUp(ver.y);
+
+			}
+			else if (glfwGetKey(window->getglfwWindow(), GLFW_KEY_RIGHT_CONTROL) == GLFW_PRESS ||
+				glfwGetKey(window->getglfwWindow(), GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
+				ver.y *= CONSTSTEP*3.0f;
+				m_SceneInstance->getCamera()->TranslateViaDirection(ver.y*(1.0f));
+
+			}
+			else {
+				m_SceneInstance->getCamera()->RotateViaUp(ver.x*(-0.2f));
+				m_SceneInstance->getCamera()->RotateViaSide(ver.y*0.2f);
+			}
+		}
+		
+		//Keyboard shortcuts
+		if (glfwGetKey(window->getglfwWindow(), GLFW_KEY_G) == GLFW_PRESS) {
+			m_CurrentCommand = COMMAND_GRAB;
 			
 		}
-		else if (glfwGetKey(window->getglfwWindow(), GLFW_KEY_RIGHT_CONTROL) == GLFW_PRESS ||
-			glfwGetKey(window->getglfwWindow(), GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS) {
-			ver.y = ((CursorPosy - m_CursorPos.v) / window->getHeight())* CONSTSTEP;
-			m_SceneInstance->getCamera()->TranslateViaDirection(ver.y*(1.0f));
-			
+		else if (glfwGetKey(window->getglfwWindow(), GLFW_KEY_R) == GLFW_PRESS) {
+			m_CurrentCommand = COMMAND_ROTATE;
 		}
-		else {
-			ver.x = ((CursorPosx - m_CursorPos.u) / window->getWidth());
-			ver.y = ((CursorPosy - m_CursorPos.v) / window->getHeight());
-			m_SceneInstance->getCamera()->RotateViaUp(ver.x*(-0.2f));
-			m_SceneInstance->getCamera()->RotateViaSide(ver.y*0.2f);
+		else if (glfwGetKey(window->getglfwWindow(), GLFW_KEY_S) == GLFW_PRESS) {
+			m_CurrentCommand = COMMAND_SCALE;
 		}
 	}
-	//else {
-		glfwGetCursorPos(window->getglfwWindow(), &CursorPosx, &CursorPosy);
-		m_CursorPos.u = (_float)CursorPosx;
-		m_CursorPos.v = (_float)CursorPosy;
-	//}
-	//keyboard shortcuts 
+	else {
+		if (glfwGetMouseButton(window->getglfwWindow(), GLFW_MOUSE_BUTTON_1) == GLFW_PRESS) {
+			m_CurrentCommand = COMMAND_NONE;
+			m_SelectedAxis = TRANSFORM_ON_ALL;
+			return;
+		}
+		else {
+			if (glfwGetKey(window->getglfwWindow(), GLFW_KEY_X) == GLFW_PRESS) {
+				if (m_SelectedAxis != TRANSFORM_ON_X)
+					m_SelectedAxis = TRANSFORM_ON_X;
+				else
+					m_SelectedAxis = TRANSFORM_ON_ALL;
+			}
+			if (glfwGetKey(window->getglfwWindow(), GLFW_KEY_Y) == GLFW_PRESS) {
+				if (m_SelectedAxis != TRANSFORM_ON_Y)
+					m_SelectedAxis = TRANSFORM_ON_Y;
+				else
+					m_SelectedAxis = TRANSFORM_ON_ALL;
+			}
+			if (glfwGetKey(window->getglfwWindow(), GLFW_KEY_Z) == GLFW_PRESS) {
+				if (m_SelectedAxis != TRANSFORM_ON_Z)
+					m_SelectedAxis = TRANSFORM_ON_Z;
+				else
+					m_SelectedAxis = TRANSFORM_ON_ALL;
+			}
+		}
+	}
+	
+	
+	if(m_CurrentCommand==COMMAND_GRAB){// if current command Grab(translate)
+		
+		//grab Command reaction
+		ver.x *= CONSTSTEP;
+		ver.y *= CONSTSTEP;
+		if (m_SelectedAxis == TRANSFORM_ON_ALL) {
+			for (_u32b i = 0; i < m_SceneInstance->getNumActors(); ++i) {
+				if (m_SceneInstance->isActorSelected(i)) {
+					transformHelper = ScaleVertex3d(m_SceneInstance->getCamera()->getSide(), -ver.x);
+					transformHelper = AddVertex3d(transformHelper, ScaleVertex3d(m_SceneInstance->getCamera()->getUp(), -ver.y));
+					m_SceneInstance->getActor(i)->Translate(transformHelper);
+				}
+			}
+		}
+		else if (m_SelectedAxis == TRANSFORM_ON_X) {
+
+			for (_u32b i = 0; i < m_SceneInstance->getNumActors(); ++i) {
+				if (m_SceneInstance->isActorSelected(i)) {
+					transformHelper = ScaleVertex3d(m_SceneInstance->getActor(i)->getSide(), ver.x);
+					m_SceneInstance->getActor(i)->Translate(transformHelper);
+				}
+			}
+		}
+		else if (m_SelectedAxis == TRANSFORM_ON_Y) {
+			for (_u32b i = 0; i < m_SceneInstance->getNumActors(); ++i) {
+				if (m_SceneInstance->isActorSelected(i)) {
+					transformHelper = ScaleVertex3d(m_SceneInstance->getActor(i)->getUp(), -ver.y);
+					m_SceneInstance->getActor(i)->Translate(transformHelper);
+				}
+			}
+		}
+		else if (m_SelectedAxis == TRANSFORM_ON_Z) {
+			for (_u32b i = 0; i < m_SceneInstance->getNumActors(); ++i) {
+				if (m_SceneInstance->isActorSelected(i)) {
+					transformHelper = ScaleVertex3d(m_SceneInstance->getActor(i)->getDirection(), ver.x);
+					m_SceneInstance->getActor(i)->Translate(transformHelper);
+				}
+			}
+		}
+	}
+	else if (m_CurrentCommand == COMMAND_SCALE) {
+		//SCale command reaction
+		if (m_SelectedAxis == TRANSFORM_ON_ALL) {
+			for (_u32b i = 0; i < m_SceneInstance->getNumActors(); ++i) {
+				if (m_SceneInstance->isActorSelected(i)) {
+					m_SceneInstance->getActor(i)->ScaleUniformAdd(ver.y);
+				}
+			}
+		}
+		else if (m_SelectedAxis == TRANSFORM_ON_X) {
+			for (_u32b i = 0; i < m_SceneInstance->getNumActors(); ++i) {
+				if (m_SceneInstance->isActorSelected(i)) {
+					transformHelper = m_SceneInstance->getActor(i)->getScale();
+					transformHelper.x += ver.x;
+					m_SceneInstance->getActor(i)->Scale(transformHelper);
+				}
+			}
+		}
+		else if (m_SelectedAxis == TRANSFORM_ON_Y) {
+			for (_u32b i = 0; i < m_SceneInstance->getNumActors(); ++i) {
+				if (m_SceneInstance->isActorSelected(i)) {
+					transformHelper = m_SceneInstance->getActor(i)->getScale();
+					transformHelper.y += ver.y;
+					m_SceneInstance->getActor(i)->Scale(transformHelper);
+				}
+			}
+		}
+		else if (m_SelectedAxis == TRANSFORM_ON_Z) {
+			for (_u32b i = 0; i < m_SceneInstance->getNumActors(); ++i) {
+				if (m_SceneInstance->isActorSelected(i)) {
+					transformHelper = m_SceneInstance->getActor(i)->getScale();
+					transformHelper.z += ver.x;
+					m_SceneInstance->getActor(i)->Scale(transformHelper);
+				}
+			}
+		}
+	}
+	else if (m_CurrentCommand == COMMAND_ROTATE) {
+		//Rotation Command Reaction
+		 if (m_SelectedAxis == TRANSFORM_ON_X) {
+			for (_u32b i = 0; i < m_SceneInstance->getNumActors(); ++i) {
+				if (m_SceneInstance->isActorSelected(i)) {
+					m_SceneInstance->getActor(i)->RotateViaSide(ver.x);
+				}
+			}
+		}
+		else if (m_SelectedAxis == TRANSFORM_ON_Y) {
+			for (_u32b i = 0; i < m_SceneInstance->getNumActors(); ++i) {
+				if (m_SceneInstance->isActorSelected(i)) {
+					m_SceneInstance->getActor(i)->RotateViaUp(ver.y);
+				}
+			}
+		}
+		else if (m_SelectedAxis == TRANSFORM_ON_Z) {
+			for (_u32b i = 0; i < m_SceneInstance->getNumActors(); ++i) {
+				if (m_SceneInstance->isActorSelected(i)) {
+					m_SceneInstance->getActor(i)->RotateViaDirection(ver.x);
+				}
+			}
+		}
+
+	}
+	
+	glfwGetCursorPos(window->getglfwWindow(), &CursorPosx, &CursorPosy);
+	m_CursorPos.u = (_float)CursorPosx;
+	m_CursorPos.v = (_float)CursorPosy;
+	
 };
+
 
 
 

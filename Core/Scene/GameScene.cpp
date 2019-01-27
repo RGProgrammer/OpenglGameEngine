@@ -91,7 +91,7 @@ RGP_CORE::BaseActor*  RGP_CORE::GameScene::getActor(_u32b index){
     }else 
 		return NULL ;
 };
-void RGP_CORE::GameScene::RemoveActorAt(_u32b index){
+_bool  RGP_CORE::GameScene::RemoveActorAt(_u32b index){
     BaseActor* tmp =NULL ;
     if(index>=0 && index< m_NumActors){
         tmp=v_Actors[index] ;
@@ -100,9 +100,11 @@ void RGP_CORE::GameScene::RemoveActorAt(_u32b index){
 		for(_u32b i=index; i<m_NumActors-1 ;i++)
             v_Actors[i]=v_Actors[i+1];
         m_NumActors-- ;
+		return true;
     }
+	return false;
 };
-void RGP_CORE::GameScene::RemoveActor(BaseActor* actor)
+_bool RGP_CORE::GameScene::RemoveActor(BaseActor* actor)
 {
 	for (_u32b i = 0; i < m_NumActors ; i++)
 		if (v_Actors[i] == actor) {
@@ -110,9 +112,10 @@ void RGP_CORE::GameScene::RemoveActor(BaseActor* actor)
 			for (; i < m_NumActors - 1;++i) {
 				v_Actors[i] = v_Actors[i + 1];
 			}
-			break;
+			m_NumActors--;
+			return true;
 		}
-	m_NumActors--;
+	return  false;
 };
 
 _u32b RGP_CORE::GameScene::getNumActors(){ return m_NumActors ;};

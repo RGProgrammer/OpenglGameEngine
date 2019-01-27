@@ -132,6 +132,12 @@ void RGP_CORE::BaseActor::ScaleUniform(_float value)
 	m_Scale.x=m_Scale.y=m_Scale.z=value ;
 	this->UpdateTransMtx();
 };
+void RGP_CORE::BaseActor::ScaleUniformAdd(_float value) {
+	m_Scale.x += value;
+	m_Scale.y += value;
+	m_Scale.z += value;
+	this->UpdateTransMtx();
+};
 void RGP_CORE::BaseActor::Scale(Vertex3d scale){
 	m_Scale=scale ;
 	this->UpdateTransMtx();
