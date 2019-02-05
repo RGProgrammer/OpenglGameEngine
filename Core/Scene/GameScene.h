@@ -29,11 +29,11 @@ namespace RGP_CORE {
 		virtual _bool				RemoveActorAt(_u32b index);
 		virtual _bool				RemoveActor(BaseActor* actor);
 
-    	_s16b						AddLight(LightSource* Source);
+    	/*_s16b						AddLight(LightSource* Source);
     	LightSource*				getLight(_u32b index);
     	_u32b						getNumLights();
     	void						RemoveLightAt(_u32b index);
-
+		*/
 		_s16b						AddEnvMapProbe(LightSource* Source);
 		EnvMapProbe*				getEnvMapProbe(_u32b index);
 		_u32b						getNumEnvMapProbe();
@@ -55,8 +55,8 @@ namespace RGP_CORE {
     	_u32b        		m_NumActors ;
     	BaseActor**         v_Actors ;
 
-    	_u32b               m_NumLights ;
-    	LightSource**       m_LightSources ;
+    	/*_u32b               m_NumLights ;
+    	LightSource**       m_LightSources ;*/
 
 		_u32b				m_NumEnvMap;
 		EnvMapProbe**		m_EnvMaps;

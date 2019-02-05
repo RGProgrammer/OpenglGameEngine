@@ -31,6 +31,7 @@ static int          g_AttribLocationPosition = 0, g_AttribLocationUV = 0, g_Attr
 static unsigned int g_VboHandle = 0, g_ElementsHandle = 0;
 
 
+
 namespace RGP_LEVELBUILDER {
 	class LevelBuilder {
 	private:
@@ -39,13 +40,22 @@ namespace RGP_LEVELBUILDER {
 			COMMAND_NONE=0,
 			COMMAND_GRAB,
 			COMMAND_SCALE,
-			COMMAND_ROTATE
+			COMMAND_ROTATE,
+			COMMAND_FILESELECT
 		};
 		enum TransformConstraint {
 			TRANSFORM_ON_ALL = 0,
 			TRANSFORM_ON_X,
 			TRANSFORM_ON_Y,
 			TRANSFORM_ON_Z
+		};
+
+		enum FileNameUse {
+			USE_NOTHING = 0,
+			USE_IMPORT_STATIC,//No animation
+			USE_IMPORT_DYNAMIC,// with animation
+			USE_IMPORT_SCENE,
+			USE_EXPORT_SCENE
 		};
 
 	public:
@@ -68,8 +78,10 @@ namespace RGP_LEVELBUILDER {
 		void				removeActor(_u32b index);
 		//TODO
 		_bool				LoadDefaultScene();
-		_bool				ImportScene(_u8b* filename);
-		_bool				ExportScene();
+		_bool				ImportScene(const _s8b* filename);
+		_bool				ExportScene(const _s8b* filename);
+		_bool				ImportStaticModel(const _s8b* filename);
+		_bool				ImportDynamicModel(const _s8b* filename);
 
 		void				TranslateSelected(Vertex3d translation);
 		void				RotateSelected(Vertex3d rotation);//Quat 
@@ -82,6 +94,7 @@ namespace RGP_LEVELBUILDER {
 		//UI
 		void				ActorsListingToolBox();
 		void				BaseActorToolBox();
+		void				SelectFileBox();
 	private :
 		//
 		void				ReactToEvents();
@@ -99,8 +112,10 @@ namespace RGP_LEVELBUILDER {
 		Vertex2d				m_CursorPos;
 		EditCommands			m_CurrentCommand;
 		TransformConstraint		m_SelectedAxis;
-
-
+		_float					m_SelectedPosition[3];
+		_float					m_SelectedRotation[3];
+		_float					m_SelectedScale[3];
+		FileNameUse				m_FilenameUse;
 		/*TODO: Class Database provier*/
 	};
 

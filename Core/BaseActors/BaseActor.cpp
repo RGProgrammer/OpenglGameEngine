@@ -143,6 +143,8 @@ void RGP_CORE::BaseActor::Scale(Vertex3d scale){
 	this->UpdateTransMtx();
 };
 Vertex3d RGP_CORE::BaseActor::getScale(){ return m_Scale ;};
+
+
 void RGP_CORE::BaseActor::UpdateTransMtx(){
 	m_Direction=Normalize3d(m_Direction);
 	Vertex3d Side = Normalize3d(CrossProduct3d(m_Up, m_Direction));
@@ -152,4 +154,13 @@ void RGP_CORE::BaseActor::UpdateTransMtx(){
     m_TransMtx[1]=m_Scale.x*Side.y; 	m_TransMtx[5]=m_Scale.y*m_Up.y; 	m_TransMtx[9 ]=m_Scale.z*m_Direction.y; 	m_TransMtx[13]=m_Position.y ;
     m_TransMtx[2]=m_Scale.x*Side.z; 	m_TransMtx[6]=m_Scale.y*m_Up.z; 	m_TransMtx[10]=m_Scale.z*m_Direction.z; 	m_TransMtx[14]=m_Position.z ;
     m_TransMtx[3]=0.0f  ; 				m_TransMtx[7]=0.0f  ;  				m_TransMtx[11]=0.0f        ; 				m_TransMtx[15]=1.0f         ;
+};
+
+Vertex4d  RGP_CORE::BaseActor::getQuaternion()
+{
+	return getQuaternionFromMatrix(this->m_TransMtx);
+};
+void      RGP_CORE::BaseActor::setQuaternion(Vertex4d q)
+{
+	getQuaternionToMatrix(q, m_TransMtx);
 };

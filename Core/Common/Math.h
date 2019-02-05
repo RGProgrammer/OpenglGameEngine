@@ -24,6 +24,10 @@
 #define MAX(a,b) (a>b)?a:b
 #define MIN(a,b) (a<b)?a:b
 
+
+typedef struct {
+	_float x, y, z, w;
+} Vertex4d, Point4d, Normal4d;
 typedef struct {
     _float x,y,z ;
 } Vertex3d,Point3d,Normal3d ;
@@ -176,6 +180,50 @@ inline void FillOrthographicsMatrix(_float left, _float top, _float right, _floa
 	Dest[1] = Dest[2] =  Dest[3] =  Dest[4] =  Dest[6] =0.0f ;
 	Dest[7] = Dest[8] = Dest[9] = Dest[11] = 0.0f;
 	Dest[15] = 1.0f;
+}
+
+
+inline Vertex4d getQuaternionFromMatrix(const _float Matrix[16]) {
+	Vertex4d rslt = { 0.0f,0.0f,0.0f,0.0f };
+
+	float trace = Matrix[0] + Matrix[5] + Matrix[10]; // I removed + 1.0f; see discussion with Ethan
+	if (trace > 0) {// I changed M_EPSILON to 0
+		float s = 0.5f / sqrtf(trace + 1.0f);
+		rslt.w = 0.25f / s;
+		rslt.x = (Matrix[6] - Matrix[9]) * s;
+		rslt.y = (Matrix[8] - Matrix[2]) * s;
+		rslt.z = (Matrix[1] - Matrix[4]) * s;
+	}
+	else {
+		if (Matrix[0] > Matrix[5] && Matrix[0] > Matrix[10]) {
+			float s = 2.0f * sqrtf(1.0f + Matrix[0] - Matrix[5] - Matrix[10]);
+			rslt.w = (Matrix[6] - Matrix[9]) / s;
+			rslt.x = 0.25f * s;
+			rslt.y = (Matrix[4] + Matrix[1]) / s;
+			rslt.z = (Matrix[8] + Matrix[2]) / s;
+		}
+		else if (Matrix[5] > Matrix[10]) {
+			float s = 2.0f * sqrtf(1.0f + Matrix[5] - Matrix[0] - Matrix[10]);
+			rslt.w = (Matrix[8] - Matrix[2]) / s;
+			rslt.x = (Matrix[4] + Matrix[1]) / s;
+			rslt.y = 0.25f * s;
+			rslt.z = (Matrix[9] + Matrix[6]) / s;
+		}
+		else {
+			float s = 2.0f * sqrtf(1.0f + Matrix[10] - Matrix[0] - Matrix[5]);
+			rslt.w = (Matrix[1] - Matrix[4]) / s;
+			rslt.x = (Matrix[8] + Matrix[2]) / s;
+			rslt.y = (Matrix[9] + Matrix[6]) / s;
+			rslt.z = 0.25f * s;
+		}
+	}
+	return rslt;
+}
+
+inline void getQuaternionToMatrix(Vertex4d q, _float matrix[16] ) {
+	matrix[0] = 1 - 2 * q.y*q.y - 2 * q.z*q.z;	matrix[4] = 2 * q.x*q.y - 2 * q.z*q.w;		matrix[8]  = 2 * q.x*q.z + 2 * q.y*q.w;
+	matrix[1] = 2 * q.x*q.y + 2 * q.z*q.w;		matrix[5] = 1 - 2 * q.x*q.x - 2 * q.z*q.z;	matrix[9]  = 2 * q.y*q.z - 2 * q.x*q.w;
+	matrix[2] = 2 * q.x*q.z - 2 * q.y*q.w;		matrix[6] = 2 * q.y*q.z + 2 * q.x*q.w;		matrix[10] = 1 - 2 * q.x*q.x - 2 * q.y*q.y;
 }
 #endif // PFE_MATH_H_
 

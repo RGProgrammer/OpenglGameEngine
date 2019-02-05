@@ -8,11 +8,12 @@ int main(void){
         delete testprogram ;
         testprogram=0;
         printf("error initializing test\n");
-		
+		system("PAUSE");
         return 0 ;
     }
     testprogram->Start();
     testprogram->Destroy();
     delete testprogram;
+	system("PAUSE");
     return 0 ;
 }

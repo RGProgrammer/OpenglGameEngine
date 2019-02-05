@@ -47,7 +47,8 @@ void RGP_LEVELBUILDER::LevelBuilder::StartLoop()
 		m_RendererInstance->RenderCurrentScene();
 		ImGui_ImplGlfwGL3_NewFrame();
 		this->ActorsListingToolBox();
-		//this->BaseActorToolBox();
+		this->BaseActorToolBox();
+		this->SelectFileBox();
 		ImGui::Render();
 		ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
 		
@@ -59,7 +60,11 @@ RGP_LEVELBUILDER::LevelBuilder::LevelBuilder():m_isInitilized(false),
 												m_RendererInstance(NULL), m_PhysicsEngineInstance(NULL),
 												m_SoundEngineInstance(NULL), m_SceneInstance(NULL),
 												m_RenderThread(NULL), m_Camera(NULL),
-												m_CurrentCommand(COMMAND_NONE), m_SelectedAxis(TRANSFORM_ON_ALL)
+												m_CurrentCommand(COMMAND_NONE), m_SelectedAxis(TRANSFORM_ON_ALL),
+												m_SelectedPosition{0.0f,0.0f,0.0f},
+												m_SelectedRotation{0.0f,0.0f,0.0f},
+												m_SelectedScale{0.0f,0.0f,0.0f},
+												m_FilenameUse(USE_NOTHING)
 {
 
 };
@@ -93,7 +98,10 @@ void				RGP_LEVELBUILDER::LevelBuilder::Destroy()
 };
 _bool				RGP_LEVELBUILDER::LevelBuilder::Init()
 {
-	
+	if (!InitClassesDatabase()) {
+		printf("error init classes database \n");
+		return false;
+	}
 	m_SceneInstance = new CustomScene();
 	if (!m_SceneInstance) {
 		this->Destroy();
@@ -176,7 +184,7 @@ _bool				RGP_LEVELBUILDER::LevelBuilder::LoadDefaultScene()
 		Actor = NULL;
 		Actor = (*ptr)(NULL);
 		Actor->setName("light");
-		m_SceneInstance->AddLight(dynamic_cast<LightSource*>(Actor));
+		m_SceneInstance->AddActor(Actor);
 	}
 	else
 		return false;
@@ -185,13 +193,31 @@ _bool				RGP_LEVELBUILDER::LevelBuilder::LoadDefaultScene()
 	return true;
 
 };
-_bool				RGP_LEVELBUILDER::LevelBuilder::ImportScene(_u8b* filename)
+_bool				RGP_LEVELBUILDER::LevelBuilder::ImportScene(const _s8b* filename)
 {
 
 	return false;
 
 };
-_bool				RGP_LEVELBUILDER::LevelBuilder::ExportScene()
+_bool				RGP_LEVELBUILDER::LevelBuilder::ExportScene(const _s8b* filename)
+{
+	return false;
+};
+_bool				RGP_LEVELBUILDER::LevelBuilder::ImportStaticModel(const _s8b* filename)
+{
+	BaseActor* (*ptr)(void**) = ((BaseActor*(*)(void** args))RGP_CORE::Class_DB::getCreateMethod("Model3D"));
+	if (ptr) {
+		BaseActor* model = NULL;
+		void* args[2] = { m_RendererInstance,(void*)filename };
+		model = (*ptr)(args);
+		m_SceneInstance->AddActor(model);
+	}
+	else {
+		printf("null pointer \n");
+	}
+	return true;
+};
+_bool				RGP_LEVELBUILDER::LevelBuilder::ImportDynamicModel(const _s8b* filename)
 {
 	return false;
 };
@@ -221,7 +247,7 @@ void	 RGP_LEVELBUILDER::LevelBuilder::ActorsListingToolBox()
 	ImGui::Begin("Scene");
 	ImGui::SetWindowSize(ImVec2(200, 600));
 	if (m_SceneInstance->getNumActors()) {
-		for (_u32b i = 0; i < m_SceneInstance->getNumActors(); ++i) {
+		for (_u32b i = 1; i < m_SceneInstance->getNumActors(); ++i) {
 			ImGui::Selectable(m_SceneInstance->getActor(i )->getName(),m_SceneInstance->getMemoryCase(i));
 		}
 	}
@@ -233,34 +259,80 @@ void	 RGP_LEVELBUILDER::LevelBuilder::ActorsListingToolBox()
 };
 void	RGP_LEVELBUILDER::LevelBuilder::BaseActorToolBox()
 {
-	
-/*	if (m_NumSelectedItems) {
-		char name[50] = "";
+	_bool showbox = false;
+	BaseActor* actor = NULL;
+	Vertex4d quat;
+	for (_u32b i = 0; i < m_SceneInstance->getNumActors(); ++i) {
+		if (m_SceneInstance->isActorSelected(i)) {
+			showbox = true;
+			break;
+		}
+	}
+	if (showbox) {
 		ImGui::Begin("Transform");
-		ImGui::SetWindowSize(ImVec2(400, 400));
-		ImGui::LabelText("Position :", NULL);
-		ImGui::InputText("x",NULL,NULL);
-		ImGui::SameLine();
-		ImGui::InputText("y", NULL, NULL);
-		ImGui::SameLine();
-		ImGui::InputText("z", NULL, NULL);
+		ImGui::SetWindowSize(ImVec2(200, 350));
+		ImGui::Text("Position :", NULL);
+		//todo: calculate average postion
+		for (_u32b i = 0; i < m_SceneInstance->getNumActors(); ++i) {
+			if (m_SceneInstance->isActorSelected(i)) {
+				actor = m_SceneInstance->getActor(i);
+				break;
+			}
+		}
+		if (actor) {
+			m_SelectedPosition[0] = actor->getPosition().x;
+			m_SelectedPosition[1] = actor->getPosition().y;
+			m_SelectedPosition[2] = actor->getPosition().z;
+			quat = actor->getQuaternion();
+			m_SelectedRotation[0] = quat.x;
+			m_SelectedRotation[1] = quat.y;
+			m_SelectedRotation[2] = quat.z;
 
-		ImGui::LabelText("Rotation :", NULL);
-		ImGui::InputText("x", NULL, NULL);
-		ImGui::SameLine();
-		ImGui::InputText("y", NULL, NULL);
-		ImGui::SameLine();
-		ImGui::InputText("z", NULL, NULL);
-
-		ImGui::LabelText("Scale :", NULL);
-		ImGui::InputText("x", NULL, NULL);
-		ImGui::SameLine();
-		ImGui::InputText("y", NULL, NULL);
-		ImGui::SameLine();
-		ImGui::InputText("z", NULL, NULL);
+		}
+		
+		if (ImGui::InputFloat3(" ", m_SelectedPosition)) {
+			actor->setPosition({ m_SelectedPosition[0],m_SelectedPosition[2], m_SelectedPosition[2] });
+		}
+		ImGui::Separator();
+		ImGui::Text("Rotation :", NULL);
+		if (ImGui::InputFloat3(" ", m_SelectedRotation)) {
+			actor->setQuaternion({ m_SelectedRotation[0],m_SelectedRotation[2], m_SelectedRotation[2],1.0f });
+		}
+		ImGui::Separator();
+		ImGui::Text("Scale :", NULL);
+		ImGui::InputFloat3(" ", m_SelectedScale);
 
 		ImGui::End();
-	}*/
+	}
+
+};
+void RGP_LEVELBUILDER::LevelBuilder::SelectFileBox()
+{
+	//temporary code
+	_s8b					FileName[100];
+	if (m_CurrentCommand== COMMAND_FILESELECT) {
+		ImGui::Begin("Input");
+		ImGui::SetWindowSize(ImVec2(800, 150));
+		ImGui::Text("File :", NULL);
+		ImGui::InputText("", FileName, IM_ARRAYSIZE(FileName));
+		if (ImGui::Button("Load")) {
+			if (m_FilenameUse == USE_IMPORT_STATIC)
+				this->ImportStaticModel(FileName);
+			else if (m_FilenameUse == USE_IMPORT_DYNAMIC)
+				this->ImportDynamicModel(FileName);
+			else if (m_FilenameUse == USE_IMPORT_SCENE)
+				this->ImportScene(FileName);
+			else if (m_FilenameUse == USE_EXPORT_SCENE)
+				this->ExportScene(FileName);
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Cancel")) {
+			m_CurrentCommand == COMMAND_NONE;
+			m_FilenameUse = USE_NOTHING;
+		}
+		ImGui::End();
+	}
+
 };
 
 
@@ -306,7 +378,7 @@ void RGP_LEVELBUILDER::LevelBuilder::ReactToEvents()
 		//Keyboard shortcuts
 		if (glfwGetKey(window->getglfwWindow(), GLFW_KEY_G) == GLFW_PRESS) {
 			m_CurrentCommand = COMMAND_GRAB;
-			
+
 		}
 		else if (glfwGetKey(window->getglfwWindow(), GLFW_KEY_R) == GLFW_PRESS) {
 			m_CurrentCommand = COMMAND_ROTATE;
@@ -314,11 +386,24 @@ void RGP_LEVELBUILDER::LevelBuilder::ReactToEvents()
 		else if (glfwGetKey(window->getglfwWindow(), GLFW_KEY_S) == GLFW_PRESS) {
 			m_CurrentCommand = COMMAND_SCALE;
 		}
+		else if (glfwGetKey(window->getglfwWindow(), GLFW_KEY_I) == GLFW_PRESS &&
+			(glfwGetKey(window->getglfwWindow(), GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS || glfwGetKey(window->getglfwWindow(), GLFW_KEY_RIGHT_CONTROL) == GLFW_PRESS)) {
+			m_CurrentCommand = COMMAND_FILESELECT;
+			m_FilenameUse = USE_IMPORT_STATIC;
+		}
 	}
 	else {
-		if (glfwGetMouseButton(window->getglfwWindow(), GLFW_MOUSE_BUTTON_1) == GLFW_PRESS) {
+		if (glfwGetMouseButton(window->getglfwWindow(), GLFW_MOUSE_BUTTON_1) == GLFW_PRESS && m_CurrentCommand != COMMAND_FILESELECT) {
 			m_CurrentCommand = COMMAND_NONE;
 			m_SelectedAxis = TRANSFORM_ON_ALL;
+			m_FilenameUse = USE_NOTHING;
+			return;
+		}
+
+		if (glfwGetKey(window->getglfwWindow(), GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+			m_CurrentCommand = COMMAND_NONE;
+			m_SelectedAxis = TRANSFORM_ON_ALL;
+			m_FilenameUse = USE_NOTHING;
 			return;
 		}
 		else {

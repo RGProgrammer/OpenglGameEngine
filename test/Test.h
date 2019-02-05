@@ -1,6 +1,6 @@
 #ifndef _RGP_TEST_SAMPLE_H_
 #define _RGP_TEST_SAMPLE_H_
-#include "../Core/Graphics/Window.h"
+#include "../Core/Graphics/MyWindow.h"
 #include "../Core/Graphics/GLRenderer.h"
 #include"..//Core//Physics//PhysicsEngine.h"
 #include "../Core/Graphics/Model3D.h"

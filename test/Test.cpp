@@ -1,5 +1,5 @@
 #include "Test.h"
-
+#include "..//Core//ClassesDB/ClassesDB.h"
 RGP_CORE::Test::Test():m_Renderer(NULL),m_CurrentScene(NULL),m_Camera(NULL),m_Physics(NULL),m_Timer(NULL)
 {
 };
@@ -35,29 +35,34 @@ void RGP_CORE::Test::Start() {
 	RGP_CORE::Model3D* testmodel1 = NULL;
 	LightSource* light = NULL;
 	PModel*	PM = NULL;
-
-	/*light = new SpotLight();
+	light = new SpotLight();
+	light->setLightSpecularColor({ 0.3f,0.3f,0.3f });
 	light->setPosition({ 0.0f,10.0f,0.0f });
 	light->setOrientation({ 0.0f,-1.0f,0.0f }, { 0.0f,0.0f,1.0f });
 	light->setShadowStrengh(0.5);
-	m_CurrentScene->AddLight(light);*/
+	m_CurrentScene->AddActor(light);
 
-	light = new PointLight();
+	/*light = new PointLight();
 	light->setPosition({ 0.0f,30.0f,0.0f });
 	light->setLightDistance(50.0f);
 	light->setShadowStrengh(0.5);
-	m_CurrentScene->AddLight(light);
+	m_CurrentScene->AddLight(light);*/
 
 	/*light = new DirectionnalLight();
-	light->setOrientation({ -0.5f,-0.5f,0.0f }, { -0.5f,0.5f,1.0f });
+	light->setLightSpecularColor({0.3f,0.3f,0.3f});
+	light->setOrientation({ -0.5f,-0.5f,0.0f }, { -0.5f,0.5f,0.0f });
 	m_CurrentScene->AddLight(light);*/
 	
-
+	
 	testmodel1 = new Model3D();
 	testmodel1->setRenderer(m_Renderer);
+	testmodel1->ScaleUniform(10.0f);
 	if (!testmodel1->LoadModelFromFile("..//test//Samples//sky.obj"))
 		printf("error \n");
-	m_CurrentScene->AddActor(testmodel1);
+	else
+		m_CurrentScene->AddActor(testmodel1);
+
+
 
 	//this did not work
 	/*InfiniteMirror* test = new InfiniteMirror();
@@ -68,7 +73,7 @@ void RGP_CORE::Test::Start() {
 		printf("something \n");
 	}
 	m_CurrentScene->AddActor(test);*/
-
+	
 	PM = PModel::CreateGround(m_Renderer,{ 0.0f,-2.0f,0.0f });
 	PM->setShadowCast(false);
 	m_CurrentScene->AddActor(PM);
@@ -82,7 +87,7 @@ void RGP_CORE::Test::Start() {
 	PM->setShadowCast(false);
 	m_CurrentScene->AddActor(PM);
 	PM = PModel::CreateSphere(m_Renderer, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,1.0f }, { 0.0f,1.0f,0.0f });
-	PM->setShadowCast(false);
+	PM->setShadowCast(true);
 	m_CurrentScene->AddActor(PM);
 
 	
@@ -90,6 +95,7 @@ void RGP_CORE::Test::Start() {
 
 	///ecerything is good
 	m_Renderer->setScene(m_CurrentScene);
+	m_Renderer->reRegisterLightSources();
 	m_Physics->setScene(m_CurrentScene);
 
 	m_Timer->Reset();
@@ -179,7 +185,7 @@ int RGP_CORE::Test::Init(){
     if(!m_CurrentScene)
         return 0 ;
     m_Renderer=new GLRenderer();
-	if (!m_Renderer->InitRenderer({ "SAMPLE",800,600,5,true ,512,false })) {
+	if (!m_Renderer->InitRenderer({ "SAMPLE",800,600,true ,512,false})) {
 		return 0;
 	}
 	m_Physics = new PhysicsEngine();
@@ -187,7 +193,7 @@ int RGP_CORE::Test::Init(){
 		return 0;
 	if (!m_Physics->Init(m_CurrentScene))
 		return 0;
-    m_Camera=new PerspCamera(M_PI_2, 800.0f/600.0f,0.1f,50000.0f);
+    m_Camera=new PerspCamera(M_PI_2, 800.0f/600.0f,0.1f,5000.0f);
 	m_Camera->setPosition({ 0.0f,7.0f,-7.0f });
 	m_Camera->setOrientation({ 0.0f, -0.5f, 0.5f }, { 0.0f, 0.5f, 0.5f });
     m_CurrentScene->setCamera(m_Camera);

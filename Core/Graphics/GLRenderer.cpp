@@ -795,15 +795,25 @@ _bool RGP_CORE::GLRenderer::reRegisterLightSources()
 	_u32b NumShadowmaps = 0;
 	GLuint* tmp = NULL;
 	LightSource* Source = NULL;
+	int error;
 	if (m_SelectedScene) {
-		NumShadowmaps = m_SelectedScene->getNumLights();
-
-		int error;
+		//determine how many shadow map needed
+		/*NumShadowmaps = m_SelectedScene->getNumLights();
+		
 		_u32b numLights = m_SelectedScene->getNumLights();
 		for (_u32b i = 0; i < numLights; ++i) {
 			Source = m_SelectedScene->getLight(i);
 			if (Source->getLightCutoffAngle() < 0.0)
 				NumShadowmaps += 5;
+		}
+		*/
+		for (_u32b i = 0; i < m_SelectedScene->getNumActors(); ++i) {
+			if (m_SelectedScene->getActor(i)->getID() & LIGHTSOURCE) {
+				++NumShadowmaps;
+				Source = dynamic_cast<LightSource*>(m_SelectedScene->getActor(i));
+				if (Source->getLightCutoffAngle() < 0.0)
+					NumShadowmaps += 5;
+			}
 		}
 
 		if (NumShadowmaps > m_ShadowVectorSize) {
@@ -947,12 +957,13 @@ void RGP_CORE::GLRenderer::RenderSceneShadows(_u32b FBO, Camera* camera)
 	
 	if (m_SelectedScene && m_Config.EnableShadows){
 		_u32b NumActors = m_SelectedScene->getNumActors();
-		_u32b ShadowIndex = 0, numLights = m_SelectedScene->getNumLights();
+		_u32b ShadowIndex = 0;// , numLights = 0;// m_SelectedScene->getNumLights();
 		_s32b Location1 = -1, Location2 = -1, Location3 = -1;
 		LightSource*	Source = NULL;
 		Renderable*		actor = NULL;
-		if (numLights == 0)
-			return;
+		
+		/*if (numLights == 0)
+			return;*/
 		if (camera) {
 			Eye = camera;
 		}
@@ -968,8 +979,11 @@ void RGP_CORE::GLRenderer::RenderSceneShadows(_u32b FBO, Camera* camera)
 		Location2 = this->GetUniformLocation(m_ShadowRenderingProgram, "View");
 		Location3 = this->GetUniformLocation(m_ShadowRenderingProgram, "Projection");
 	
-		for(_u32b Index = 0 ; Index < numLights; ++Index){
-				Source = m_SelectedScene->getLight(Index);
+		for(_u32b Index = 0 ; Index < m_SelectedScene->getNumActors(); ++Index){
+			if (!(m_SelectedScene->getActor(Index)->getID() & LIGHTSOURCE))
+				continue;
+
+			Source = dynamic_cast<LightSource*>( m_SelectedScene->getActor(Index));
 					glBindFramebuffer(GL_FRAMEBUFFER, m_ShadowFBOs[ShadowIndex]);
 					glDrawBuffer(GL_NONE);
 					glReadBuffer(GL_NONE);
@@ -1023,9 +1037,11 @@ void RGP_CORE::GLRenderer::RenderSceneShadows(_u32b FBO, Camera* camera)
 		glBindTexture(GL_TEXTURE_2D, m_AttachmentTextures[POSITION_TEXTURE]);
 		glUniform1i(Location1, 0);
 
-		for (_u32b Index = 0; Index < numLights; ++Index) {
+		for (_u32b Index = 0; Index < m_SelectedScene->getNumActors(); ++Index) {
+			if (!(m_SelectedScene->getActor(Index)->getID() & LIGHTSOURCE))
+				continue;
 
-			Source = m_SelectedScene->getLight(Index);
+			Source = dynamic_cast<LightSource*>(m_SelectedScene->getActor(Index));
 
 			Location1 = this->GetUniformLocation(m_ShadowAccumProgram, "lighttype");
 			if (Source->getLightDistance() < 0.0f)//Directionnal light
@@ -1090,9 +1106,9 @@ void	RGP_CORE::GLRenderer:: RenderSceneLightAccum(Camera* camera)
 	if (!Eye)
 		Eye = m_SelectedScene->getCamera();
 	if (m_SelectedScene) {
-		if (m_SelectedScene->getNumLights() == 0) {
+		/*if (m_SelectedScene->getNumLights() == 0) {
 			return;
-		}
+		}*/
 		this->BindFrameBuffer(m_LightAccumBuffer);
 		this->SetShaderProgram(m_LightAccumProgram);
 		glDrawBuffers(2, DrawBuff);
@@ -1120,8 +1136,11 @@ void	RGP_CORE::GLRenderer:: RenderSceneLightAccum(Camera* camera)
 
 
 		//for each light
-		for (_u32b i = 0; i<m_SelectedScene->getNumLights(); ++i) {
-			Source = m_SelectedScene->getLight(i);
+		for (_u32b Index = 0; Index < m_SelectedScene->getNumActors(); ++Index) {
+			if (!(m_SelectedScene->getActor(Index)->getID() & LIGHTSOURCE))
+				continue;
+
+			Source = dynamic_cast<LightSource*>(m_SelectedScene->getActor(Index));
 			//specific light uniform variables
 			///initializing world matrix
 			Location = this->GetUniformLocation(m_LightAccumProgram, "Source.WorldMtx");

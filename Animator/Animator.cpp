@@ -113,7 +113,7 @@ _bool RGP_ANIMATOR::Animator::Init_RGP_Sys()
 	light->setOrientation({ 0.0f, -0.5f, 0.5f }, { 0.0f, 0.5f, 0.5f });
 	light->setLightSpecularColor({ 0.2f,0.2f,0.2f });
 
-	m_Scene->AddLight(light);
+	m_Scene->AddActor(light);
 
 	m_Timer = new Timer();
 
@@ -298,9 +298,9 @@ _bool		RGP_ANIMATOR::Animator::ImportDynamicModel(_s8b* filename, Vertex3d Pos)
 #include "..//Core//ClassesDB//ClassesDB.h"
 _bool		RGP_ANIMATOR::Animator::ImportStaticModel(_s8b* filename, Vertex3d Pos)
 {
-	Model3D* model = new Model3D();
+	/*Model3D* model = new Model3D();
 	model->setRenderer(m_SceneRenderer);
-	model->LoadModelFromFile(filename);
+	model->LoadModelFromFile(filename);*/
 	BaseActor* (*ptr)(void**) = ((BaseActor*(*)(void** args))RGP_CORE::Class_DB::getCreateMethod("Model3D"));
 	if (ptr) {
 		BaseActor* model = NULL;

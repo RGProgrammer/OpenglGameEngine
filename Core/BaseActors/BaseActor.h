@@ -47,6 +47,9 @@ namespace RGP_CORE {
 		
 
 		_float* getTransMtx();
+		Vertex4d getQuaternion();
+		void     setQuaternion(Vertex4d);
+
 
 	protected:
 		void UpdateTransMtx();

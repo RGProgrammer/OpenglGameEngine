@@ -1,7 +1,7 @@
 #include "GameScene.h"
 
 
-RGP_CORE::GameScene::GameScene(): Size(10) ,m_NumActors(0) ,v_Actors(NULL) ,m_NumLights(0),m_LightSources(NULL),
+RGP_CORE::GameScene::GameScene(): Size(10) ,m_NumActors(0) ,v_Actors(NULL) ,//m_NumLights(0),m_LightSources(NULL),
 								m_NumEnvMap(0),m_EnvMaps(NULL),m_Camera(NULL) ,m_Gravity({0.0f,0.0f,0.0f}),
 								m_NumUILayerComponents(0), m_UILayerCompoenents(NULL )
 							
@@ -49,7 +49,7 @@ void RGP_CORE::GameScene::FreeVector(){
     v_Actors=NULL ;
     m_NumActors=0 ;
     Size=10;
-    if(m_LightSources){
+   /* if(m_LightSources){
         for(_u32b i=0;i<m_NumLights ;++i){
             m_LightSources[i]->Destroy();
             delete (m_LightSources[i]);
@@ -57,7 +57,7 @@ void RGP_CORE::GameScene::FreeVector(){
         free(m_LightSources);
         m_LightSources=NULL ;
         m_NumLights=0 ;
-    }
+    }*/
 
 	if (m_EnvMaps) {
 		for (_u32b i = 0; i<m_NumEnvMap; ++i) {
@@ -119,7 +119,9 @@ _bool RGP_CORE::GameScene::RemoveActor(BaseActor* actor)
 };
 
 _u32b RGP_CORE::GameScene::getNumActors(){ return m_NumActors ;};
-_s16b RGP_CORE::GameScene::AddLight(RGP_CORE::LightSource* Source){
+
+
+/*_s16b RGP_CORE::GameScene::AddLight(RGP_CORE::LightSource* Source){
     if(!Source)
         return 0 ;
     RGP_CORE::LightSource** tmp=(RGP_CORE::LightSource**)malloc((m_NumLights+1)*sizeof(RGP_CORE::LightSource*));
@@ -152,6 +154,8 @@ RGP_CORE::LightSource*  RGP_CORE::GameScene::getLight(_u32b index){
 
 };
 _u32b RGP_CORE::GameScene::getNumLights(){ return m_NumLights ;};
+
+*/
 void RGP_CORE::GameScene::setCamera(Camera* cam){ m_Camera=cam ;};
 RGP_CORE::Camera* RGP_CORE::GameScene::getCamera(){ return m_Camera ;};
 void RGP_CORE::GameScene::setGravity(Vertex3d force){ m_Gravity= force ;};
