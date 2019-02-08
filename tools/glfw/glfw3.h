@@ -200,7 +200,7 @@ extern "C" {
  #define GLFWAPI __attribute__((visibility("default")))
 #else
  /* We are building or calling GLFW as a static library */
- #define GLFWAPI
+ #define GLFWAPI 
 #endif
 
 
