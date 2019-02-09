@@ -20,7 +20,7 @@ namespace RGP_CORE {
 		_float*		    NormalBuffer;
 		_float*         TangentBuffer ;
 		_float*         BitangentBuffer ;
-		_float*         TexCoords ;//each 2 floats form a vertex (x,y) or (u,v)
+		_float*         TexCoords;//each 2 floats form a vertex (x,y) or (u,v)
 		_u32b* 			IndexBuffer ;
 		_u32b			nbVertices;
 		_u32b			nbNormals;
@@ -55,7 +55,7 @@ namespace RGP_CORE {
         _u16b CopyVertices(const aiVector3D*   buffer,_u32b nbVertices);
         _u16b CopyNormals(const aiVector3D*   buffer,_u32b nbVertices);
         _u16b CopyTangents(const aiVector3D*   Tbuffer,const aiVector3D*   Bibuffer,_u32b nbVertices);
-        _u16b CopyFaces(const aiFace* Faces, _u32b nbFaces,_u32b add= 0);
+        _u16b CopyFaces(const aiFace* Faces, _u32b nbFaces);
         _u16b CopyTextureCoords(aiVector3D** TexCoords, _u32b nbTexCoords);
         _u16b LoadMaterial(const aiScene* Scene);
         _u16b CopyTextureData(aiTexture* Texture, Image* Dest);

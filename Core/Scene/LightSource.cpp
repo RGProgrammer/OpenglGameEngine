@@ -1,25 +1,11 @@
 #include ".//LightSource.h"
 
-RGP_CORE::LightSource::LightSource() : BaseActor(),
-										m_Distance(10.0f), m_Shiness(1.0f), m_CutoffAngle(-1.0f),
-										m_LightViewMtx(NULL), m_LightProjectionMtx(NULL), m_ShadowStrengh(0.0)
+RGP_CORE::LightSource::LightSource() : LightSource({0.0f,0.0f,0.0f})
 { 
-	m_ID |= LIGHTSOURCE;
-	m_DiffuseColor[0]  = 1.0f ; m_DiffuseColor[1]  = 1.0f; m_DiffuseColor[2]  = 1.0f;
-	m_SpecularColor[0] = 1.0f ; m_SpecularColor[1] = 1.0f; m_SpecularColor[2] = 1.0f;
-	m_AmbientColor[0]  = 0.2f ; m_AmbientColor[1]  = 0.2f; m_AmbientColor[2]  = 0.2f;
-	m_LightProjectionMtx = (_float*)malloc(16 * sizeof(_float));
 };
 
-RGP_CORE::LightSource::LightSource(Vertex3d Pos): BaseActor(Pos),
-													m_Distance(10.0f), m_Shiness(1.0f), m_CutoffAngle(-1.0f),
-													m_LightViewMtx(NULL), m_LightProjectionMtx(NULL), m_ShadowStrengh(0.0)
+RGP_CORE::LightSource::LightSource(Vertex3d Pos) : LightSource(Pos, { 0.0f,0.0f,1.0f }, { 0.0f,1.0f,0.0f })
 { 
-	m_ID |= LIGHTSOURCE ;
-	m_DiffuseColor[0] = 1.0f; m_DiffuseColor[1] = 1.0f; m_DiffuseColor[2] = 1.0f;
-	m_SpecularColor[0] = 1.0f; m_SpecularColor[1] = 1.0f; m_SpecularColor[2] = 1.0f;
-	m_AmbientColor[0] = 0.2f; m_AmbientColor[1] = 0.2f; m_AmbientColor[2] = 0.2f;
-	m_LightProjectionMtx = (_float*)malloc(16 * sizeof(_float));
 };
 
 RGP_CORE::LightSource::LightSource(Vertex3d Pos,Vertex3d Dir,Vertex3d Up): BaseActor(Pos,Dir,Up),
@@ -31,6 +17,7 @@ RGP_CORE::LightSource::LightSource(Vertex3d Pos,Vertex3d Dir,Vertex3d Up): BaseA
 	m_SpecularColor[0] = 1.0f; m_SpecularColor[1] = 1.0f; m_SpecularColor[2] = 1.0f;
 	m_AmbientColor[0] = 0.2f; m_AmbientColor[1] = 0.2f; m_AmbientColor[2] = 0.2f;
 	m_LightProjectionMtx = (_float*)malloc(16 * sizeof(_float));
+	m_LightViewMtx = (_float*)malloc(96 * sizeof(_float));//contains all the View matrices for a point light
 };
 
 RGP_CORE::LightSource::~LightSource(){

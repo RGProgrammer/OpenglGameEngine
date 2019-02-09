@@ -7,6 +7,10 @@ RGP_CORE::Test::~Test(){
     this->Destroy() ;
 };
 void RGP_CORE::Test::Destroy(){
+	if (m_Physics) {
+		delete m_Physics;
+		m_Physics = NULL;
+	}
     if(m_CurrentScene){
         m_CurrentScene->Destroy();
         delete m_CurrentScene ;
@@ -21,10 +25,7 @@ void RGP_CORE::Test::Destroy(){
         delete m_Renderer ;
         m_Renderer=NULL;
     }
-	if (m_Physics) {
-		delete m_Physics;
-		m_Physics = NULL;
-	}
+	
 	if (m_Timer) {
 		delete m_Timer;
 		m_Timer = NULL;

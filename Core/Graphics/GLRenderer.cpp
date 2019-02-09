@@ -55,6 +55,7 @@ RGP_CORE::Image* RGP_CORE::LoadImageFromFile(const _s8b* filename)
 	for (_u32b i = 0; i < width*height * 4; ++i) {
 		Output->Pixels[i] = bits[i];
 	}
+	FreeImage_Unload(dib);
 	return Output;
 };
 
@@ -798,15 +799,7 @@ _bool RGP_CORE::GLRenderer::reRegisterLightSources()
 	int error;
 	if (m_SelectedScene) {
 		//determine how many shadow map needed
-		/*NumShadowmaps = m_SelectedScene->getNumLights();
 		
-		_u32b numLights = m_SelectedScene->getNumLights();
-		for (_u32b i = 0; i < numLights; ++i) {
-			Source = m_SelectedScene->getLight(i);
-			if (Source->getLightCutoffAngle() < 0.0)
-				NumShadowmaps += 5;
-		}
-		*/
 		for (_u32b i = 0; i < m_SelectedScene->getNumActors(); ++i) {
 			if (m_SelectedScene->getActor(i)->getID() & LIGHTSOURCE) {
 				++NumShadowmaps;
@@ -920,7 +913,7 @@ void RGP_CORE::GLRenderer::RenderSceneColors(_u32b FBO,Camera *camera)
 		glEnable(GL_CULL_FACE);
 		glCullFace(GL_BACK);
 		glEnable(GL_DEPTH_TEST);
-		
+		glEnable(GL_TEXTURE);
 		//glDisable(GL_BLEND);
 		//glEnable(GL_BLEND);
 		//glBlendEquation(GL_FUNC_ADD);
@@ -1106,9 +1099,7 @@ void	RGP_CORE::GLRenderer:: RenderSceneLightAccum(Camera* camera)
 	if (!Eye)
 		Eye = m_SelectedScene->getCamera();
 	if (m_SelectedScene) {
-		/*if (m_SelectedScene->getNumLights() == 0) {
-			return;
-		}*/
+		
 		this->BindFrameBuffer(m_LightAccumBuffer);
 		this->SetShaderProgram(m_LightAccumProgram);
 		glDrawBuffers(2, DrawBuff);

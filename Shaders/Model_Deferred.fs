@@ -23,6 +23,8 @@ void main(){
 		gl_FragData[0]=basecolor ;  // Duffise 1 (Solid Colors)			
 	else
 		gl_FragData[1]=basecolor	;	// Diffuse 2 ( Transparent Color)
+
+		
 	gl_FragData[2]= vec4(texture2D(Specularmap,texcoord0).rgb,1.0);	// Specular 
 	gl_FragData[3]= vec4(normal,1.0);							// world normal
 	gl_FragData[4]= vec4(0.0,0.0,0.0,1.0); // Material ID

@@ -95,6 +95,9 @@ namespace RGP_LEVELBUILDER {
 		void				ActorsListingToolBox();
 		void				BaseActorToolBox();
 		void				SelectFileBox();
+		void				LightingToolBox();
+		void				DynamicActorToolBox();
+
 	private :
 		//
 		void				ReactToEvents();

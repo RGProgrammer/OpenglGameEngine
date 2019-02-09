@@ -12,9 +12,10 @@ void RGP_CORE::PhysicsEngine::Destroy()
 {
 	
 	if (m_DynamicWorld) {
-
+		int numObejcts = m_DynamicWorld->getNumCollisionObjects();
 		m_DynamicWorld->clearForces();
-		for (int i = m_DynamicWorld->getNumCollisionObjects() - 1; i >= 0; --i) {
+
+		for (int i = numObejcts - 1; i >= 0; --i) {
 			btCollisionObject* object = m_DynamicWorld->getCollisionObjectArray()[i];
 			m_DynamicWorld->removeCollisionObject(object);
 		}

@@ -107,12 +107,12 @@ _bool				RGP_LEVELBUILDER::LevelBuilder::Init()
 		this->Destroy();
 		return false;
 	}
-	m_Camera = new PerspCamera(M_PI_2, 1200.0f / 900.0f, 0.1f, 5000.0f);
+	m_Camera = new PerspCamera(M_PI_2, 1600.0f / 900.0f, 0.1f, 5000.0f);
 	m_SceneInstance->setCamera(m_Camera);
 	m_Camera->setPosition({ 0.0f,12.0f,-10.0f });
 	m_Camera->setOrientation({ 0.0f, -0.5f, 0.5f }, { 0.0f, 0.5f, 0.5f });
 	m_RendererInstance = new RGP_CORE::GLRenderer();
-	if (!m_RendererInstance->InitRenderer({ Title,1200,900,false ,1024,false })) {
+	if (!m_RendererInstance->InitRenderer({ Title,1600,900,true ,1024,false })) {
 		return false;
 	}
 	m_RendererInstance->setScene(m_SceneInstance);
@@ -176,6 +176,7 @@ _bool				RGP_LEVELBUILDER::LevelBuilder::LoadDefaultScene()
 		Actor = (*ptr)(args);
 		Actor->setName("Plane");
 		m_SceneInstance->AddActor(Actor);
+		
 	}
 	else
 		return false;
@@ -248,7 +249,7 @@ void	 RGP_LEVELBUILDER::LevelBuilder::ActorsListingToolBox()
 	ImGui::SetWindowSize(ImVec2(200, 600));
 	if (m_SceneInstance->getNumActors()) {
 		for (_u32b i = 1; i < m_SceneInstance->getNumActors(); ++i) {
-			ImGui::Selectable(m_SceneInstance->getActor(i )->getName(),m_SceneInstance->getMemoryCase(i));
+			ImGui::Selectable(m_SceneInstance->getActor(i)->getName(),m_SceneInstance->getMemoryCase(i));
 		}
 	}
 	else {
@@ -337,6 +338,7 @@ void RGP_LEVELBUILDER::LevelBuilder::SelectFileBox()
 
 
 
+
 void RGP_LEVELBUILDER::LevelBuilder::ReactToEvents()
 {
 	
@@ -376,7 +378,11 @@ void RGP_LEVELBUILDER::LevelBuilder::ReactToEvents()
 		}
 		
 		//Keyboard shortcuts
-		if (glfwGetKey(window->getglfwWindow(), GLFW_KEY_G) == GLFW_PRESS) {
+		if (glfwGetKey(window->getglfwWindow(), GLFW_KEY_DELETE) == GLFW_PRESS) {
+			m_SceneInstance->RemoveSelectedActors();
+
+		}
+		else if (glfwGetKey(window->getglfwWindow(), GLFW_KEY_G) == GLFW_PRESS) {
 			m_CurrentCommand = COMMAND_GRAB;
 
 		}

@@ -16,10 +16,11 @@ namespace RGP_LEVELBUILDER {
 		_bool setActorAsSelected(const _s8b* nameactor, _bool Selected = true);
 		_bool* getMemoryCase(_u32b index);
 
-		 _s16b						AddActor(BaseActor* actor);
+		 _u32b						AddActor(BaseActor* actor);
 		 _bool						RemoveActorAt(_u32b index);
 		 _bool						RemoveActor(BaseActor* actor);
-
+		 void						RemoveSelectedActors();
+		 void						UnselectAll();
 
 	private:
 		_bool*			m_isSelected;

@@ -1,6 +1,7 @@
 #include ".//Model3D.h"
 
-RGP_CORE::BaseActor*	RGP_CORE::Model3D::Create(void ** args) {
+RGP_CORE::BaseActor*	RGP_CORE::Model3D::Create(void ** args) 
+{
 
 	Model3D* model = new Model3D();
 	if (!model)
@@ -72,12 +73,18 @@ void RGP_CORE::Model3D::Destroy(){
 void RGP_CORE::Model3D::DestroyBuffers()
 {
 	if (m_Buffers) {
-			m_GLRenderer->DeleteBuffers(6, m_Buffers->Wrappers);
-			m_Buffers->AppliedMaterialIndex = 0;
-			m_Buffers->numFaces = 0;
+		for (_u32b i = 0; i< m_NumMeshes; i++) {
+			m_GLRenderer->DeleteBuffers(6, m_Buffers[i].Wrappers);
+			if (m_Buffers[i].VertexArrayObject) {
+				m_GLRenderer->DeleteVertexArrays(1, &(m_Buffers[i].VertexArrayObject));
+			}
+			
+			m_Buffers[i].AppliedMaterialIndex = 0;
+			m_Buffers[i].numFaces = 0;
 		}
 		free(m_Buffers);
 		m_Buffers = NULL;
+	}
 };
 void RGP_CORE::Model3D::ClearModelLoadedData()
 {
@@ -165,6 +172,7 @@ _s16b RGP_CORE::Model3D::LoadModelFromFile(char* filename, _bool ClearDataAfterL
   	//else succes
   	///init m_FileDirectory value
   	m_FileDirectory=ExtractDirectory(filename);
+	printf("%s\n", m_FileDirectory);
   	//some other code here(copying useful contents)
     if(!LoadMaterial(Scene)){
         printf("Could not load material \n");
@@ -215,45 +223,50 @@ _s16b   RGP_CORE::Model3D::InitVAOs(){
     if(!m_ShaderProgram)
         return 0;
     glGetError();
+    for(_u32b i=0 ;i<m_NumMeshes;++i){
+        m_GLRenderer->GenVertexArrays(1,&(m_Buffers[i].VertexArrayObject));
+        m_GLRenderer->BindVertexArray(m_Buffers[i].VertexArrayObject);
 
-        m_GLRenderer->GenVertexArrays(1,&(m_Buffers->VertexArrayObject));
-        m_GLRenderer->BindVertexArray(m_Buffers->VertexArrayObject);
-
-        m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER,m_Buffers->Wrappers[0]);//positions
+        m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER,m_Buffers[i].Wrappers[0]);
         m_GLRenderer->SetVertexAttribPointer(0,3,0,0);
         m_GLRenderer->EnableVertexAttribArray(0);
 
-        m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER,m_Buffers->Wrappers[1]);//normals
+        m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER,m_Buffers[i].Wrappers[1]);
         m_GLRenderer->SetVertexAttribPointer(1,3,0,0);
         m_GLRenderer->EnableVertexAttribArray(1);
 
-        m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER,m_Buffers->Wrappers[2]);//texturecoords+ applied matAriel index
-        m_GLRenderer->SetVertexAttribPointer(2,3,0,0);
+        m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER,m_Buffers[i].Wrappers[2]);
+        m_GLRenderer->SetVertexAttribPointer(2,2,0,0);
         m_GLRenderer->EnableVertexAttribArray(2);
 
-        m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER,m_Buffers->Wrappers[3]);//Tangents
+        m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER,m_Buffers[i].Wrappers[3]);
         m_GLRenderer->SetVertexAttribPointer(3,3,0,0);
         m_GLRenderer->EnableVertexAttribArray(3);
 
-        m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER,m_Buffers->Wrappers[4]);//Bitangemt
+        m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER,m_Buffers[i].Wrappers[4]);
         m_GLRenderer->SetVertexAttribPointer(4,3,0,0);
         m_GLRenderer->EnableVertexAttribArray(4);
 
-        m_GLRenderer->BindBuffer(GL_ELEMENT_ARRAY_BUFFER,m_Buffers->Wrappers[5]);//Indices
+		/*m_GLRenderer->BindBuffer(GL_UNIFORM_BUFFER, m_Buffers[i].TexturesUnifomBuffer);
+		int location=m_GLRenderer->GetUniformLocation(m_ShaderProgram, "texMaps");
+		m_GLRenderer->SetVertexAttribPointer(location, 3, 0, 0);
+		m_GLRenderer->EnableVertexAttribArray(4);*/
+        m_GLRenderer->BindBuffer(GL_ELEMENT_ARRAY_BUFFER,m_Buffers[i].Wrappers[5]);
 
- 
+    }
 	m_GLRenderer->BindVertexArray(0);
 	m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER, 0);
+	m_GLRenderer->BindBuffer(GL_UNIFORM_BUFFER, 0);
 	m_GLRenderer->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
+	glGetError();
 	m_GLRenderer->GenVertexArrays(m_NumMeshes, m_VAOforShadowcasting);
 
-	for (GLuint i = 0; i < m_NumMeshes; ++i){
+	for (GLuint i = 0; i < m_NumMeshes; ++i) {
 		m_GLRenderer->BindVertexArray(m_VAOforShadowcasting[i]);
-		m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER, m_Buffers->Wrappers[0]);
+		m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER, m_Buffers[i].Wrappers[0]);
 		m_GLRenderer->SetVertexAttribPointer(0, 3, 0, 0);
 		m_GLRenderer->EnableVertexAttribArray(0);
-		m_GLRenderer->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Buffers->Wrappers[5]);
+		m_GLRenderer->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Buffers[i].Wrappers[5]);
 	}
 	m_GLRenderer->BindVertexArray(0);
 	m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER, 0);
@@ -297,40 +310,40 @@ void RGP_CORE::Model3D::Render(Camera* Selected){
 			m_GLRenderer->SetUniformI(Location, 0);
 		}*/
 		
+        for(_u32b i = 0 ;i<m_NumMeshes;++i){
             //Textures
 			//no UBO + no bindless
 			m_GLRenderer->SetActiveTexture(1);
-			m_GLRenderer->BindTexture(m_oglMaterials[m_Buffers->AppliedMaterialIndex].DiffuseMap);
+			m_GLRenderer->BindTexture(m_oglMaterials[m_Buffers[i].AppliedMaterialIndex].DiffuseMap);
 			Location = m_GLRenderer->GetUniformLocation(m_ShaderProgram, "Diffusemap");
 			m_GLRenderer->SetUniformSample(Location, 1);
 
 			m_GLRenderer->SetActiveTexture(2);
-			m_GLRenderer->BindTexture(m_oglMaterials[m_Buffers->AppliedMaterialIndex].NormalsMap);
+			m_GLRenderer->BindTexture(m_oglMaterials[m_Buffers[i].AppliedMaterialIndex].NormalsMap);
 			Location = m_GLRenderer->GetUniformLocation(m_ShaderProgram, "Normalmap");
 			m_GLRenderer->SetUniformSample(Location, 2);
 
 			m_GLRenderer->SetActiveTexture(3);
-			m_GLRenderer->BindTexture(m_oglMaterials[m_Buffers->AppliedMaterialIndex].SpecularMap);
+			m_GLRenderer->BindTexture(m_oglMaterials[m_Buffers[i].AppliedMaterialIndex].SpecularMap);
 			Location = m_GLRenderer->GetUniformLocation(m_ShaderProgram, "Specularmap");
 			m_GLRenderer->SetUniformSample(Location, 3);
 
 			Location = m_GLRenderer->GetUniformLocation(m_ShaderProgram, "Opacity");
-			m_GLRenderer->SetUniformF(Location, m_oglMaterials[m_Buffers->AppliedMaterialIndex].Opacity);
+			m_GLRenderer->SetUniformF(Location, m_oglMaterials[m_Buffers[i].AppliedMaterialIndex].Opacity);
 
 
 			
 			//bindless  + UBO
 			//Location = m_GLRenderer->GetUniformLocation(m_ShaderProgram, "texMaps");
-			//m_GLRenderer->SetUniformHandleu64v(Location, 3, m_oglMaterials[m_Buffers->AppliedMaterialIndex].Handles);
+			//m_GLRenderer->SetUniformHandleu64v(Location, 3, m_oglMaterials[m_Buffers[i].AppliedMaterialIndex].Handles);
             //Bind the VAO
-            m_GLRenderer->BindVertexArray(m_Buffers->VertexArrayObject);
-			m_GLRenderer->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Buffers->Wrappers[5]);
-            m_GLRenderer->DrawElements(GL_TRIANGLES,m_Buffers->numFaces*3,GL_UNSIGNED_INT,(void*)0 );
-       
+            m_GLRenderer->BindVertexArray(m_Buffers[i].VertexArrayObject);
+			m_GLRenderer->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Buffers[i].Wrappers[5]);
+            m_GLRenderer->DrawElements(GL_TRIANGLES,m_Buffers[i].numFaces*3,GL_UNSIGNED_INT,(void*)0  );
+        }
         //after rendering
         m_GLRenderer->BindVertexArray(0);
-        m_GLRenderer->SetActiveTexture(0);
-        m_GLRenderer->BindTexture(0);
+
     }
 };
 void	RGP_CORE::Model3D::CastShadow()
@@ -345,7 +358,7 @@ void	RGP_CORE::Model3D::CastShadow()
 		//binding need VAO
 		m_GLRenderer->BindVertexArray(m_VAOforShadowcasting[i]);
 		//Draw
-		m_GLRenderer->DrawElements(GL_TRIANGLES, m_Buffers->numFaces * 3, GL_UNSIGNED_INT, (void*)0);
+		m_GLRenderer->DrawElements(GL_TRIANGLES, m_Buffers[i].numFaces * 3, GL_UNSIGNED_INT, (void*)0);
 	}
 	m_GLRenderer->BindVertexArray(0);
 };
@@ -380,16 +393,15 @@ _u32b			RGP_CORE::Model3D::getNumMeshes()
 
 _u16b RGP_CORE::Model3D::ProcessNode(aiNode* Node,const aiScene* Scene){
     /// process current Node
-   _u32b add=0;
+   
 	for(_u16b i=0;i<Node->mNumMeshes ;i++){
 		AddMesh(Scene->mMeshes[Node->mMeshes[i]]->mName.C_Str(),Scene->mMeshes[Node->mMeshes[i]]->mMaterialIndex);
 		CopyVertices(Scene->mMeshes[Node->mMeshes[i]]->mVertices,Scene->mMeshes[Node->mMeshes[i]]->mNumVertices);
 		CopyNormals(Scene->mMeshes[Node->mMeshes[i]]->mNormals,Scene->mMeshes[Node->mMeshes[i]]->mNumVertices);
 		CopyTangents(Scene->mMeshes[Node->mMeshes[i]]->mTangents,Scene->mMeshes[Node->mMeshes[i]]->mBitangents,
 		Scene->mMeshes[Node->mMeshes[i]]->mNumVertices);
-		CopyFaces(Scene->mMeshes[Node->mMeshes[i]]->mFaces,Scene->mMeshes[Node->mMeshes[i]]->mNumFaces,add );
+		CopyFaces(Scene->mMeshes[Node->mMeshes[i]]->mFaces,Scene->mMeshes[Node->mMeshes[i]]->mNumFaces );
 		CopyTextureCoords(Scene->mMeshes[Node->mMeshes[i]]->mTextureCoords,Scene->mMeshes[Node->mMeshes[i]]->mNumVertices);
-		add += Scene->mMeshes[Node->mMeshes[i]]->mNumVertices;
 	}
     ///process ChildNodes
    for(_u16b i=0; i< Node->mNumChildren;i++ ){
@@ -424,6 +436,7 @@ _u16b RGP_CORE::Model3D::AddMesh(const char* Name, _u16b MaterialID){
     m_Meshes[m_NumMeshes-1].TangentBuffer=NULL;
     m_Meshes[m_NumMeshes-1].BitangentBuffer=NULL;
     m_Meshes[m_NumMeshes-1].nbNormals=0;
+	m_Meshes[m_NumMeshes - 1].TexCoords = NULL;
     m_Meshes[m_NumMeshes-1].AppliedMaterial=MaterialID ;
 	return 1;
 };
@@ -480,19 +493,17 @@ _u16b RGP_CORE::Model3D::CopyTangents(const aiVector3D*   Tbuffer,const aiVector
     }
     return 0 ;
 };
-_u16b RGP_CORE::Model3D::CopyFaces(const aiFace* Faces, _u32b nbFaces,_u32b add){
+_u16b RGP_CORE::Model3D::CopyFaces(const aiFace* Faces, _u32b nbFaces){
     ///copy Faces
-	
     if(Faces && nbFaces> 0){
         m_Meshes[m_NumMeshes-1].IndexBuffer=(_u32b*)malloc(nbFaces*3*sizeof(_u32b));
         if(!(m_Meshes[m_NumMeshes-1].IndexBuffer))
             return 0;
         m_Meshes[m_NumMeshes-1].nbFaces=nbFaces ;
         for(_u32b i=0 ; i<nbFaces;i++){
-            m_Meshes[m_NumMeshes-1].IndexBuffer[i*3  ]=Faces[i].mIndices[0]+add;
-            m_Meshes[m_NumMeshes-1].IndexBuffer[i*3+1]=Faces[i].mIndices[1]+add;
-            m_Meshes[m_NumMeshes-1].IndexBuffer[i*3+2]=Faces[i].mIndices[2]+add;
-
+            m_Meshes[m_NumMeshes-1].IndexBuffer[i*3  ]=Faces[i].mIndices[0];
+            m_Meshes[m_NumMeshes-1].IndexBuffer[i*3+1]=Faces[i].mIndices[1];
+            m_Meshes[m_NumMeshes-1].IndexBuffer[i*3+2]=Faces[i].mIndices[2];
         }
         return 1 ;
     }
@@ -502,25 +513,23 @@ _u16b RGP_CORE::Model3D::CopyTextureCoords(aiVector3D** TexCoords, _u32b nbTexCo
     ///copy tecture coords
     if(TexCoords && nbTexCoords> 0){
         if(!TexCoords[0]){
-            m_Meshes[m_NumMeshes-1].TexCoords=(_float*)malloc(nbTexCoords*3*sizeof(_float)); 
+            m_Meshes[m_NumMeshes-1].TexCoords=(_float*)malloc(nbTexCoords*2*sizeof(_float));
             if(!(m_Meshes[m_NumMeshes-1].TexCoords))
                 return 0;
             m_Meshes[m_NumMeshes-1].nbTexCoords=nbTexCoords ;
             for(_u32b i=0 ; i<nbTexCoords;i++){
-				m_Meshes[m_NumMeshes - 1].TexCoords[i * 3    ] = 0.0f;
-				m_Meshes[m_NumMeshes - 1].TexCoords[i * 3 + 1] = 0.0f;
-				m_Meshes[m_NumMeshes - 1].TexCoords[i * 3 + 2] = 0.0f;
+                m_Meshes[m_NumMeshes-1].TexCoords[i*2  ]= 0.0f;
+                m_Meshes[m_NumMeshes-1].TexCoords[i*2+1]= 0.0f;
             }
             return 1 ;
         }else{
-            m_Meshes[m_NumMeshes-1].TexCoords=(_float*)malloc(nbTexCoords*3*sizeof(_float)); //tx and y and the third cahnnel for applied matrial index
+            m_Meshes[m_NumMeshes-1].TexCoords =(_float*)malloc(nbTexCoords*2*sizeof(_float));
             if(!(m_Meshes[m_NumMeshes-1].TexCoords))
                 return 0;
             m_Meshes[m_NumMeshes-1].nbTexCoords=nbTexCoords ;
             for(_u32b i=0 ; i<nbTexCoords;i++){
-				m_Meshes[m_NumMeshes - 1].TexCoords[i * 3    ] = TexCoords[0][i].x;
-				m_Meshes[m_NumMeshes - 1].TexCoords[i * 3 + 1] = TexCoords[0][i].y;
-				m_Meshes[m_NumMeshes - 1].TexCoords[i * 3 + 2] = (_float)m_Meshes[m_NumMeshes - 1].AppliedMaterial;
+                m_Meshes[m_NumMeshes-1].TexCoords[i*2  ]= TexCoords[0][i].x;
+                m_Meshes[m_NumMeshes-1].TexCoords[i*2+1]= TexCoords[0][i].y;
             }
             return 1 ;
         }
@@ -576,6 +585,7 @@ _u16b RGP_CORE::Model3D::LoadMaterialstoMemory(const aiScene* Scene){
                         }else{
                             m_Materials[i].DiffuseMap= LoadImageFromFile(path.C_Str());
                         }
+				
                     }
                     hasDiffusemap=true ;
              }else if(Scene->mMaterials[i]->mProperties[j]->mSemantic==aiTextureType_SPECULAR){
@@ -683,12 +693,6 @@ _u16b RGP_CORE::Model3D::GenerateOGLMaterials(){
                             m_GLRenderer->SetImageData2D(m_Materials[i].NormalsMap);
                             m_GLRenderer->BindTexture(0);
         }
-		m_oglMaterials[i].Handles[0] = m_GLRenderer->GetTextureHandle(m_oglMaterials[i].DiffuseMap);
-		m_GLRenderer->MakeTextureHandleResidant(m_oglMaterials[i].Handles[0]);
-		m_oglMaterials[i].Handles[1] = m_GLRenderer->GetTextureHandle(m_oglMaterials[i].SpecularMap);
-		m_GLRenderer->MakeTextureHandleResidant(m_oglMaterials[i].Handles[1]);
-		m_oglMaterials[i].Handles[2] = m_GLRenderer->GetTextureHandle(m_oglMaterials[i].NormalsMap);
-		m_GLRenderer->MakeTextureHandleResidant(m_oglMaterials[i].Handles[2]);
 
 	}
     glDisable(GL_TEXTURE_2D);
@@ -696,124 +700,106 @@ _u16b RGP_CORE::Model3D::GenerateOGLMaterials(){
 }
 _u16b RGP_CORE::Model3D::GenerateBuffers(){
 
-	_u32b numVertices = 0;
-	_u32b numfaces = 0;
+	_u64b  textureHandles[3];
 	if (m_Buffers) {
 		this->DestroyBuffers();
 	}
-	m_Buffers=(MeshBuffers*)malloc(sizeof(MeshBuffers));
+	m_Buffers=(MeshBuffers*)malloc(m_NumMeshes*sizeof(MeshBuffers));
     if(m_Buffers==NULL){
         return 0 ;
 	}
 	m_VAOforShadowcasting = (GLuint*)malloc(m_NumMeshes*sizeof(GLuint));
 	if (!m_VAOforShadowcasting)
 		return 0;
-    m_Buffers->VertexArrayObject=0;
-    m_Buffers->Wrappers[0] =0;
-    m_Buffers->Wrappers[1] =0;
-    m_Buffers->Wrappers[2] =0;
-    m_Buffers->Wrappers[3] =0;
-    m_Buffers->Wrappers[4] =0 ;
-    m_Buffers->Wrappers[5] =0;
-	m_Buffers->AppliedMaterialIndex = 0;
-	m_Buffers->numFaces = 0;
-	for (_u32b i = 0; i < m_NumMeshes; ++i) {
+    for(_u32b i=0; i< m_NumMeshes;++i){
+        m_Buffers[i].VertexArrayObject=0;
+        m_Buffers[i].Wrappers[5]=0;
+        m_Buffers[i].Wrappers[0]=0;
+        m_Buffers[i].Wrappers[1]=0;
+        m_Buffers[i].Wrappers[3]=0;
+        m_Buffers[i].Wrappers[4]=0 ;
+        m_Buffers[i].Wrappers[2]=0;
+		m_Buffers[i].AppliedMaterialIndex = 0;
+		m_Buffers[i].numFaces = 0;
 		m_VAOforShadowcasting[i] = 0;
-		numVertices += m_Meshes[i].nbVertices;
-		numfaces += m_Meshes[i].nbFaces; 
-	}
+    };
 
-		//generating buffers
-        m_GLRenderer->GenBuffers(6,m_Buffers->Wrappers);
+	for (_u32b i = 0; i < m_NumMeshes; ++i) {
+		m_Buffers[i].AppliedMaterialIndex = m_Meshes[i].AppliedMaterial;
 
-		///vertex bufer
-		m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER, m_Buffers->Wrappers[0]);
-		if (m_ClearAfterLoad)
-			m_GLRenderer->setBufferData(GL_ARRAY_BUFFER, numVertices* 3 * sizeof(_float),0, GL_STATIC_DRAW);
-		else
-			m_GLRenderer->setBufferData(GL_ARRAY_BUFFER, numVertices * 3 * sizeof(_float), 0, GL_DYNAMIC_DRAW);
 
-        /// Normals buffer
-		m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER, m_Buffers->Wrappers[1]);
-		if (m_ClearAfterLoad)
-			m_GLRenderer->setBufferData(GL_ARRAY_BUFFER, numVertices * 3 * sizeof(_float), 0, GL_STATIC_DRAW);
-		else
-			m_GLRenderer->setBufferData(GL_ARRAY_BUFFER, numVertices * 3 * sizeof(_float), 0, GL_DYNAMIC_DRAW);
+		//generating vertices buffer
+		m_GLRenderer->GenBuffers(1, &(m_Buffers[i].Wrappers[0]));
+		if (!m_Buffers[i].Wrappers[0])
+			return 0;
 
-		/// texture coordinates buffer
-		m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER, m_Buffers->Wrappers[2]);
-		if (m_ClearAfterLoad)
-			m_GLRenderer->setBufferData(GL_ARRAY_BUFFER, numVertices * 3 * sizeof(_float), 0, GL_STATIC_DRAW);
-		else
-			m_GLRenderer->setBufferData(GL_ARRAY_BUFFER, numVertices * 3 * sizeof(_float), 0, GL_DYNAMIC_DRAW);
 
-        /// Tangent and Bitangent
-		if (m_ClearAfterLoad) {
-			m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER, m_Buffers->Wrappers[3]);
-			m_GLRenderer->setBufferData(GL_ARRAY_BUFFER, numVertices * 3 * sizeof(_float),0, GL_STATIC_DRAW);
-			m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER, m_Buffers->Wrappers[4]);
-			m_GLRenderer->setBufferData(GL_ARRAY_BUFFER, numVertices * 3 * sizeof(_float), 0, GL_STATIC_DRAW);
-		}
-		else {
-			m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER, m_Buffers->Wrappers[3]);
-			m_GLRenderer->setBufferData(GL_ARRAY_BUFFER, numVertices * 3 * sizeof(_float), 0, GL_DYNAMIC_DRAW);
-			m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER, m_Buffers->Wrappers[4]);
-			m_GLRenderer->setBufferData(GL_ARRAY_BUFFER, numVertices * 3 * sizeof(_float),0, GL_DYNAMIC_DRAW);
-		}
-      
-      
+
+		///generating Normals buffer
+		m_GLRenderer->GenBuffers(1, &(m_Buffers[i].Wrappers[1]));
+		if (!m_Buffers[i].Wrappers[1])
+			return 0;
+
+
+		///Generating Tangent and Bitangent
+		m_GLRenderer->GenBuffers(1, &(m_Buffers[i].Wrappers[3]));
+		m_GLRenderer->GenBuffers(1, &(m_Buffers[i].Wrappers[4]));
+		if (!(m_Buffers[i].Wrappers[3] && m_Buffers[i].Wrappers[4]))
+			return 0;
+
+		///generating texture coordinates buffer
+		if (m_Meshes[i].TexCoords) {
+			m_GLRenderer->GenBuffers(1, &(m_Buffers[i].Wrappers[2]));
+			if (!m_Buffers[i].Wrappers[2])
+				return 0;
+			///filling buffer with data code here
+			m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER, m_Buffers[i].Wrappers[2]);
+			m_GLRenderer->setBufferData(GL_ARRAY_BUFFER, m_Meshes[i].nbTexCoords * 2 * sizeof(_float), m_Meshes[i].TexCoords, GL_STATIC_DRAW);
+		};
+
+		///generating indices buffer
+		m_GLRenderer->GenBuffers(1, &(m_Buffers[i].Wrappers[5]));
+		if (!m_Buffers[i].Wrappers[5])
+            return 0 ;
         ///filling buffer with data code here
-        m_GLRenderer->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Buffers->Wrappers[5]);
-        m_GLRenderer->setBufferData(GL_ELEMENT_ARRAY_BUFFER, numfaces *3*sizeof(_u32b) ,0, GL_STATIC_DRAW);
+        m_GLRenderer->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Buffers[i].Wrappers[5]);
+        m_GLRenderer->setBufferData(GL_ELEMENT_ARRAY_BUFFER, m_Meshes[i].nbFaces*3*sizeof(_u32b) , m_Meshes[i].IndexBuffer, GL_STATIC_DRAW);
         ///.........
-		m_Buffers->numFaces =numfaces;
+		m_Buffers[i].numFaces = m_Meshes[i].nbFaces;
+
+    }
    
     return 1;
 };
 _u16b RGP_CORE::Model3D::FillBuffers()
 {
-	//filling
-	_u32b verticesOffSet = 0;
-	m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER, m_Buffers->Wrappers[0]);
 	for (_u32b i = 0; i < m_NumMeshes; ++i) {
-		m_GLRenderer->setBufferSubData(GL_ARRAY_BUFFER, verticesOffSet * 3 * sizeof(_float), m_Meshes[i].nbVertices * 3 * sizeof(_float), m_Meshes[i].VertexBuffer);
-		verticesOffSet += m_Meshes[i].nbVertices;
-	}
+		//filling
+		m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER, m_Buffers[i].Wrappers[0]);
+		if (m_ClearAfterLoad)
+			m_GLRenderer->setBufferData(GL_ARRAY_BUFFER, m_Meshes[i].nbVertices * 3 * sizeof(_float), m_Meshes[i].VertexBuffer, GL_STATIC_DRAW);
+		else
+			m_GLRenderer->setBufferData(GL_ARRAY_BUFFER, m_Meshes[i].nbVertices * 3 * sizeof(_float), m_Meshes[i].VertexBuffer, GL_DYNAMIC_DRAW);
 		///........
-	verticesOffSet = 0;
-	m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER, m_Buffers->Wrappers[1]);
-	for (_u32b i = 0; i < m_NumMeshes; ++i) {
-			m_GLRenderer->setBufferSubData(GL_ARRAY_BUFFER, verticesOffSet * 3 * sizeof(_float), m_Meshes[i].nbVertices * 3 * sizeof(_float), m_Meshes[i].NormalBuffer);
-			verticesOffSet += m_Meshes[i].nbVertices;
-	}
+		m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER, m_Buffers[i].Wrappers[1]);
+		if (m_ClearAfterLoad)
+			m_GLRenderer->setBufferData(GL_ARRAY_BUFFER, m_Meshes[i].nbNormals * 3 * sizeof(_float), m_Meshes[i].NormalBuffer, GL_STATIC_DRAW);
+		else
+			m_GLRenderer->setBufferData(GL_ARRAY_BUFFER, m_Meshes[i].nbNormals * 3 * sizeof(_float), m_Meshes[i].NormalBuffer, GL_DYNAMIC_DRAW);
 		///........
-	verticesOffSet = 0;
-	m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER, m_Buffers->Wrappers[2]);
-	for (_u32b i = 0; i < m_NumMeshes; ++i) {
-		m_GLRenderer->setBufferSubData(GL_ARRAY_BUFFER, verticesOffSet * 3 * sizeof(_float), m_Meshes[i].nbVertices * 3 * sizeof(_float), m_Meshes[i].TexCoords);
-		verticesOffSet += m_Meshes[i].nbVertices;
-	}
-	
-	verticesOffSet = 0;
-	m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER, m_Buffers->Wrappers[3]);
-	for (_u32b i = 0; i < m_NumMeshes; ++i) {
-		m_GLRenderer->setBufferSubData(GL_ARRAY_BUFFER, verticesOffSet * 3 * sizeof(_float), m_Meshes[i].nbVertices * 3 * sizeof(_float), m_Meshes[i].TangentBuffer);
-		verticesOffSet += m_Meshes[i].nbVertices;
-	}
-	verticesOffSet = 0;
-	m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER, m_Buffers->Wrappers[4]);
-	for (_u32b i = 0; i < m_NumMeshes; ++i) {
-		m_GLRenderer->setBufferSubData(GL_ARRAY_BUFFER, verticesOffSet * 3 * sizeof(_float), m_Meshes[i].nbVertices * 3 * sizeof(_float), m_Meshes[i].BitangentBuffer);
-		verticesOffSet += m_Meshes[i].nbVertices;
-	}
+		m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER, m_Buffers[i].Wrappers[3]);
+		if (m_ClearAfterLoad)
+			m_GLRenderer->setBufferData(GL_ARRAY_BUFFER, m_Meshes[i].nbNormals * 3 * sizeof(_float), m_Meshes[i].TangentBuffer, GL_STATIC_DRAW);
+		else
+			m_GLRenderer->setBufferData(GL_ARRAY_BUFFER, m_Meshes[i].nbNormals * 3 * sizeof(_float), m_Meshes[i].TangentBuffer, GL_DYNAMIC_DRAW);
 
-	_u32b faces = 0;
-	m_GLRenderer->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Buffers->Wrappers[5]);
-	for (_u32b i = 0; i < m_NumMeshes; ++i) {
-		m_GLRenderer->setBufferSubData(GL_ELEMENT_ARRAY_BUFFER, faces * 3 * sizeof(_u32b), m_Meshes[i].nbFaces * 3 * sizeof(_u32b), m_Meshes[i].IndexBuffer);
-		faces += m_Meshes[i].nbFaces;
-	}
+		m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER, m_Buffers[i].Wrappers[4]);
+		if (m_ClearAfterLoad)
+			m_GLRenderer->setBufferData(GL_ARRAY_BUFFER, m_Meshes[i].nbNormals * 3 * sizeof(_float), m_Meshes[i].BitangentBuffer, GL_STATIC_DRAW);
+		else
+			m_GLRenderer->setBufferData(GL_ARRAY_BUFFER, m_Meshes[i].nbNormals * 3 * sizeof(_float), m_Meshes[i].BitangentBuffer, GL_DYNAMIC_DRAW);
 		/// //////
+	}
 	m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER, 0);
 	m_GLRenderer->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 	return true;

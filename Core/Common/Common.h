@@ -69,8 +69,9 @@ namespace RGP_CORE {
 				break;
 			}
 		}
+		++divider;
 		_s8b *Directory = (_s8b*)malloc((divider + 1));
-		for (_s32b i = 0; i <= divider; i++) {
+		for (_s32b i = 0; i < divider; i++) {
 			Directory[i] = filename[i];
 		}
 		Directory[divider] = '\0';

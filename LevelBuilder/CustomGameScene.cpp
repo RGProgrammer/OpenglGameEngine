@@ -65,13 +65,15 @@ _bool* RGP_LEVELBUILDER::CustomScene::getMemoryCase(_u32b index)
 	return  NULL;
 };
 
-_s16b RGP_LEVELBUILDER::CustomScene::AddActor(BaseActor * actor)
+_u32b RGP_LEVELBUILDER::CustomScene::AddActor(BaseActor * actor)
 {
 	_bool*  tmp = NULL;
 	if (GameScene::AddActor(actor)) {
 			tmp = (_bool*)malloc(getNumActors() * sizeof(_bool));
-			if (!tmp)
+			if (!tmp) {
+				GameScene::RemoveActor(actor);
 				return 0;
+			}
 			for (_u32b i = 0; i < m_NumElements; ++i) {
 				tmp[i] = m_isSelected[i];
 			}
@@ -80,7 +82,7 @@ _s16b RGP_LEVELBUILDER::CustomScene::AddActor(BaseActor * actor)
 
 		m_isSelected[getNumActors() - 1] = false;
 		m_NumElements = getNumActors();
-		return  1;
+		return  getNumActors();
 	}
 	return 0;
 }
@@ -88,13 +90,14 @@ _s16b RGP_LEVELBUILDER::CustomScene::AddActor(BaseActor * actor)
 
 _bool RGP_LEVELBUILDER::CustomScene::RemoveActorAt(_u32b index)
 {
-	GameScene::RemoveActorAt(index);
-	if (index >= m_NumElements)
-		return false ;
-	for (_u32b i = 0; i < m_NumElements-1; ++i) {
-		m_isSelected[i] = m_isSelected[i + 1];
+	if (GameScene::RemoveActorAt(index)) {
+
+		for (_u32b i = index; i < m_NumElements - 1; ++i) {
+			m_isSelected[i] = m_isSelected[i + 1];
+		}
+		return true;
 	}
-	return true;
+	return false;
 }
 
 _bool RGP_LEVELBUILDER::CustomScene::RemoveActor(BaseActor * actor)
@@ -112,4 +115,16 @@ _bool RGP_LEVELBUILDER::CustomScene::RemoveActor(BaseActor * actor)
 		return true;
 	}
 	return false;
+}
+
+void RGP_LEVELBUILDER::CustomScene::RemoveSelectedActors()
+{
+	for (_u32b i = 0; i < this->getNumActors();) {
+		if (this->isActorSelected(i)) {
+			this->RemoveActorAt(i);
+		}
+		else {
+			++i;
+		}
+	}
 }
