@@ -13,7 +13,19 @@ namespace RGP_CORE{
 		_float getFarValue();
 		_float* getViewMtx();
 		_float* getProjectionMtx();
+		_bool   hasChanged();
+		void	ApplyChanges();
+		virtual void setPosition(Vertex3d Pos);
+		virtual bool setOrientation(Vertex3d Dir, Vertex3d Up);
+		virtual void RotateViaDirection(_float Angle);
+		virtual void RotateViaUp(_float Angle);
+		virtual void RotateViaSide(_float Angle);
+		virtual void		 Translate(Vertex3d ver);
+		virtual void		 TranslateViaSide(_float value);
+		virtual void		 TranslateViaUp(_float value);
+		virtual void		 TranslateViaDirection(_float value);
 	protected:
+		_bool				m_Changed;
         _float				m_Near ;
 		_float				m_Far;
 		_float*				m_ViewMatrix;

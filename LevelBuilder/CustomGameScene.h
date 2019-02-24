@@ -21,6 +21,7 @@ namespace RGP_LEVELBUILDER {
 		 _bool						RemoveActor(BaseActor* actor);
 		 void						RemoveSelectedActors();
 		 void						UnselectAll();
+		 _u32b						getNumSelected();
 
 	private:
 		_bool*			m_isSelected;

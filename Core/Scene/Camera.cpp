@@ -3,7 +3,7 @@
 
 RGP_CORE::Camera::Camera() :BaseActor(),
 						m_Near(1.0f), m_Far(1000.0f),
-						m_ViewMatrix(NULL),m_ProjectionMtx(NULL) {
+						m_ViewMatrix(NULL),m_ProjectionMtx(NULL),m_Changed(true) {
 	m_ViewMatrix=(_float*)malloc(16*sizeof(_float));
 	m_ProjectionMtx=(_float*)malloc(16*sizeof(_float));
 };
@@ -20,12 +20,70 @@ RGP_CORE::Camera::~Camera(){
 _float RGP_CORE::Camera::getNearValue() { return m_Near; };
 _float RGP_CORE::Camera::getFarValue() { return m_Far; };
 _float* RGP_CORE::Camera::getViewMtx(){
-	this->UpdateViewMtx();
 	return m_ViewMatrix;
 };
 _float* RGP_CORE::Camera::getProjectionMtx(){
     return m_ProjectionMtx ;
-};
+}
+_bool RGP_CORE::Camera::hasChanged()
+{
+	return m_Changed;
+}
+void RGP_CORE::Camera::ApplyChanges()
+{
+	this->UpdateViewMtx();
+	this->UpdateProjectionMtx();
+	m_Changed = false;
+}
+void RGP_CORE::Camera::setPosition(Vertex3d Pos)
+{
+	BaseActor::setPosition(Pos);
+	m_Changed= true;
+}
+bool RGP_CORE::Camera::setOrientation(Vertex3d Dir, Vertex3d Up)
+{
+	_bool ret = BaseActor::setOrientation(Dir,Up);
+	if (ret) {
+		m_Changed = true;
+	}
+	return ret;
+}
+void RGP_CORE::Camera::RotateViaDirection(_float Angle)
+{
+	BaseActor::RotateViaDirection(Angle);
+	m_Changed = true;
+}
+void RGP_CORE::Camera::RotateViaUp(_float Angle)
+{
+	BaseActor::RotateViaUp(Angle);
+	m_Changed = true;
+}
+void RGP_CORE::Camera::RotateViaSide(_float Angle)
+{
+	BaseActor::RotateViaSide(Angle);
+	m_Changed = true;
+}
+void RGP_CORE::Camera::Translate(Vertex3d ver)
+{
+	BaseActor::Translate(ver);
+	m_Changed = true;
+}
+void RGP_CORE::Camera::TranslateViaSide(_float value)
+{
+	BaseActor::TranslateViaSide(value);
+	m_Changed = true;
+}
+void RGP_CORE::Camera::TranslateViaUp(_float value)
+{
+	BaseActor::TranslateViaUp(value);
+	m_Changed = true;
+}
+void RGP_CORE::Camera::TranslateViaDirection(_float value)
+{
+	BaseActor::TranslateViaDirection(value);
+	m_Changed = true;
+}
+
 
 
 void RGP_CORE::Camera::UpdateViewMtx(){

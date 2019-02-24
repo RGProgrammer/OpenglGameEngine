@@ -37,13 +37,13 @@ namespace RGP_CORE {
 		virtual void RotateViaDirection (_float Angle);
 		virtual void RotateViaUp        (_float Angle);
 		virtual void RotateViaSide      (_float Angle);
-		void		 Translate          (Vertex3d ver);
-		void		 TranslateViaSide(_float value);
-		void		 TranslateViaUp(_float value);
-		void		 TranslateViaDirection(_float value);
-		void 		 ScaleUniform(_float value) ;
-		void 		 ScaleUniformAdd(_float value);
-		void 		 Scale(Vertex3d scale);
+		virtual void		 Translate          (Vertex3d ver);
+		virtual void		 TranslateViaSide(_float value);
+		virtual void		 TranslateViaUp(_float value);
+		virtual void		 TranslateViaDirection(_float value);
+		virtual void 		 ScaleUniform(_float value) ;
+		virtual void 		 ScaleUniformAdd(_float value);
+		virtual void 		 Scale(Vertex3d scale);
 		
 
 		_float* getTransMtx();

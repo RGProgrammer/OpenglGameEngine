@@ -34,8 +34,8 @@ namespace RGP_CORE {
 		PerspCamera*	m_PerspCameras[6];
 		_bool			m_isInitialized;
 		_bool			m_isStatic;
-		GLuint			m_FBO;
-		GLuint			m_TextureCubeMap;
+		_u32b			m_FBO;
+		_u32b			m_TextureCubeMap;
 		
 
 	};

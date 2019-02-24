@@ -1,4 +1,4 @@
-#version 410 
+#version 450 
 
 uniform sampler2D Specular ;
 uniform sampler2D Diffuse1 ;

@@ -47,7 +47,7 @@ _bool			RGP_CORE::EnvMapProbe::Init(GLRenderer* Renderer, GameScene* Scene)
 		return false;
 	m_Renderer = Renderer;
 	m_Scene = Scene;
-	m_Renderer->GenFrameBuffers(1, &m_FBO);
+	m_Renderer->GenFrameBuffers(1,&m_FBO);
 	if (!m_FBO)
 		return false;
 	m_Renderer->GenTexturesCube(1, &m_TextureCubeMap);

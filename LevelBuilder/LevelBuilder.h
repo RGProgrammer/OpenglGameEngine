@@ -115,9 +115,7 @@ namespace RGP_LEVELBUILDER {
 		Vertex2d				m_CursorPos;
 		EditCommands			m_CurrentCommand;
 		TransformConstraint		m_SelectedAxis;
-		_float					m_SelectedPosition[3];
-		_float					m_SelectedRotation[3];
-		_float					m_SelectedScale[3];
+		
 		FileNameUse				m_FilenameUse;
 		/*TODO: Class Database provier*/
 	};

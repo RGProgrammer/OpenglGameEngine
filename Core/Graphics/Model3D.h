@@ -23,11 +23,10 @@ namespace RGP_CORE {
 		_float*         TexCoords;//each 2 floats form a vertex (x,y) or (u,v)
 		_u32b* 			IndexBuffer ;
 		_u32b			nbVertices;
-		_u32b			nbNormals;
 		_u32b			nbFaces ;
-		_u32b           nbTexCoords;
 		_u32b   		AppliedMaterial ;
 	} Mesh , *pMesh ;
+
 
 	class Model3D : public virtual Renderable {
 	public:
@@ -60,21 +59,28 @@ namespace RGP_CORE {
         _u16b LoadMaterial(const aiScene* Scene);
         _u16b CopyTextureData(aiTexture* Texture, Image* Dest);
         _u16b LoadMaterialstoMemory(const aiScene* Scene);
-        _u16b GenerateOGLMaterials();
-        _u16b GenerateBuffers();
+        _u16b GenerateGPUMaterials();
+        _u16b GenerateVerticesBuffers();
+		_u16b GenerateCommandBuffer();
 		_u16b FillBuffers();
 	protected:
 		_s8b*					m_FileDirectory;
 		pMesh					m_Meshes ;
-		MeshBuffers*            m_Buffers ;
-		GLuint*					m_VAOforShadowcasting;
-		Material*               m_Materials;
-		OGLMaterial*            m_oglMaterials;
-		EnvMapProbe*			m_ReflectionProbe;
 		_u32b					m_NumMeshes;
+		Material*               m_Materials;
 		_u32b                   m_NumMaterials;
-		_u32b				    m_ShaderProgram ;
+		_u32b*					m_MaterialsWrappers;
+		_u32b					m_MaterialUBO;
+		_u32b				    m_ShaderProgram;
+		_u32b					m_RenderingVAO;
+		_u32b					m_RenderingCommandsBuffer;
 		_bool					m_ClearAfterLoad;
+		_s32b					m_WorldMtxLocation;
+		//renderer dependent attributs
+		MeshBuffers				m_Buffer ;
+		EnvMapProbe*			m_ReflectionProbe;
+		
+		
 	};
 
 };

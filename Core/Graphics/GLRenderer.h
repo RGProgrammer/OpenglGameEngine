@@ -34,6 +34,7 @@ namespace RGP_CORE{
 
 
 	typedef struct{
+		_s8b*			Name;
 		Image*			DiffuseMap;
 		Image*			SpecularMap;
 		Image*			NormalsMap;
@@ -42,27 +43,33 @@ namespace RGP_CORE{
 	} Material ;
 
 	typedef struct {
-        GLuint          DiffuseMap;
-		GLuint			SpecularMap;
-		GLuint			NormalsMap;
+		_s8b*			Name;
+		//TODO : replace these 3 field with a vector contains more maps 
+        _u32b          DiffuseMap;
+		_u32b			SpecularMap;
+		_u32b			NormalsMap;
 		_float			IOR;
 		_float			Opacity;
-		_u64b			Handles[3];
 	} OGLMaterial ;
 
     ///mesh structure for openGL
 	typedef struct {
-		GLuint			Wrappers[6];
-	    GLuint          VertexArrayObject ;
+		_u32b			Wrappers[6];
+		_u32b			VertexArrayObject ;
+		_u32b			TexturesUBO;//TODO
 		_u32b			AppliedMaterialIndex;
 		_u32b			numFaces;
     } MeshBuffers ;
 
+	
     ///OpenGL Renderer
+	
     typedef enum RenderType {
         FORWARD_RENDERING,
         DEFERRED_RENDERING
     } RenderMode;
+
+	//renderer configuration
     typedef struct {
         _s8b*       Title ;
         _s32b       Witdh;
@@ -74,8 +81,22 @@ namespace RGP_CORE{
 
     } gfxConfig;
 
-
+	//Indirect render Command struct
+	typedef  struct {
+		_u32b  count;
+		_u32b  instanceCount;
+		_u32b  first;
+		_u32b  baseInstance;
+	} DrawArraysIndirectCommand;
 	
+
+	typedef  struct {
+		_u32b  count;
+		_u32b  instanceCount;
+		_u32b  firstIndex;
+		_u32b  baseVertex;
+		_u32b  baseInstance;
+	} DrawElementsIndirectCommand;
 
 	class GLShaderProgramsManager {
 		
@@ -91,7 +112,7 @@ namespace RGP_CORE{
 	private:
 		_u32b LoadShaderBuffer(GLenum type, const _s8b* Buffer, int buffersize);
 		_u32b LoadShaderFile(GLenum Type, _s8b* filename);
-		GLuint CreateGLProgram(_s8b* VertexFile, _s8b* GeometryFile, _s8b* FrgamentFile);
+		_u32b CreateGLProgram(_s8b* VertexFile, _s8b* GeometryFile, _s8b* FrgamentFile);
 		_u32b doExiste(_s8b* VertexFile, _s8b* GeometryFile, _s8b* FrgamentFile);// verify if the shader program existeif it is returns the progran ID
 	private:
 		friend class GLRenderer;
@@ -110,6 +131,7 @@ namespace RGP_CORE{
 		_u32b				m_boundProgramID;
 	
 	};
+
 
 	class GameScene;
 
@@ -150,27 +172,44 @@ namespace RGP_CORE{
 		void	UnloadShadowProgram();
 		void	UpdateEnvironmentMaps();
 		void	SwitchNoLightMode();
+		_u32b	getCameratransformsUBO();
+		_u32b	getCurrentShaderProgram();
+
+		//todo material
+		_u32b			CreateMaterial(Material material); //return material index (>=1)
+		_u32b			GetMaterialIndex(_s8b* Name);
+		OGLMaterial*	GetMaterial(_u32b index);
+		_bool			RemoveMaterial(_s8b* materialname);
+		_bool			RemeoveMaterialAt(_u32b index);
+		void			ClearMaterials();// remove all created materials 
+
 		//this is for testing
 		_u32b	getLastFrameTexture();
         ///buffers manager
         ///Buffer Objects
-        _bool GenBuffers(_u32b numBuffers,GLuint*    target);
-        void  DeleteBuffers(_u32b numBuffers,GLuint*    target);
+        _bool GenBuffers(_u32b numBuffers,_u32b*    target);
+        void  DeleteBuffers(_u32b numBuffers, _u32b*    target);
         void  setBufferData(_u32b Target ,_u32b Size , void* Data, _u32b flag,_u32b bufferwrapper=0);
-		void  setBufferSubData(_u32b Target, _u32b Offset, _u32b Size, void* Data);
+		void  setBufferSubData(_u32b Target, _u32b Offset, _u32b Size, void* Data , _u32b bufferwrapper = 0);
         void  BindBuffer(_u32b Bindtype,_u32b BufferID );
+		void  BindBufferBase(_u32b Target, _u32b index, _u32b BufferID);
 
         ///VAOs
-        _bool GenVertexArrays(_u32b numBuffers,GLuint*    target);
-        void  DeleteVertexArrays(_u32b numBuffers,GLuint*    target);
+        _bool GenVertexArrays(_u32b numBuffers,_u32b*    target);
+        void  DeleteVertexArrays(_u32b numBuffers,_u32b*    target);
         _bool BindVertexArray(_u32b BufferID);
         ///VBO and VAO
-        void DrawElements(GLenum mode,_u32b Count,GLenum type,void* Offset,_u32b numInstances=1);
-		void DrawArrays(GLenum mode, _u32b first, _u32b Count,  _u32b numInstances=1);
+        void DrawElements(_u32b mode,_u32b Count,GLenum type,void* Offset,_u32b numInstances=1);
+		void DrawArrays(_u32b mode, _u32b first, _u32b Count,  _u32b numInstances=1);
+		_bool MultiDrawElementsIndirect(_u32b mode, _u32b Type,const void* commands, _u32b count, _u32b stride=0);
+		_bool MultiDrawArraysIndirect(_u32b mode,const void *indirect, _u32b drawcount, _u32b stride);
+
+
+
         ///Textures
-        _bool GenTextures2D(_u32b numTexture,GLuint*    target);
-		_bool GenTexturesCube(_u32b numTexture, GLuint* target);
-        void  DeleteTextures(_u32b numTexture,GLuint*    target);
+        _bool GenTextures2D(_u32b numTexture,_u32b*    target);
+		_bool GenTexturesCube(_u32b numTexture, _u32b* target);
+        void  DeleteTextures(_u32b numTexture,_u32b*    target);
         void  SetImageData2D(Image* ImageSource );
 		void  SetImageDataCube(Image* right, Image* left, Image* front,
 								Image* back, Image* top, Image* bottom);
@@ -181,8 +220,8 @@ namespace RGP_CORE{
 		void  MakeTextureHandleResidant(_u64b texHandle, _bool makeResidant = true);
 		
 		///FBOs
-		_bool GenFrameBuffers(_u32b numFrameBuffers, GLuint* target);
-		void DeleteFrameBuffers(_u32b numFrameBuffers, GLuint* target);
+		_bool GenFrameBuffers(_u32b numFrameBuffers, _u32b* target);
+		void DeleteFrameBuffers(_u32b numFrameBuffers, _u32b* target);
 		_bool BindFrameBuffer(_u32b BufferID);
 		_bool AttachTexturetoFrameBuffer(GLenum AttachementID ,GLenum TextureTarget,_u32b GLTextureID, _s32b Level=0);
 		void  setDrawBuffers(GLenum* bufferenum, _s32b numBuffers);
@@ -211,8 +250,10 @@ namespace RGP_CORE{
 		_bool	CreateColorsObjects();
 		_bool	CreateShadowsObjects();
 		_bool	CreateLightObjects();
-        
-        _bool InitFinalPhase();
+		_bool	CreateDefaultMaterial();
+        _bool   InitFinalPhase();
+		_bool   UpdateCameraMtxUBO(); //TODO
+
 		
         
 
@@ -221,39 +262,45 @@ namespace RGP_CORE{
         RenderMode					m_Mode;
 		gfxConfig					m_Config;
 		MeshBuffers*				m_FinalRenderSurface;
-		GLuint						m_FinalRenderProgram;
+		_u32b						m_FinalRenderProgram;
 		GLShaderProgramsManager*	m_ShaderManager;
         _bool						m_isInitialized ;
-
+		Material					defaultMAaterial;
 		//scene to render
 		GameScene*					m_SelectedScene;
-		
-		//_s16b						m_SelectedFBO;
-		//_s16b						m_NumFBOs;
 
 		//colors
-        GLuint						m_FBO;
-        GLuint*						m_AttachmentTextures;
+        _u32b						m_FBO;
+        _u32b*						m_AttachmentTextures;
         
 
 		//light
 		_u32b						m_LightAccumProgram;
-		GLuint						m_LightAccumBuffer;
-		GLuint						m_LightAccumDiffuseTexture;
-		GLuint						m_LightAccumSpecularTexture;
+		_u32b						m_LightAccumBuffer;
+		_u32b						m_LightAccumDiffuseTexture;
+		_u32b						m_LightAccumSpecularTexture;
 
 		//Shadows
 		_u32b						m_ShadowVectorSize;
 		_u32b						m_NumShadowFBOs;
 		_u32b						m_ShadowRenderingProgram;
-		GLuint*						m_ShadowFBOs;
-		GLuint*						m_ShadowAttachmentTexture;
+		_u32b*						m_ShadowFBOs;
+		_u32b*						m_ShadowAttachmentTexture;
 		_u32b						m_ShadowAccumProgram;
-		GLuint						m_ShadowAccumBuffer;
-		GLuint						m_ShadowAccumTexture;
+		_u32b						m_ShadowAccumBuffer;
+		_u32b						m_ShadowAccumTexture;
 		_bool						m_noLightMode;
 		
-		_u16b						m_BoundShaderProgram;
+		_u32b						m_MaterialBoundUBO;
+		OGLMaterial*				m_Materials; //all the needed materials will be stored here (not in the scene actors);
+		_u32b						m_NumMaterials;
+		_u32b						m_SizeofMaterialVector;
+
+		//UBOs
+		_u32b						m_CurrentShaderProgram;
+		_u32b						m_AllMaterialUBO;
+		_u32b						m_CameraMtxUBO;//TODO
+		
 		
     };
 };

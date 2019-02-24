@@ -128,3 +128,22 @@ void RGP_LEVELBUILDER::CustomScene::RemoveSelectedActors()
 		}
 	}
 }
+
+void RGP_LEVELBUILDER::CustomScene::UnselectAll()
+{
+	for (_u32b i = 0; i < this->getNumActors(); ++i) {
+		if (isActorSelected(i)) {
+			m_isSelected[i] = false;
+		}
+	}
+}
+
+_u32b RGP_LEVELBUILDER::CustomScene::getNumSelected()
+{
+	_u32b num = 0;
+	for (_u32b i = 0; i < this->getNumActors(); ++i) {
+		if (isActorSelected(i))
+			++num;
+	}
+	return num ;
+}

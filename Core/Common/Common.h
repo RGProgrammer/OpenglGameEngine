@@ -88,6 +88,8 @@ namespace RGP_CORE {
 	}
 	inline _s8b* CreateStringCopy(const _s8b* s)
 	{
+		if (!s)
+			return NULL;
 		return (_s8b*)CopyBuffer(s,strlen(s)+1);
 	};
 	

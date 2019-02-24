@@ -40,8 +40,7 @@ void RGP_LEVELBUILDER::LevelBuilder::StartLoop()
 		if (glfwWindowShouldClose(m_RendererInstance->getTarget()->getglfwWindow()))
 			break;
 		ReactToEvents();
-		//TODO : implement select item function
-		//TODO : add select item window
+		
 
 
 		m_RendererInstance->RenderCurrentScene();
@@ -49,6 +48,7 @@ void RGP_LEVELBUILDER::LevelBuilder::StartLoop()
 		this->ActorsListingToolBox();
 		this->BaseActorToolBox();
 		this->SelectFileBox();
+		this->LightingToolBox();
 		ImGui::Render();
 		ImGui_ImplGlfwGL3_RenderDrawData(ImGui::GetDrawData());
 		
@@ -61,9 +61,6 @@ RGP_LEVELBUILDER::LevelBuilder::LevelBuilder():m_isInitilized(false),
 												m_SoundEngineInstance(NULL), m_SceneInstance(NULL),
 												m_RenderThread(NULL), m_Camera(NULL),
 												m_CurrentCommand(COMMAND_NONE), m_SelectedAxis(TRANSFORM_ON_ALL),
-												m_SelectedPosition{0.0f,0.0f,0.0f},
-												m_SelectedRotation{0.0f,0.0f,0.0f},
-												m_SelectedScale{0.0f,0.0f,0.0f},
 												m_FilenameUse(USE_NOTHING)
 {
 
@@ -112,9 +109,10 @@ _bool				RGP_LEVELBUILDER::LevelBuilder::Init()
 	m_Camera->setPosition({ 0.0f,12.0f,-10.0f });
 	m_Camera->setOrientation({ 0.0f, -0.5f, 0.5f }, { 0.0f, 0.5f, 0.5f });
 	m_RendererInstance = new RGP_CORE::GLRenderer();
-	if (!m_RendererInstance->InitRenderer({ Title,1600,900,true ,1024,false })) {
+	if (!m_RendererInstance->InitRenderer({ Title,1600,900,false ,256,false })) {
 		return false;
 	}
+	//m_RendererInstance->SwitchNoLightMode();
 	m_RendererInstance->setScene(m_SceneInstance);
 
 	m_PhysicsEngineInstance = new PhysicsEngine();
@@ -174,8 +172,10 @@ _bool				RGP_LEVELBUILDER::LevelBuilder::LoadDefaultScene()
 		
 		void* args[2] = { m_RendererInstance,(void*)"..//test//Samples//Plane.obj" };
 		Actor = (*ptr)(args);
-		Actor->setName("Plane");
-		m_SceneInstance->AddActor(Actor);
+		if (Actor) {
+			Actor->setName("Plane");
+			m_SceneInstance->AddActor(Actor);
+		}
 		
 	}
 	else
@@ -184,8 +184,10 @@ _bool				RGP_LEVELBUILDER::LevelBuilder::LoadDefaultScene()
 	if (ptr) {
 		Actor = NULL;
 		Actor = (*ptr)(NULL);
-		Actor->setName("light");
-		m_SceneInstance->AddActor(Actor);
+		if (Actor) {
+			Actor->setName("light");
+			m_SceneInstance->AddActor(Actor);
+		}
 	}
 	else
 		return false;
@@ -246,7 +248,7 @@ void	 RGP_LEVELBUILDER::LevelBuilder::ActorsListingToolBox()
 {
 	char name[50] = "";
 	ImGui::Begin("Scene");
-	ImGui::SetWindowSize(ImVec2(200, 600));
+	//ImGui::SetWindowSize(ImVec2(200, 600));
 	if (m_SceneInstance->getNumActors()) {
 		for (_u32b i = 1; i < m_SceneInstance->getNumActors(); ++i) {
 			ImGui::Selectable(m_SceneInstance->getActor(i)->getName(),m_SceneInstance->getMemoryCase(i));
@@ -263,6 +265,10 @@ void	RGP_LEVELBUILDER::LevelBuilder::BaseActorToolBox()
 	_bool showbox = false;
 	BaseActor* actor = NULL;
 	Vertex4d quat;
+	Vertex3d scale;
+	_float					m_SelectedPosition[3];
+	_float					m_SelectedRotation[3];
+	_float					m_SelectedScale[3];
 	for (_u32b i = 0; i < m_SceneInstance->getNumActors(); ++i) {
 		if (m_SceneInstance->isActorSelected(i)) {
 			showbox = true;
@@ -270,9 +276,10 @@ void	RGP_LEVELBUILDER::LevelBuilder::BaseActorToolBox()
 		}
 	}
 	if (showbox) {
+		
 		ImGui::Begin("Transform");
-		ImGui::SetWindowSize(ImVec2(200, 350));
-		ImGui::Text("Position :", NULL);
+		ImGui::SetWindowSize(ImVec2(300, 200));
+		
 		//todo: calculate average postion
 		for (_u32b i = 0; i < m_SceneInstance->getNumActors(); ++i) {
 			if (m_SceneInstance->isActorSelected(i)) {
@@ -288,17 +295,20 @@ void	RGP_LEVELBUILDER::LevelBuilder::BaseActorToolBox()
 			m_SelectedRotation[0] = quat.x;
 			m_SelectedRotation[1] = quat.y;
 			m_SelectedRotation[2] = quat.z;
+			scale = actor->getScale();
+			m_SelectedScale[0] = scale.x;
+			m_SelectedScale[1] = scale.y;
+			m_SelectedScale[2] = scale.z;
 
 		}
-		
-		if (ImGui::InputFloat3(" ", m_SelectedPosition)) {
-			actor->setPosition({ m_SelectedPosition[0],m_SelectedPosition[2], m_SelectedPosition[2] });
-		}
+
+		ImGui::Text("Position :", NULL);
+		ImGui::InputFloat3(" ", m_SelectedPosition);
+
 		ImGui::Separator();
 		ImGui::Text("Rotation :", NULL);
-		if (ImGui::InputFloat3(" ", m_SelectedRotation)) {
-			actor->setQuaternion({ m_SelectedRotation[0],m_SelectedRotation[2], m_SelectedRotation[2],1.0f });
-		}
+		ImGui::InputFloat3(" ", m_SelectedRotation);
+
 		ImGui::Separator();
 		ImGui::Text("Scale :", NULL);
 		ImGui::InputFloat3(" ", m_SelectedScale);
@@ -325,10 +335,11 @@ void RGP_LEVELBUILDER::LevelBuilder::SelectFileBox()
 				this->ImportScene(FileName);
 			else if (m_FilenameUse == USE_EXPORT_SCENE)
 				this->ExportScene(FileName);
+			m_CurrentCommand = COMMAND_NONE;
 		}
 		ImGui::SameLine();
 		if (ImGui::Button("Cancel")) {
-			m_CurrentCommand == COMMAND_NONE;
+			m_CurrentCommand = COMMAND_NONE;
 			m_FilenameUse = USE_NOTHING;
 		}
 		ImGui::End();
@@ -336,7 +347,80 @@ void RGP_LEVELBUILDER::LevelBuilder::SelectFileBox()
 
 };
 
+void RGP_LEVELBUILDER::LevelBuilder::LightingToolBox()
+{
+	
+	_float Diffuse[3], Specular[3], Ambiant[3],Shininess = 1.0f ,Distance=5.0f,Angle=2.0f;
+	LightSource* first=NULL;
+	_u32b numLight = 0;
+	//determine how many light actor selected 
+	for (_u32b i = 0; i < m_SceneInstance->getNumActors(); ++i) {
+		if (m_SceneInstance->isActorSelected(i)) {
+			if (m_SceneInstance->getActor(i)->getID() & LIGHTSOURCE) {
+				++numLight;
+				if (numLight == 1)
+					first = dynamic_cast<LightSource*>(m_SceneInstance->getActor(i));
+			}
+		}
+	}
+	if (!numLight)
+		return;
 
+	ImGui::Begin("Light UI");
+	
+	//construct the light UI depending on the num of lights
+	if (numLight==1) {
+		if (first->getLightDistance() < 0.0f) {
+			ImGui::Text("Light Type : Directionnal (Sun)");
+		}
+		else if (first->getLightCutoffAngle() < 0.0f) {
+			ImGui::Text("Light Type : Point");
+		}
+		else {
+			ImGui::Text("Light Type : Spot");
+		}
+		ImGui::Separator();
+		ImGui::Separator();
+		ImGui::Text("Change Light Type :");
+		ImGui::Button("Directionnal");
+		ImGui::SameLine();
+		ImGui::Button("Spot");
+		ImGui::SameLine();
+		ImGui::Button("Point");
+		ImGui::SameLine();
+		ImGui::Button("Ambiant");
+	}
+	ImGui::Text("DiffuseColor :", NULL);
+	ImGui::InputFloat3(" ", Diffuse);
+
+	ImGui::Separator();
+	ImGui::Text("Specular Color :", NULL);
+	ImGui::InputFloat3(" ", Specular);
+
+	ImGui::Separator();
+	ImGui::Text("Ambiant Color :", NULL);
+	ImGui::InputFloat3(" ", Ambiant);
+
+	ImGui::Text("Shininess :", NULL);
+	ImGui::InputFloat(" ", &Shininess);
+
+	if (numLight==1 && first->getLightDistance()>= 0.0f ) {
+		ImGui::Text("Distance :", NULL);
+		ImGui::InputFloat(" ", &Distance);
+	}
+	if (numLight == 1 && first->getLightCutoffAngle() >= 0.0f) {
+		ImGui::Text("Angle :", NULL);
+		ImGui::InputFloat(" ", &Angle);
+	}
+
+
+	ImGui::End();
+
+};
+void RGP_LEVELBUILDER::LevelBuilder::DynamicActorToolBox()
+{
+
+};
 
 
 void RGP_LEVELBUILDER::LevelBuilder::ReactToEvents()
@@ -376,6 +460,10 @@ void RGP_LEVELBUILDER::LevelBuilder::ReactToEvents()
 				m_SceneInstance->getCamera()->RotateViaSide(ver.y*0.2f);
 			}
 		}
+
+		//unselect all the selected
+		if (glfwGetKey(window->getglfwWindow(), GLFW_KEY_DELETE) == GLFW_PRESS)
+			m_SceneInstance->UnselectAll();
 		
 		//Keyboard shortcuts
 		if (glfwGetKey(window->getglfwWindow(), GLFW_KEY_DELETE) == GLFW_PRESS) {

@@ -1,14 +1,17 @@
-#version 410
+#version 450
 layout(location=0) in vec3 Position ;
 layout(location=1) in vec3 Normal ;
 layout(location=2) in vec3 Texcoord ;
 layout(location=3) in vec3 Tangent ;
 layout(location=4) in vec3 Bitangent ;
 
-uniform mat4 WorldMtx ;
-uniform mat4 ViewMtx ;
-uniform mat4 ProjMtx ;
 
+layout(std140, binding=1) uniform TransformsMtx{
+	mat4 ViewMtx;
+	mat4 ProjMtx ;
+};
+
+uniform mat4 WorldMtx ;
 out vec4 PositionColor ;
 out mat3 TBN ;
 out vec2 texcoord0;
