@@ -221,7 +221,7 @@ _u32b RGP_CORE::GLShaderProgramsManager::LoadShaderBuffer(GLenum type, const _s8
 		glShaderSource(Shader, 1, (const _s8b**)(&Buffer), &buffersize);
 		glCompileShader(Shader);
 		GLint compiled;
-		glGetObjectParameterivARB(Shader, GL_COMPILE_STATUS, &compiled);
+		glGetShaderiv(Shader, GL_COMPILE_STATUS, &compiled);
 		if (!compiled) {
 			printf("error compiling shader\n");
 			printf("Source: %s \n", Buffer);
@@ -232,7 +232,7 @@ _u32b RGP_CORE::GLShaderProgramsManager::LoadShaderBuffer(GLenum type, const _s8
 			if (blen > 1)
 			{
 				GLchar* compiler_log = (GLchar*)malloc(blen);
-				glGetInfoLogARB(Shader, blen, &slen, compiler_log);
+				glGetShaderInfoLog(Shader, blen, &slen, compiler_log);
 				printf("compiler_log: %s\n", compiler_log);
 				free(compiler_log);
 			}
@@ -509,6 +509,14 @@ _bool RGP_CORE::GLRenderer::InitRenderer(gfxConfig Config){
         printf("errro initializing GLFW\n");
         return false ;
     }
+	glfwWindowHint(GLFW_STEREO, 0);
+	glfwWindowHint(GLFW_DOUBLEBUFFER, 1);
+	glfwWindowHint(GLFW_RESIZABLE, 1);
+	//glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
+
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
     m_Target=RGP_CORE::Window::Create(Config.Title,Config.Witdh,Config.Height);
     if(!m_Target){
         printf("error creating Window\n");
@@ -517,11 +525,7 @@ _bool RGP_CORE::GLRenderer::InitRenderer(gfxConfig Config){
 	
 	this->MakeContext();
 
-    ///initializing GLEW
-    if(glewInit()!=GLEW_OK){
-        printf("error init GLEW\n");
-        return false ;
-	}
+	gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 	glfwSwapInterval(0);
 	FreeImage_Initialise();
 	m_ShaderManager = new GLShaderProgramsManager();
@@ -555,7 +559,9 @@ _bool RGP_CORE::GLRenderer::CreateNeededObjects(){
 	if (!CreateShadowsObjects())
 		return false;
 	this->GenBuffers(1, &m_CameraMtxUBO);
-	this->setBufferData(GL_UNIFORM_BUFFER, 32 * sizeof(_u32b), NULL, GL_DYNAMIC_DRAW, m_CameraMtxUBO);
+	this->BindBuffer(GL_UNIFORM_BUFFER, m_CameraMtxUBO);
+	this->setBufferData(GL_UNIFORM_BUFFER, 32 * sizeof(_float), NULL, GL_DYNAMIC_DRAW);
+
 	return true;
 };
 
@@ -592,8 +598,8 @@ _bool	RGP_CORE::GLRenderer::CreateColorsObjects()
 			glBindTexture(GL_TEXTURE_2D, m_AttachmentTextures[k]);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F,
 				m_Target->getWidth(),
 				m_Target->getHeight(),
@@ -646,6 +652,7 @@ _bool	RGP_CORE::GLRenderer::CreateShadowsObjects()
 		printf("error loading Shadow Mapping program");
 		return false;
 	}
+
 	m_ShadowAccumProgram = CreateGLProgramFromFile("..//Shaders//ShadowAccumProgram.vs", "..//Shaders//ShadowAccumProgram.fs");
 	if (!m_ShadowAccumProgram) {
 		printf("error loading Shadow Maps Combiner program");
@@ -662,8 +669,8 @@ _bool	RGP_CORE::GLRenderer::CreateShadowsObjects()
 	glBindTexture(GL_TEXTURE_2D, m_ShadowAccumTexture);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F,
 		m_Target->getWidth(),
 		m_Target->getHeight(),
@@ -695,8 +702,8 @@ _bool	RGP_CORE::GLRenderer::CreateLightObjects()
 	glBindTexture(GL_TEXTURE_2D, m_LightAccumDiffuseTexture);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F,
 		m_Target->getWidth(),
 		m_Target->getHeight(),
@@ -705,8 +712,8 @@ _bool	RGP_CORE::GLRenderer::CreateLightObjects()
 	glBindTexture(GL_TEXTURE_2D, m_LightAccumSpecularTexture);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F,
 		m_Target->getWidth(),
 		m_Target->getHeight(),
@@ -1168,12 +1175,10 @@ void	RGP_CORE::GLRenderer:: RenderSceneLightAccum(Camera* camera)
 		
 		//common uniform variables
 		Location = this->GetUniformLocation(m_LightAccumProgram, "NormalMap");
-		this->SetActiveTexture(0);
-		this->BindTexture(m_AttachmentTextures[NORMAL_TEXTURE]);
+		this->BindTexture(m_AttachmentTextures[NORMAL_TEXTURE],0);
 		this->SetUniformSample(Location, 0);
 		Location = this->GetUniformLocation(m_LightAccumProgram, "PositionMap");
-		this->SetActiveTexture(1);
-		this->BindTexture(m_AttachmentTextures[POSITION_TEXTURE]);
+		this->BindTexture(m_AttachmentTextures[POSITION_TEXTURE],1);
 		this->SetUniformSample(Location, 1);
 		Location = this->GetUniformLocation(m_LightAccumProgram, "CameraPos");
 		this->SetUniform3F(Location, Eye->getPosition().x,
@@ -1328,6 +1333,11 @@ _u32b RGP_CORE::GLRenderer::getCurrentShaderProgram()
 	return m_CurrentShaderProgram;
 }
 
+_bool RGP_CORE::GLRenderer::DoesSupportBindlessTexture()
+{
+	return false;
+}
+
 //TODO
 _u32b RGP_CORE::GLRenderer::CreateMaterial(Material material)
 {
@@ -1380,7 +1390,7 @@ _u32b RGP_CORE::GLRenderer::CreateMaterial(Material material)
 	}
 
 }
-_u32b RGP_CORE::GLRenderer::GetMaterialIndex(_s8b * Name)
+_u32b RGP_CORE::GLRenderer::GetMaterialIndex( const _s8b * Name)
 {
 	if (!m_NumMaterials)
 		return 0;
@@ -1396,7 +1406,7 @@ RGP_CORE::OGLMaterial * RGP_CORE::GLRenderer::GetMaterial(_u32b index)
 		return NULL;
 	return &(m_Materials[index]);
 }
-_bool RGP_CORE::GLRenderer::RemoveMaterial(_s8b * materialname)
+_bool RGP_CORE::GLRenderer::RemoveMaterial(const _s8b * materialname)
 {
 	return this->RemeoveMaterialAt(GetMaterialIndex(materialname));
 }
@@ -1560,6 +1570,22 @@ void RGP_CORE::GLRenderer::DrawArrays(_u32b mode, _u32b first, _u32b count,  _u3
 {
 	glDrawArraysInstanced(mode, first, count,numInstances);
 }
+_bool RGP_CORE::GLRenderer::DrawElementsIndirect(_u32b mode, _u32b Type, const DrawElementsIndirectCommand * command)
+{
+	glGetError();
+	glDrawElementsIndirect(mode, Type, command);
+	if (glGetError())
+		return false;
+	return true;
+}
+_bool RGP_CORE::GLRenderer::DrawArraysIndirect(_u32b mode, const DrawArraysIndirectCommand * command)
+{
+	glGetError();
+	glDrawArraysIndirect(mode, command);
+	if (glGetError())
+		return false;
+	return true;
+}
 _bool RGP_CORE::GLRenderer::MultiDrawElementsIndirect(_u32b mode, _u32b Type, const void * commands_or_Offset, _u32b count, _u32b stride)
 {
 	if (!glMultiDrawElementsIndirect)
@@ -1641,20 +1667,22 @@ void  RGP_CORE::GLRenderer::SetActiveTexture(_u16b index)
 {
     glActiveTexture(GL_TEXTURE0+index);
 };
-_bool RGP_CORE::GLRenderer::BindTexture(_u32b textureID,_bool Texture2D){
+_bool RGP_CORE::GLRenderer::BindTexture(_u32b textureID, _u32b unit ,_bool Texture2D){
+	this->SetActiveTexture(unit);
     if(Texture2D)
 		glBindTexture(GL_TEXTURE_2D,textureID);
 	else
 		glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
     if(glGetError())
         return false ;
+	this->SetActiveTexture(0);
     return true ;
 };
 
 
 _u64b RGP_CORE::GLRenderer::GetTextureHandle(_u32b textureID)
 {
-	if (glGetTextureHandleARB != NULL)
+	if (glGetTextureHandleARB(textureID) != NULL)
 		return  glGetTextureHandleARB(textureID);
 	else
 		return 0;
@@ -1705,8 +1733,6 @@ _bool RGP_CORE::GLRenderer::BindFrameBuffer(_u32b BufferID)
 _bool RGP_CORE::GLRenderer::AttachTexturetoFrameBuffer(GLenum AttachementID, GLenum TextureTarget, _u32b TextureID, _s32b Level)
 {
 	glFramebufferTexture2D(GL_FRAMEBUFFER, AttachementID, TextureTarget, TextureID, Level);
-	//try this  
-	//glFrameBufferTexture3D
 	return true;
 };
 
@@ -1743,7 +1769,6 @@ _s32b   RGP_CORE::GLRenderer::GetUniformLocation(_u32b programID ,_s8b*  Name){
 	GLint location;
 	if (program) {
 		location= glGetUniformLocation(program->GLProgramID, Name);
-//		printf("%s location %d \n",Name, location);
 		return location;
 	}
 	return -1;
@@ -1779,7 +1804,6 @@ _bool   RGP_CORE::GLRenderer::SetUniformvMtx(_s32b Location,_float* Matrix_4x4 )
 _bool   RGP_CORE::GLRenderer::SetUniformSample(_s32b Location, _u32b TextureUnit){
     glUniform1i(Location,TextureUnit);
      if(glGetError()){
-        //printf("problem \n");
         return false ;
      }
     return true ;

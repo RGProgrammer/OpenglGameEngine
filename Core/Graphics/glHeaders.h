@@ -9,6 +9,6 @@
 #include <Windows.h>
 #endif
 
-#include "..//..//tools//glew//glew.h"
+#include "..//..//tools//glad//include//glad.h"
 #include "..//..//tools//glfw//glfw3.h"
 #endif // _RGP_OGLHEADERS_H_

@@ -174,12 +174,12 @@ namespace RGP_CORE{
 		void	SwitchNoLightMode();
 		_u32b	getCameratransformsUBO();
 		_u32b	getCurrentShaderProgram();
-
+		_bool	DoesSupportBindlessTexture();
 		//todo material
 		_u32b			CreateMaterial(Material material); //return material index (>=1)
-		_u32b			GetMaterialIndex(_s8b* Name);
+		_u32b			GetMaterialIndex(const _s8b* Name);
 		OGLMaterial*	GetMaterial(_u32b index);
-		_bool			RemoveMaterial(_s8b* materialname);
+		_bool			RemoveMaterial(const _s8b* materialname);
 		_bool			RemeoveMaterialAt(_u32b index);
 		void			ClearMaterials();// remove all created materials 
 
@@ -201,6 +201,9 @@ namespace RGP_CORE{
         ///VBO and VAO
         void DrawElements(_u32b mode,_u32b Count,GLenum type,void* Offset,_u32b numInstances=1);
 		void DrawArrays(_u32b mode, _u32b first, _u32b Count,  _u32b numInstances=1);
+		_bool DrawElementsIndirect(_u32b mode, _u32b Type, const DrawElementsIndirectCommand* command);
+		_bool DrawArraysIndirect(_u32b mode, const DrawArraysIndirectCommand * command);
+
 		_bool MultiDrawElementsIndirect(_u32b mode, _u32b Type,const void* commands, _u32b count, _u32b stride=0);
 		_bool MultiDrawArraysIndirect(_u32b mode,const void *indirect, _u32b drawcount, _u32b stride);
 
@@ -215,7 +218,7 @@ namespace RGP_CORE{
 								Image* back, Image* top, Image* bottom);
 		void  SetImageDataCube(_s32b Width, _s32b Height);
         void  SetActiveTexture(_u16b index);///starts from GL_TEXTURE0
-        _bool BindTexture(_u32b textureID,_bool Texture2D=true);
+        _bool BindTexture(_u32b textureID,_u32b unit=0,_bool Texture2D=true);
 		_u64b GetTextureHandle(_u32b textureID);
 		void  MakeTextureHandleResidant(_u64b texHandle, _bool makeResidant = true);
 		

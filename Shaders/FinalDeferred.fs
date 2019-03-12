@@ -26,5 +26,5 @@ void main(){
 		shadowcolor=texture2D(Shadow,texcoord0).rgb;
 	}
 	gl_FragColor=vec4((DiffuseColor+SpecularColor)*shadowcolor ,1.0);
-	//gl_FragColor=vec4(DiffuseColor,1.0);
+	//gl_FragColor=vec4(DiffuseColor1.rgb,1.0);
 }

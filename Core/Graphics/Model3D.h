@@ -76,6 +76,7 @@ namespace RGP_CORE {
 		_u32b					m_RenderingCommandsBuffer;
 		_bool					m_ClearAfterLoad;
 		_s32b					m_WorldMtxLocation;
+		DrawElementsIndirectCommand* m_DrawCommands;
 		//renderer dependent attributs
 		MeshBuffers				m_Buffer ;
 		EnvMapProbe*			m_ReflectionProbe;

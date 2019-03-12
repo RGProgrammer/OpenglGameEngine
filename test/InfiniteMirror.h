@@ -19,13 +19,13 @@ public:
 	
 private :
 	_u32b			m_ShaderProgram;
-	GLuint			m_VAO;
-	GLuint			m_VertexBuffer;
-	GLuint			m_NormalBuffer;
-	GLuint			m_TexCoordBuffer;
-	GLuint			m_IndexBuffer;
-	GLuint			m_FBO;
-	GLuint			m_Texture;
+	_u32b			m_VAO;
+	_u32b			m_VertexBuffer;
+	_u32b			m_NormalBuffer;
+	_u32b			m_TexCoordBuffer;
+	_u32b			m_IndexBuffer;
+	_u32b			m_FBO;
+	_u32b			m_Texture;
 	PerspCamera*	m_Camera;
 };
 

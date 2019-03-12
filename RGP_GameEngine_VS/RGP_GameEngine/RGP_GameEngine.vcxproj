@@ -65,7 +65,7 @@
       <AdditionalDependencies>../../tools/glew/lib/Release/Win32/glew32s.lib;../../tools/bullet3/lib/Bullet3Common_Debug.lib;../../tools/bullet3/lib/LinearMath_Debug.lib;../../tools/bullet3/lib/BulletCollision_Debug.lib;../../tools/bullet3/lib/BulletDynamics_Debug.lib;../../tools/assimp/lib/assimp.lib;../../tools/glfw/VClibs/glfw3dll.lib;../../tools/openal/libs/Win32/OpenAL32.lib;../../tools/SOIL/lib/SOIL.lib;opengl32.lib;msvcrt.lib;msvcmrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Lib>
-      <AdditionalDependencies>../../tools/glew/lib/Release/Win32/glew32s.lib;../../tools/assimp/lib-md/Debug/assimp-vc140-mt.lib;../../tools/freeimage/lib/Debug/FreeImaged.lib;../../tools/bullet3/lib/Bullet3Common_Debug.lib;../../tools/bullet3/lib/LinearMath_Debug.lib;../../tools/bullet3/lib/BulletCollision_Debug.lib;../../tools/bullet3/lib/BulletDynamics_Debug.lib;../../tools/glfw/VClibs/glfw3dll.lib;../../tools/openal/libs/Win32/OpenAL32.lib;opengl32.lib;msvcrt.lib;msvcmrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>../../tools/assimp/lib-md/Debug/assimp-vc140-mt.lib;../../tools/freeimage/lib/Debug/FreeImaged.lib;../../tools/bullet3/lib/Bullet3Common_Debug.lib;../../tools/bullet3/lib/LinearMath_Debug.lib;../../tools/bullet3/lib/BulletCollision_Debug.lib;../../tools/bullet3/lib/BulletDynamics_Debug.lib;../../tools/glfw/VClibs/glfw3dll.lib;../../tools/openal/libs/Win32/OpenAL32.lib;opengl32.lib;msvcrt.lib;msvcmrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -91,7 +91,7 @@
       <UseLibraryDependencyInputs>true</UseLibraryDependencyInputs>
     </ProjectReference>
     <Lib>
-      <AdditionalDependencies>../../tools/glew/lib/Release/Win32/glew32s.lib;../../tools/assimp/lib-md/Release/assimp-vc140-mt.lib;../../tools/freeimage/lib/Release/FreeImage.lib;../../tools/bullet3/lib/Bullet3Common.lib;../../tools/bullet3/lib/LinearMath.lib;../../tools/bullet3/lib/BulletCollision.lib;../../tools/bullet3/lib/BulletDynamics.lib;../../tools/glfw/VClibs/glfw3dll.lib;../../tools/openal/libs/Win32/OpenAL32.lib;opengl32.lib;msvcrt.lib;msvcmrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>../../tools/assimp/lib-md/Release/assimp-vc140-mt.lib;../../tools/freeimage/lib/Release/FreeImage.lib;../../tools/bullet3/lib/Bullet3Common.lib;../../tools/bullet3/lib/LinearMath.lib;../../tools/bullet3/lib/BulletCollision.lib;../../tools/bullet3/lib/BulletDynamics.lib;../../tools/glfw/VClibs/glfw3dll.lib;../../tools/openal/libs/Win32/OpenAL32.lib;opengl32.lib;msvcrt.lib;msvcmrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -116,6 +116,7 @@
     <ClCompile Include="..\..\Core\Scene\PointLight.cpp" />
     <ClCompile Include="..\..\Core\Scene\SpotLight.cpp" />
     <ClCompile Include="..\..\Core\Sound\SoundEngine.cpp" />
+    <ClCompile Include="..\..\tools\glad\src\glad.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Core\AdvancedActors\AnimatedModel.h" />
@@ -146,6 +147,8 @@
     <ClInclude Include="..\..\Core\Scene\PointLight.h" />
     <ClInclude Include="..\..\Core\Scene\SpotLight.h" />
     <ClInclude Include="..\..\Core\Sound\SoundEngine.h" />
+    <ClInclude Include="..\..\tools\glad\include\glad.h" />
+    <ClInclude Include="..\..\tools\glad\include\khrplatform.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
