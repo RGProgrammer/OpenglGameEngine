@@ -511,7 +511,7 @@ _bool RGP_CORE::GLRenderer::InitRenderer(gfxConfig Config){
     }
 	glfwWindowHint(GLFW_STEREO, 0);
 	glfwWindowHint(GLFW_DOUBLEBUFFER, 1);
-	glfwWindowHint(GLFW_RESIZABLE, 1);
+	glfwWindowHint(GLFW_RESIZABLE, 0);
 	//glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
 
@@ -1335,7 +1335,9 @@ _u32b RGP_CORE::GLRenderer::getCurrentShaderProgram()
 
 _bool RGP_CORE::GLRenderer::DoesSupportBindlessTexture()
 {
-	return false;
+	if(glfwExtensionSupported("GL_NV_bindless_texture")!= GLFW_TRUE)
+		return false;
+	return true;
 }
 
 //TODO
@@ -1572,10 +1574,12 @@ void RGP_CORE::GLRenderer::DrawArrays(_u32b mode, _u32b first, _u32b count,  _u3
 }
 _bool RGP_CORE::GLRenderer::DrawElementsIndirect(_u32b mode, _u32b Type, const DrawElementsIndirectCommand * command)
 {
+	int error;
 	glGetError();
 	glDrawElementsIndirect(mode, Type, command);
-	if (glGetError())
+	if (error=glGetError()) {
 		return false;
+	}
 	return true;
 }
 _bool RGP_CORE::GLRenderer::DrawArraysIndirect(_u32b mode, const DrawArraysIndirectCommand * command)

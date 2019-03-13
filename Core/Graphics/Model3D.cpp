@@ -291,7 +291,7 @@ void RGP_CORE::Model3D::Render(Camera* Selected){
 
 				location = m_GLRenderer->GetUniformLocation(m_ShaderProgram, "Opacity");
 				m_GLRenderer->SetUniformF(location, m_GLRenderer->GetMaterial(m_DrawCommands[i].baseInstance)->Opacity);
-
+				
 				m_GLRenderer->DrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, &m_DrawCommands[i]);
 			}
 		}
