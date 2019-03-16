@@ -1,4 +1,4 @@
-#version 450 
+#version 430 
 
 #define DIRECTIONNAL 1
 #define POINT 2

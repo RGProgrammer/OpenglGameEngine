@@ -403,11 +403,15 @@ RGP_CORE::GLRenderer::GLRenderer(RenderMode Type):m_Target(NULL),
 											m_noLightMode(false),
 							
 											m_Materials(NULL),
+											m_GPUMaterials(NULL),
 											m_NumMaterials(0),
 											m_SizeofMaterialVector(0),
 											m_CurrentShaderProgram(0),
 											m_AllMaterialUBO(0),
-											m_CameraMtxUBO(0)
+											m_CameraMtxUBO(0),
+			
+											num_exts_i(0),
+											exts_i(NULL)
 											
 {
     if(Type==DEFERRED_RENDERING || Type==FORWARD_RENDERING)
@@ -430,6 +434,22 @@ RGP_CORE::GLRenderer::~GLRenderer(){
 void RGP_CORE::GLRenderer::Destroy(){
 	
 	ClearMaterials();
+	if (exts_i) {
+		for (_u32b index = 0; index < num_exts_i; ++index) {
+			free( exts_i[index]);
+		}
+		free(exts_i);
+		exts_i = NULL;
+		num_exts_i = 0;
+	}
+	if (m_CameraMtxUBO) {
+		this->DeleteBuffers(1, &m_CameraMtxUBO);
+		m_CameraMtxUBO = 0;
+	}
+	if (m_GPUMaterials) {
+		this->DeleteBuffers(1, &m_AllMaterialUBO);
+		m_GPUMaterials = 0;
+	}
 	if(m_FBO){
         glDeleteFramebuffers(1,(GLuint*)&m_FBO);
         m_FBO=0 ;
@@ -561,6 +581,12 @@ _bool RGP_CORE::GLRenderer::CreateNeededObjects(){
 	this->GenBuffers(1, &m_CameraMtxUBO);
 	this->BindBuffer(GL_UNIFORM_BUFFER, m_CameraMtxUBO);
 	this->setBufferData(GL_UNIFORM_BUFFER, 32 * sizeof(_float), NULL, GL_DYNAMIC_DRAW);
+	this->GenBuffers(1, &m_AllMaterialUBO);
+	this->BindBuffer(GL_UNIFORM_BUFFER, m_AllMaterialUBO);
+	this->setBufferData(GL_UNIFORM_BUFFER, MAXNUMAMTERIALS * sizeof(GPUMaterial), NULL, GL_DYNAMIC_DRAW);
+	this->BindBuffer(GL_UNIFORM_BUFFER, 0);
+
+
 
 	return true;
 };
@@ -765,7 +791,8 @@ _bool RGP_CORE::GLRenderer::CreateDefaultMaterial()
 	defaultMAaterial.SpecularMap->Pixels[2] = 120;
 	defaultMAaterial.SpecularMap->Pixels[3] = 0;
 
-	
+	this->CreateMaterial(defaultMAaterial);
+
 	return true;
 }
 ;
@@ -831,7 +858,22 @@ _bool RGP_CORE::GLRenderer::UpdateCameraMtxUBO()
 	this->setBufferSubData(GL_UNIFORM_BUFFER, 16 * sizeof(_float), 16 * sizeof(_float), m_SelectedScene->getCamera()->getProjectionMtx(), m_CameraMtxUBO);
 
 	return true;
-};
+}
+_bool RGP_CORE::GLRenderer::UpdateMaterialsUBO()
+{
+	_u32b chuncksize = 2 * sizeof(_float) + 3 * sizeof(_u64b);
+	/*for (_u32b i = 0; i < m_NumMaterials; ++i) {
+		
+		this->setBufferSubData(GL_UNIFORM_BUFFER, i*chuncksize											, sizeof(_u64b), &m_GPUMaterials[i].DiffuseBindless, m_AllMaterialUBO);
+		this->setBufferSubData(GL_UNIFORM_BUFFER, i*chuncksize + sizeof(_u64b)							, sizeof(_u64b), &m_GPUMaterials[i].SpecularBindless, m_AllMaterialUBO);
+		this->setBufferSubData(GL_UNIFORM_BUFFER, i*chuncksize + 2*sizeof(_u64b)						, sizeof(_u64b), &m_GPUMaterials[i].NormalBindless, m_AllMaterialUBO);
+		this->setBufferSubData(GL_UNIFORM_BUFFER, i*chuncksize + 3*sizeof(_u64b)						, sizeof(_float), &m_GPUMaterials[i].IOR, m_AllMaterialUBO);
+		this->setBufferSubData(GL_UNIFORM_BUFFER, i*chuncksize + 3 * sizeof(_u64b) + sizeof(_float)		, sizeof(_float), &m_GPUMaterials[i].Opacity, m_AllMaterialUBO);
+	}*/
+	this->setBufferSubData(GL_UNIFORM_BUFFER, 0, m_NumMaterials * sizeof(GPUMaterial), m_GPUMaterials, m_AllMaterialUBO);
+	return true;
+}
+;
 
 _bool RGP_CORE::GLRenderer::isInitialized(){ return m_isInitialized ;};
 RGP_CORE::RenderMode  RGP_CORE::GLRenderer::getRenderMode(){ return m_Mode ;};
@@ -1328,6 +1370,11 @@ _u32b RGP_CORE::GLRenderer::getCameratransformsUBO()
 	return m_CameraMtxUBO;
 }
 
+_u32b RGP_CORE::GLRenderer::getMaterialsUBO()
+{
+	return m_AllMaterialUBO;
+}
+
 _u32b RGP_CORE::GLRenderer::getCurrentShaderProgram()
 {
 	return m_CurrentShaderProgram;
@@ -1335,26 +1382,57 @@ _u32b RGP_CORE::GLRenderer::getCurrentShaderProgram()
 
 _bool RGP_CORE::GLRenderer::DoesSupportBindlessTexture()
 {
-	if(glfwExtensionSupported("GL_NV_bindless_texture")!= GLFW_TRUE)
+	if(glfwExtensionSupported("GL_ARB_bindless_texture")!= GLFW_TRUE)
 		return false;
 	return true;
+}
+
+void RGP_CORE::GLRenderer::printExtension()
+{
+	if (!exts_i) {
+		num_exts_i = 0;
+		glGetIntegerv(GL_NUM_EXTENSIONS, (GLint*)&num_exts_i);
+		if (num_exts_i > 0) {
+			exts_i = (_s8b **)malloc((size_t)num_exts_i * (sizeof *exts_i));
+		}
+
+		if (exts_i == NULL) {
+			return;
+		}
+
+		for (_u32b index = 0; index < num_exts_i; index++) {
+			const char *gl_str_tmp = (const char*)glGetStringi(GL_EXTENSIONS, index);
+			exts_i[index] = CreateStringCopy(gl_str_tmp);
+		}
+	}
+	for (_u32b index = 0; index < num_exts_i; ++index) {
+		printf("%s\n", exts_i[index]);
+	}
 }
 
 //TODO
 _u32b RGP_CORE::GLRenderer::CreateMaterial(Material material)
 {
-	OGLMaterial* tmp = NULL;
+	OGLMaterial* tmp1 = NULL;
+	GPUMaterial* tmp2 = NULL;
 	_u32b index = 0;
 	if (!(index=GetMaterialIndex(material.Name))) {
 		if (m_SizeofMaterialVector == m_NumMaterials) {
-			tmp = (OGLMaterial*)malloc((m_SizeofMaterialVector + 5) * sizeof(OGLMaterial));
-			if (!tmp)
+			
+			tmp1 = (OGLMaterial*)malloc((m_SizeofMaterialVector + 5) * sizeof(OGLMaterial));
+			tmp2 = (GPUMaterial*)malloc((m_SizeofMaterialVector + 5) * sizeof(GPUMaterial));
+
+			if (!tmp1 || !tmp2)
 				return 0;
+			
 			for (_u32b i = 0; i < m_NumMaterials; ++i) {
-				tmp[i] = m_Materials[i];
+				tmp1[i] = m_Materials[i];
+				tmp2[i] = m_GPUMaterials[i];
 			}
 			free(m_Materials);
-			m_Materials = tmp;
+			free(m_GPUMaterials);
+			m_Materials = tmp1;
+			m_GPUMaterials = tmp2;
 		}
 		//copy material data 
 		m_Materials[m_NumMaterials].Name = CreateStringCopy(material.Name);
@@ -1363,6 +1441,11 @@ _u32b RGP_CORE::GLRenderer::CreateMaterial(Material material)
 		m_Materials[m_NumMaterials].NormalsMap = 0;
 		m_Materials[m_NumMaterials].IOR = material.IOR;
 		m_Materials[m_NumMaterials].Opacity = material.Opacity;
+		m_GPUMaterials[m_NumMaterials].DiffuseBindless = 0;
+		m_GPUMaterials[m_NumMaterials].SpecularBindless = 0;
+		m_GPUMaterials[m_NumMaterials].NormalBindless = 0;
+		m_GPUMaterials[m_NumMaterials].IOR = material.IOR;
+		m_GPUMaterials[m_NumMaterials].Opacity = material.Opacity;
 
 
 		if (material.DiffuseMap && material.DiffuseMap->Pixels) {
@@ -1370,21 +1453,29 @@ _u32b RGP_CORE::GLRenderer::CreateMaterial(Material material)
 			this->BindTexture(m_Materials[m_NumMaterials].DiffuseMap);
 			this->SetImageData2D(material.DiffuseMap);
 			this->BindTexture(0);
+			m_GPUMaterials[m_NumMaterials].DiffuseBindless = this->GetTextureHandle(m_Materials[m_NumMaterials].DiffuseMap);
+			this->MakeTextureHandleResidant(m_GPUMaterials[m_NumMaterials].DiffuseBindless);
 		}
 		if (material.SpecularMap && material.SpecularMap->Pixels) {
 			this->GenTextures2D(1, &(m_Materials[m_NumMaterials].SpecularMap));
 			this->BindTexture(m_Materials[m_NumMaterials].SpecularMap);
 			this->SetImageData2D(material.SpecularMap);
 			this->BindTexture(0);
+			m_GPUMaterials[m_NumMaterials].SpecularBindless = this->GetTextureHandle(m_Materials[m_NumMaterials].SpecularMap);
+			this->MakeTextureHandleResidant(m_GPUMaterials[m_NumMaterials].SpecularBindless);
 		}
 		if (material.NormalsMap && material.NormalsMap->Pixels) {
 			this->GenTextures2D(1, &(m_Materials[m_NumMaterials].NormalsMap));
 			this->BindTexture(m_Materials[m_NumMaterials].NormalsMap);
 			this->SetImageData2D(material.NormalsMap);
 			this->BindTexture(0);
+			m_GPUMaterials[m_NumMaterials].NormalBindless = this->GetTextureHandle(m_Materials[m_NumMaterials].NormalsMap);
+			this->MakeTextureHandleResidant(m_GPUMaterials[m_NumMaterials].NormalBindless);
 		}
+		//TODO:: update material UBO
 
 		++m_NumMaterials;
+		this->UpdateMaterialsUBO();
 		return m_NumMaterials - 1;
 	}
 	else {
@@ -1432,6 +1523,7 @@ _bool RGP_CORE::GLRenderer::RemeoveMaterialAt(_u32b index)
 		m_Materials[i] = m_Materials[i + 1];
 	}
 	--m_NumMaterials;
+	this->UpdateMaterialsUBO();
 	return true;
 }
 
@@ -1456,6 +1548,11 @@ void RGP_CORE::GLRenderer::ClearMaterials()
 		m_Materials = NULL;
 		m_NumMaterials = 0;
 		m_SizeofMaterialVector = 0;
+	}
+	if (m_GPUMaterials) {
+		free(m_GPUMaterials);
+		free(m_GPUMaterials);
+		m_GPUMaterials = NULL;
 	}
 
 	if (defaultMAaterial.DiffuseMap) {
@@ -1483,6 +1580,11 @@ void RGP_CORE::GLRenderer::ClearMaterials()
 		defaultMAaterial.NormalsMap = NULL;
 	}
 
+}
+
+_u32b RGP_CORE::GLRenderer::getNumMetrials()
+{
+	return m_NumMaterials;
 }
 
 
@@ -1538,7 +1640,11 @@ void  RGP_CORE::GLRenderer::BindBuffer(_u32b Bindtype,_u32b BufferID ){
 }
 void RGP_CORE::GLRenderer::BindBufferBase(_u32b Target, _u32b index, _u32b BufferID)
 {
+	glGetError();
 	glBindBufferBase(Target, index, BufferID);
+	if (glGetError()) {
+		printf("NOPE");
+	}
 }
 ;
 
@@ -1686,21 +1792,34 @@ _bool RGP_CORE::GLRenderer::BindTexture(_u32b textureID, _u32b unit ,_bool Textu
 
 _u64b RGP_CORE::GLRenderer::GetTextureHandle(_u32b textureID)
 {
-	if (glGetTextureHandleARB(textureID) != NULL)
+	if (glGetTextureHandleARB(textureID))
 		return  glGetTextureHandleARB(textureID);
+	else if (glGetTextureHandleNV)
+		return glGetTextureHandleNV(textureID);
 	else
 		return 0;
 };
 void  RGP_CORE::GLRenderer::MakeTextureHandleResidant(_u64b texHandle,_bool makeResidant )
 {
-	if (glMakeTextureHandleResidentARB == NULL)
+	if (glMakeTextureHandleResidentARB) {
+		if (makeResidant) {
+			glMakeTextureHandleResidentARB(texHandle);
+		}
+		else {
+			glMakeTextureHandleNonResidentARB(texHandle);
+		}
 		return;
-	if (makeResidant) {
-		 glMakeTextureHandleResidentARB(texHandle);
 	}
-	else {
-		glMakeTextureHandleNonResidentARB(texHandle);
+	if (glMakeTextureHandleResidentNV) {
+		if (makeResidant) {
+			glMakeTextureHandleResidentNV(texHandle);
+		}
+		else {
+			glMakeTextureHandleNonResidentNV(texHandle);
+		}
+		return;
 	}
+	printf("make resident is not supported\n");
 	
 };
 
@@ -1791,7 +1910,21 @@ _bool   RGP_CORE::GLRenderer::SetUniformI(_s32b Location, _u32b data)
 {
 	glUniform1i(Location, data);
 	return true;
-};
+}
+_bool RGP_CORE::GLRenderer::SetUniform64I(_s32b Location, _u64b data)
+{
+	if (glUniform1ui64ARB) {
+		glUniform1ui64ARB(Location, data);
+		return true;
+	}
+	else if (glUniform1ui64NV) {
+		glUniform1ui64NV(Location, data);
+		return true;
+	}
+	printf("not supported func\n");
+	return true;
+}
+;
 _bool   RGP_CORE::GLRenderer::SetUniformFv(_s32b Location,_float* data,_u32b numElements )
 {
     glUniform1fv(Location,numElements,data);
@@ -1814,27 +1947,45 @@ _bool   RGP_CORE::GLRenderer::SetUniformSample(_s32b Location, _u32b TextureUnit
 };
 _bool	RGP_CORE::GLRenderer::SetUniformHandleu64(_s32b Location, _u64b Handle)
 {
-	if(glUniformHandleui64ARB == NULL)
-		return false;
-	glUniformHandleui64ARB(Location, Handle);
-	return true;
+	if (glUniformHandleui64ARB) {
+		glUniformHandleui64ARB(Location, Handle);
+		return true;
+	}
+	else if (glUniformHandleui64NV) {
+		glUniformHandleui64NV(Location, Handle);
+		return true;
+	}
+	return false;
 };
 _bool	RGP_CORE::GLRenderer::SetUniformHandleu64v(_s32b Location, _u32b Count, _u64b* Handle) 
 {
-	if (glUniformHandleui64ARB == NULL)
-		return false;
-	glUniformHandleui64vARB(Location, Count, Handle);
-	return true;
+	if (glUniformHandleui64vARB) {
+		glUniformHandleui64vARB(Location, Count,Handle);
+		return true;
+	}
+	else if (glUniformHandleui64vNV) {
+		glUniformHandleui64vNV(Location, Count ,Handle);
+		return true;
+	}
+	return false;
 };
 
 
-_bool   RGP_CORE::GLRenderer::SetVertexAttribPointer(_u32b Index,_u32b NumElemntsPerVertex,
+_bool   RGP_CORE::GLRenderer::SetVertexAttribPointerF(_u32b Index,_u32b NumElemntsPerVertex,
                                _u32b offsetBetweenElements,void* offsetFromFirst)
 {
     glVertexAttribPointer(Index,NumElemntsPerVertex,GL_FLOAT,GL_FALSE,offsetBetweenElements,offsetFromFirst);
      if(glGetError())
         return false ;
     return true ;
+};
+_bool   RGP_CORE::GLRenderer::SetVertexAttribPointerI(_u32b Index, _u32b NumElemntsPerVertex,
+	_u32b offsetBetweenElements, void* offsetFromFirst)
+{
+	glVertexAttribPointer(Index, NumElemntsPerVertex, GL_UNSIGNED_INT, GL_FALSE, offsetBetweenElements, offsetFromFirst);
+	if (glGetError())
+		return false;
+	return true;
 };
 _bool   RGP_CORE::GLRenderer::EnableVertexAttribArray(_u32b index){
     glEnableVertexAttribArray(index);
@@ -1849,10 +2000,10 @@ _bool   RGP_CORE::GLRenderer::DisableVertexAttribArray(_u32b index){
     return true ;
 };
 void    RGP_CORE::GLRenderer::SetShaderProgram(_u32b programID){
-	if (m_CurrentShaderProgram != programID) {
+	
 		m_CurrentShaderProgram = programID;
 		m_ShaderManager->BindProgram(programID);
-	}
+
 };
 
  

@@ -35,6 +35,7 @@ void RGP_LEVELBUILDER::LevelBuilder::StartLoop()
 {
 	if (!m_isInitilized)
 		return;
+	//m_RendererInstance->printExtension();
 	while (true) {
 		glfwPollEvents();
 		if (glfwWindowShouldClose(m_RendererInstance->getTarget()->getglfwWindow()))

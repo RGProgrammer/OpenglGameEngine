@@ -1,4 +1,4 @@
-#version 450 
+#version 430 
 
 uniform sampler2D Specular ;
 uniform sampler2D Diffuse1 ;
@@ -26,5 +26,4 @@ void main(){
 		shadowcolor=texture2D(Shadow,texcoord0).rgb;
 	}
 	gl_FragColor=vec4((DiffuseColor+SpecularColor)*shadowcolor ,1.0);
-	//gl_FragColor=vec4(DiffuseColor1.rgb,1.0);
 }

@@ -58,12 +58,12 @@ namespace RGP_ANIMATOR {
 		_u32b			m_SelectedAnimation;
 		_u32b			m_Size;
 		_u32b			m_BoneRenderingShader;
-		GLuint			m_BonesVBO;
-		GLuint			m_BonesVAO;
+		_u32b			m_BonesVBO;
+		_u32b			m_BonesVAO;
 
 		_u32b			m_WeighMappingShader;
-		GLuint			m_WeighMappingModeVAO;
-		GLuint			m_WeighMappingVBO;
+		_u32b			m_WeighMappingModeVAO;
+		_u32b			m_WeighMappingVBO;
 
 		_u8b			m_Mode;//0 solid , 1 weighmap
 

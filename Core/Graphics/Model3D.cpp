@@ -20,11 +20,11 @@ RGP_CORE::Model3D::Model3D(Vertex3d Pos, const _s8b* name): Model3D(Pos,{0.0f,0.
 };
 RGP_CORE::Model3D::Model3D(Vertex3d Pos, Vertex3d Dir, Vertex3d Up, const _s8b* name): Renderable(Pos,Dir, Up,name),
 															m_NumMeshes(0), m_Meshes(NULL),
-															m_Buffer { {0,0,0,0,0,0},0,0,0,0 },
+															m_Buffer { {0,0,0,0,0,0},0,0 },
 															m_ReflectionProbe(NULL),
 															m_Materials(NULL),m_NumMaterials(0),
 															m_FileDirectory(NULL),m_ShaderProgram(0), 
-															m_MaterialsWrappers(NULL),m_MaterialUBO(0),
+															m_MaterialsWrappers(NULL),
 															m_RenderingVAO(0),m_RenderingCommandsBuffer(0), m_DrawCommands(NULL),
 															m_ClearAfterLoad(true), m_WorldMtxLocation(-1)
 {
@@ -59,11 +59,11 @@ void RGP_CORE::Model3D::Destroy(){
 void RGP_CORE::Model3D::DestroyBuffers()
 {
 	
-	m_GLRenderer->DeleteBuffers(5, m_Buffer.Wrappers);
+	m_GLRenderer->DeleteBuffers(6, m_Buffer.Wrappers);
 	if (m_Buffer.VertexArrayObject) {
 		m_GLRenderer->DeleteVertexArrays(1, &(m_Buffer.VertexArrayObject));
 	}
-	m_Buffer = { {0,0,0,0,0,0},0,0,0,0 };
+	m_Buffer = { {0,0,0,0,0,0},0,0 };
 	
 };
 void RGP_CORE::Model3D::ClearModelLoadedData()
@@ -127,6 +127,7 @@ void RGP_CORE::Model3D::ClearModelLoadedData()
 				free(m_Meshes[i].TexCoords);
 				m_Meshes[i].TexCoords = NULL;
 			}
+			
 		}
 		free(m_Meshes);
 		m_Meshes = NULL;
@@ -138,7 +139,11 @@ void RGP_CORE::Model3D::ClearModelLoadedData()
 _s16b RGP_CORE::Model3D::LoadModelFromFile(char* filename, _bool ClearDataAfterLoad ){
 	if(!m_GLRenderer)
         return 0 ;
-	const aiScene* Scene = aiImportFile(filename, aiProcessPreset_TargetRealtime_Quality |aiProcess_FlipUVs );
+	if (!filename) {
+		printf("no valide model filename provided\n");
+		return 0;
+	}
+	const aiScene* Scene = aiImportFile(filename, aiProcessPreset_TargetRealtime_Quality  );
 	//if failed
 	if(!Scene){
         printf("error loading file\n");
@@ -216,25 +221,25 @@ _s16b   RGP_CORE::Model3D::InitVAOs(){
 	m_GLRenderer->BindVertexArray(m_Buffer.VertexArrayObject);
 
 	m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER, m_Buffer.Wrappers[0]);
-	m_GLRenderer->SetVertexAttribPointer(0, 3);
+	m_GLRenderer->SetVertexAttribPointerF(0, 3);
 	m_GLRenderer->EnableVertexAttribArray(0);
 
 	m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER, m_Buffer.Wrappers[1]);
-	m_GLRenderer->SetVertexAttribPointer(1, 3);
+	m_GLRenderer->SetVertexAttribPointerF(1, 3);
 	m_GLRenderer->EnableVertexAttribArray(1);
 
 	m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER, m_Buffer.Wrappers[2]);
-	m_GLRenderer->SetVertexAttribPointer(2, 2);
+	m_GLRenderer->SetVertexAttribPointerF(2, 2);
 	m_GLRenderer->EnableVertexAttribArray(2);
 
 
 	m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER, m_Buffer.Wrappers[3]);
-	m_GLRenderer->SetVertexAttribPointer(3, 3);
+	m_GLRenderer->SetVertexAttribPointerF(3, 3);
 	m_GLRenderer->EnableVertexAttribArray(3);
 
 
 	m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER, m_Buffer.Wrappers[4]);
-	m_GLRenderer->SetVertexAttribPointer(4, 3);
+	m_GLRenderer->SetVertexAttribPointerF(4, 3);
 	m_GLRenderer->EnableVertexAttribArray(4);
 
 	m_GLRenderer->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Buffer.Wrappers[5]);
@@ -250,14 +255,14 @@ _s16b   RGP_CORE::Model3D::InitVAOs(){
 
 void RGP_CORE::Model3D::Render(Camera* Selected){
     if(isVisible() && Selected && m_GLRenderer && m_GLRenderer->isInitialized() ){
+		_s32b location = -1;
+		_s8b shaderVariableString[100];
         ///new rendering code here using the high level opengl interface(m_GLRenderer)
         //set the program to use
 		if (m_GLRenderer->getCurrentShaderProgram() != m_ShaderProgram) {
 
 			m_GLRenderer->SetShaderProgram(m_ShaderProgram);
-			m_GLRenderer->BindBufferBase(GL_UNIFORM_BUFFER, 1, m_GLRenderer->getCameratransformsUBO());
-			if(m_GLRenderer->DoesSupportBindlessTexture())
-				m_GLRenderer->BindBufferBase(GL_UNIFORM_BUFFER, 2, m_MaterialUBO);
+			m_GLRenderer->BindBufferBase(GL_UNIFORM_BUFFER, 0, m_GLRenderer->getCameratransformsUBO());
 		}
 		m_GLRenderer->SetUniformvMtx(m_WorldMtxLocation, this->getTransMtx());
 		//TODO :providing attached reflection probe to the shader program
@@ -265,27 +270,36 @@ void RGP_CORE::Model3D::Render(Camera* Selected){
 		
 		m_GLRenderer->BindVertexArray(m_Buffer.VertexArrayObject);
 		m_GLRenderer->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Buffer.Wrappers[5]);
-		if (m_GLRenderer->DoesSupportBindlessTexture()) {
-			m_GLRenderer->BindBuffer(GL_DRAW_INDIRECT_BUFFER, m_RenderingCommandsBuffer);//Bind MultiDraw Indirect Buffer
-			//Draw Command
-			m_GLRenderer->MultiDrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, 0, m_NumMeshes);
-		}
-		else {
 			m_GLRenderer->BindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
 			for (_u32b i = 0; i < m_NumMeshes; ++i) {
-				_s32b location = -1;
-				location = m_GLRenderer->GetUniformLocation(m_ShaderProgram, "DiffuseMap");
-				m_GLRenderer->BindTexture(m_GLRenderer->GetMaterial(m_DrawCommands[i].baseInstance)->DiffuseMap,0);
-				m_GLRenderer->SetUniformSample(location, 0);
 
-				location = m_GLRenderer->GetUniformLocation(m_ShaderProgram, "SpecularMap");
-				m_GLRenderer->BindTexture(m_GLRenderer->GetMaterial(m_DrawCommands[i].baseInstance)->SpecularMap, 1);
-				m_GLRenderer->SetUniformSample(location, 1);
+				if (m_GLRenderer->DoesSupportBindlessTexture())
+				{
+					location = m_GLRenderer->GetUniformLocation(m_ShaderProgram, "DiffuseMap");
+					m_GLRenderer->SetUniformHandleu64(location, m_GLRenderer->GetTextureHandle(m_GLRenderer->GetMaterial(m_DrawCommands[i].baseInstance)->DiffuseMap));
 
-				location = m_GLRenderer->GetUniformLocation(m_ShaderProgram, "NormalMap");
-				m_GLRenderer->BindTexture(m_GLRenderer->GetMaterial(m_DrawCommands[i].baseInstance)->NormalsMap, 2);
-				m_GLRenderer->SetUniformSample(location, 2);
+					location = m_GLRenderer->GetUniformLocation(m_ShaderProgram, "SpecularMap");
+					m_GLRenderer->SetUniformHandleu64(location, m_GLRenderer->GetTextureHandle(m_GLRenderer->GetMaterial(m_DrawCommands[i].baseInstance)->SpecularMap));
 
+					location = m_GLRenderer->GetUniformLocation(m_ShaderProgram, "NormalMap");
+					m_GLRenderer->SetUniformHandleu64(location, m_GLRenderer->GetTextureHandle(m_GLRenderer->GetMaterial(m_DrawCommands[i].baseInstance)->NormalsMap));
+
+				}
+				else {
+					location = m_GLRenderer->GetUniformLocation(m_ShaderProgram, "DiffuseMap");
+					m_GLRenderer->BindTexture(m_GLRenderer->GetMaterial(m_DrawCommands[i].baseInstance)->DiffuseMap,0);
+					m_GLRenderer->SetUniformSample(location, 0);
+					
+
+					location = m_GLRenderer->GetUniformLocation(m_ShaderProgram, "SpecularMap");
+					m_GLRenderer->BindTexture(m_GLRenderer->GetMaterial(m_DrawCommands[i].baseInstance)->SpecularMap, 1);
+					m_GLRenderer->SetUniformSample(location, 1);
+					
+					location = m_GLRenderer->GetUniformLocation(m_ShaderProgram, "NormalMap");
+					m_GLRenderer->BindTexture(m_GLRenderer->GetMaterial(m_DrawCommands[i].baseInstance)->NormalsMap, 2);
+					m_GLRenderer->SetUniformSample(location, 2);
+					
+				}
 				location = m_GLRenderer->GetUniformLocation(m_ShaderProgram, "IOR");
 				m_GLRenderer->SetUniformF(location, m_GLRenderer->GetMaterial(m_DrawCommands[i].baseInstance)->IOR);
 
@@ -294,7 +308,6 @@ void RGP_CORE::Model3D::Render(Camera* Selected){
 				
 				m_GLRenderer->DrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, &m_DrawCommands[i]);
 			}
-		}
 		m_GLRenderer->BindVertexArray(0);
 		m_GLRenderer->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 		m_GLRenderer->BindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
@@ -467,21 +480,25 @@ _u16b RGP_CORE::Model3D::CopyTextureCoords(aiVector3D** TexCoords, _u32b nbTexCo
     if(TexCoords && nbTexCoords> 0){
         if(!TexCoords[0]){
             m_Meshes[m_NumMeshes-1].TexCoords=(_float*)malloc(nbTexCoords*2*sizeof(_float));
-            if(!(m_Meshes[m_NumMeshes-1].TexCoords))
+		
+            if(!(m_Meshes[m_NumMeshes-1].TexCoords) )
                 return 0;
             for(_u32b i=0 ; i<nbTexCoords;i++){
                 m_Meshes[m_NumMeshes-1].TexCoords[i*2  ]= 0.0f;
                 m_Meshes[m_NumMeshes-1].TexCoords[i*2+1]= 0.0f;
+				
             }
             return 1 ;
         }else{
             m_Meshes[m_NumMeshes-1].TexCoords =(_float*)malloc(nbTexCoords*2*sizeof(_float));
+			
             if(!(m_Meshes[m_NumMeshes-1].TexCoords))
                 return 0;
 
             for(_u32b i=0 ; i<nbTexCoords;i++){
                 m_Meshes[m_NumMeshes-1].TexCoords[i*2  ]= TexCoords[0][i].x;
                 m_Meshes[m_NumMeshes-1].TexCoords[i*2+1]= TexCoords[0][i].y;
+				
             }
             return 1 ;
         }
@@ -514,6 +531,8 @@ _u16b RGP_CORE::Model3D::LoadMaterialstoMemory(const aiScene* Scene){
 		aiGetMaterialString(Scene->mMaterials[i],AI_MATKEY_NAME,&materialname);
 		aiGetMaterialFloat(Scene->mMaterials[i],AI_MATKEY_REFRACTI,&(m_Materials[i].IOR));
 		aiGetMaterialFloat(Scene->mMaterials[i], AI_MATKEY_OPACITY, &(m_Materials[i].Opacity));
+		//m_Materials[i].IOR = 1.0f;
+		//m_Materials[i].Opacity = 1.0f;
         hasDiffusemap=false;
 		hasNormalmap = false;
 		hasSpecularmap = false;
@@ -653,6 +672,7 @@ _u16b RGP_CORE::Model3D::GenerateVerticesBuffers()
 	m_GLRenderer->setBufferData(GL_ARRAY_BUFFER, numVertices * 3 * sizeof(_float), NULL, GL_DYNAMIC_DRAW);
 	m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER, m_Buffer.Wrappers[4]);
 	m_GLRenderer->setBufferData(GL_ARRAY_BUFFER, numVertices * 3 * sizeof(_float), NULL, GL_DYNAMIC_DRAW);
+
 	m_GLRenderer->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Buffer.Wrappers[5]);
 	m_GLRenderer->setBufferData(GL_ELEMENT_ARRAY_BUFFER, numFaces * 3 * sizeof(_u32b), NULL, GL_DYNAMIC_DRAW);
 
@@ -686,7 +706,6 @@ _u16b RGP_CORE::Model3D::GenerateCommandBuffer()
 ;
 _u16b RGP_CORE::Model3D::FillBuffers()
 {
-	//TODO
 	_u32b numVertices = 0;
 	_u32b numfaces = 0;
 	m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER, m_Buffer.Wrappers[0]);
@@ -723,6 +742,7 @@ _u16b RGP_CORE::Model3D::FillBuffers()
 		numVertices += m_Meshes[i].nbVertices;
 		
 	}
+
 
 	m_GLRenderer->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Buffer.Wrappers[5]);
 	for (_u32b i = 0; i < m_NumMeshes; ++i) {

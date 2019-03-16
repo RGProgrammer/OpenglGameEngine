@@ -20,7 +20,7 @@
 #include <string.h>
 
 
-
+#define MAXNUMAMTERIALS 100
 
 namespace RGP_CORE{
 
@@ -44,20 +44,28 @@ namespace RGP_CORE{
 
 	typedef struct {
 		_s8b*			Name;
-		//TODO : replace these 3 field with a vector contains more maps 
-        _u32b          DiffuseMap;
+        _u32b			DiffuseMap;
 		_u32b			SpecularMap;
 		_u32b			NormalsMap;
 		_float			IOR;
 		_float			Opacity;
 	} OGLMaterial ;
 
+	typedef struct {
+		
+		_u64b			DiffuseBindless;
+		_u64b			SpecularBindless;
+		_u64b			NormalBindless;
+		_float			IOR;
+		_float			Opacity;
+		
+		
+	} GPUMaterial;
+
     ///mesh structure for openGL
 	typedef struct {
-		_u32b			Wrappers[6];
+		_u32b			Wrappers[7];
 		_u32b			VertexArrayObject ;
-		_u32b			TexturesUBO;//TODO
-		_u32b			AppliedMaterialIndex;
 		_u32b			numFaces;
     } MeshBuffers ;
 
@@ -173,15 +181,19 @@ namespace RGP_CORE{
 		void	UpdateEnvironmentMaps();
 		void	SwitchNoLightMode();
 		_u32b	getCameratransformsUBO();
+		_u32b   getMaterialsUBO();
 		_u32b	getCurrentShaderProgram();
 		_bool	DoesSupportBindlessTexture();
+		void	printExtension();
+
 		//todo material
 		_u32b			CreateMaterial(Material material); //return material index (>=1)
 		_u32b			GetMaterialIndex(const _s8b* Name);
 		OGLMaterial*	GetMaterial(_u32b index);
 		_bool			RemoveMaterial(const _s8b* materialname);
 		_bool			RemeoveMaterialAt(_u32b index);
-		void			ClearMaterials();// remove all created materials 
+		void			ClearMaterials();// remove all created materials
+		_u32b			getNumMetrials();
 
 		//this is for testing
 		_u32b	getLastFrameTexture();
@@ -237,11 +249,14 @@ namespace RGP_CORE{
         _bool   SetUniformF(_s32b Location,_float data );
 		_bool   SetUniform3F(_s32b Location, _float data1, _float data2, _float data3);
 		_bool   SetUniformI(_s32b Location, _u32b data);
+		_bool	SetUniform64I(_s32b Location, _u64b data);
         _bool   SetUniformFv(_s32b Location,_float* data ,_u32b numElements );
         _bool   SetUniformvMtx(_s32b Location,_float* Matrix_4x4 );
         _bool   SetUniformSample(_s32b Location, _u32b TextureUnit);
-        _bool   SetVertexAttribPointer(_u32b Index,_u32b NumElemntsPerVertex,
+        _bool   SetVertexAttribPointerF(_u32b Index,_u32b NumElemntsPerVertex,
                                             _u32b offsetBetweenElements=0,void* offsetFromFirst=0);
+		_bool   SetVertexAttribPointerI(_u32b Index, _u32b NumElemntsPerVertex,
+											_u32b offsetBetweenElements = 0, void* offsetFromFirst = 0);
 		_bool	SetUniformHandleu64(_s32b Location, _u64b Handle);
 		_bool	SetUniformHandleu64v(_s32b Location, _u32b Count , _u64b* Handle);
         _bool   EnableVertexAttribArray(_u32b index);
@@ -256,6 +271,8 @@ namespace RGP_CORE{
 		_bool	CreateDefaultMaterial();
         _bool   InitFinalPhase();
 		_bool   UpdateCameraMtxUBO(); //TODO
+	public:
+		_bool   UpdateMaterialsUBO();
 
 		
         
@@ -294,8 +311,8 @@ namespace RGP_CORE{
 		_u32b						m_ShadowAccumTexture;
 		_bool						m_noLightMode;
 		
-		_u32b						m_MaterialBoundUBO;
 		OGLMaterial*				m_Materials; //all the needed materials will be stored here (not in the scene actors);
+		GPUMaterial*				m_GPUMaterials;
 		_u32b						m_NumMaterials;
 		_u32b						m_SizeofMaterialVector;
 
@@ -303,6 +320,10 @@ namespace RGP_CORE{
 		_u32b						m_CurrentShaderProgram;
 		_u32b						m_AllMaterialUBO;
 		_u32b						m_CameraMtxUBO;//TODO
+
+
+		_u32b						num_exts_i;
+		_s8b**						exts_i;
 		
 		
     };

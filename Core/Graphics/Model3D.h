@@ -70,7 +70,6 @@ namespace RGP_CORE {
 		Material*               m_Materials;
 		_u32b                   m_NumMaterials;
 		_u32b*					m_MaterialsWrappers;
-		_u32b					m_MaterialUBO;
 		_u32b				    m_ShaderProgram;
 		_u32b					m_RenderingVAO;
 		_u32b					m_RenderingCommandsBuffer;
