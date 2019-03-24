@@ -8,7 +8,7 @@ layout(location=3) in vec3 Tangent ;
 layout(location=4) in vec3 Bitangent ;
 
 
-layout(std140, binding=0) uniform TransformsMtx {
+layout(std140, binding=1) uniform TransformsMtx {
 	mat4 ViewMtx;
 	mat4 ProjMtx ;
 };

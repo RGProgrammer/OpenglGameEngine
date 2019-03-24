@@ -35,7 +35,7 @@ RGP_ANIMATOR::AnimatedModel*	RGP_ANIMATOR::AnimatedModel::CreateFromFile(GLRende
 		return 0;
 	}
 	// We're done. Release all resources associated with this import
-	if (!am->GenerateBuffers()) {
+	if (!am->GenerateVerticesBuffers()) {
 		printf("could not generate vertices buffers \n");
 		return 0;
 	}
@@ -388,7 +388,7 @@ _bool		RGP_ANIMATOR::AnimatedModel::Init(GLRenderer* renderer, _s8b* modelfilena
 	m_GLRenderer->GenBuffers(1,&(m_BonesVBO));
 	m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER, m_BonesVBO);
 	m_GLRenderer->setBufferData(GL_ARRAY_BUFFER, MAX_NUM_BONES * 3 * sizeof(_float), NULL, GL_DYNAMIC_DRAW);
-	m_GLRenderer->SetVertexAttribPointer(0, 3, 0, 0);
+	m_GLRenderer->SetVertexAttribPointerF(0, 3);
 	m_GLRenderer->EnableVertexAttribArray(0);
 
 	m_GLRenderer->BindVertexArray(m_BonesVAO);

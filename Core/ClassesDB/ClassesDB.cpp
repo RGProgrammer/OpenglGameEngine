@@ -22,7 +22,7 @@ void RGP_CORE::Class_DB::Clear()
 	}
 };
 
-_bool RGP_CORE::Class_DB::addClass(const _s8b* classname,void*(*createmethod)(void** args),_u32b numArgs)
+_bool RGP_CORE::Class_DB::addClass(const _s8b* classname,void*(*createmethod)(void** args))
 {
 	if (find(classname)) {
 		return false ;
@@ -39,7 +39,6 @@ _bool RGP_CORE::Class_DB::addClass(const _s8b* classname,void*(*createmethod)(vo
 	m_Classes = tmp;
 	m_numClasses = ++num;
 	m_Classes[num - 1].createInstanceMethod = createmethod;
-	m_Classes[num - 1].creatmethodNumArgs = numArgs;
 	m_Classes[num - 1].currentclassname = CreateStringCopy((_s8b*)classname);
 	m_Classes[num - 1].numMethods = 0;
 	m_Classes[num - 1].ptrMethods = NULL;

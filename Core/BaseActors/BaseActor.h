@@ -55,7 +55,7 @@ namespace RGP_CORE {
 		void UpdateTransMtx();
 
 		_u32b						m_ID ;
-		_s8b						m_Name[20];
+		_s8b*						m_Name;
 		Vertex3d 					m_Position;
 		Vertex3d					m_Direction;
 		Vertex3d					m_Up;

@@ -370,12 +370,6 @@ RGP_CORE::GLShaderProgramsManager::ShaderProgram*
 };
 
 
-_u32b	RGP_CORE::GLRenderer::getLastFrameTexture()
-{
-	//TODO
-	return 0;
-};
-
 
 
 RGP_CORE::GLRenderer::GLRenderer(RenderMode Type):m_Target(NULL),
@@ -409,7 +403,11 @@ RGP_CORE::GLRenderer::GLRenderer(RenderMode Type):m_Target(NULL),
 											m_CurrentShaderProgram(0),
 											m_AllMaterialUBO(0),
 											m_CameraMtxUBO(0),
+											m_LightDataUBO(0),
+											m_NumRegisteredLights(0),
 			
+											m_Timer(),
+											m_Time(0.0),
 											num_exts_i(0),
 											exts_i(NULL)
 											
@@ -446,6 +444,10 @@ void RGP_CORE::GLRenderer::Destroy(){
 		this->DeleteBuffers(1, &m_CameraMtxUBO);
 		m_CameraMtxUBO = 0;
 	}
+	if (m_LightDataUBO) {
+		this->DeleteBuffers(1, &m_LightDataUBO);
+		m_LightDataUBO = 0;
+	}
 	if (m_GPUMaterials) {
 		this->DeleteBuffers(1, &m_AllMaterialUBO);
 		m_GPUMaterials = 0;
@@ -455,7 +457,7 @@ void RGP_CORE::GLRenderer::Destroy(){
         m_FBO=0 ;
     }
     if(m_AttachmentTextures){
-         glDeleteTextures(8, (GLuint*)m_AttachmentTextures);
+         glDeleteTextures(7, (GLuint*)m_AttachmentTextures);
         free(m_AttachmentTextures);
         m_AttachmentTextures=NULL ;
     }
@@ -558,7 +560,7 @@ _bool RGP_CORE::GLRenderer::InitRenderer(gfxConfig Config){
         printf("error Creating FBOs and Render Textures\n");
         return false ;
      }
-	 //TODO : Create default Material
+
 	 this->CreateDefaultMaterial();
 
    //final step to initialize the renderer
@@ -569,6 +571,7 @@ _bool RGP_CORE::GLRenderer::InitRenderer(gfxConfig Config){
     //init rendering thread 
 	
     m_isInitialized=true ;
+	m_Timer.Reset();
     return true ;
 };
 _bool RGP_CORE::GLRenderer::CreateNeededObjects(){
@@ -584,6 +587,9 @@ _bool RGP_CORE::GLRenderer::CreateNeededObjects(){
 	this->GenBuffers(1, &m_AllMaterialUBO);
 	this->BindBuffer(GL_UNIFORM_BUFFER, m_AllMaterialUBO);
 	this->setBufferData(GL_UNIFORM_BUFFER, MAXNUMAMTERIALS * sizeof(GPUMaterial), NULL, GL_DYNAMIC_DRAW);
+	this->GenBuffers(1, &m_LightDataUBO);
+	this->BindBuffer(GL_UNIFORM_BUFFER, m_LightDataUBO);
+	this->setBufferData(GL_UNIFORM_BUFFER, MAXNUMLIGHTSOURCES*25 * sizeof(_float), NULL, GL_DYNAMIC_DRAW);
 	this->BindBuffer(GL_UNIFORM_BUFFER, 0);
 
 
@@ -595,16 +601,16 @@ _bool	RGP_CORE::GLRenderer::CreateColorsObjects()
 {
 	int error;
 	//generating textures(Diffuse1,Diffuse2,Specular+Roughness(RGBA),Normal,Depth+Stencil,Material ID,position,trancprency)==>8maps;
-	m_AttachmentTextures = (_u32b*)malloc(8 * sizeof(_u32b));
+	m_AttachmentTextures = (_u32b*)malloc(7 * sizeof(_u32b));
 	if (!m_AttachmentTextures) {
 			printf("error allocation \n");
 			return false;
 	}
-	for (_s16b k = 0; k<8; ++k) {
+	for (_s16b k = 0; k<7; ++k) {
 		m_AttachmentTextures[k] = 0;
 	}
 	glGetError();// emptying the error log
-	glGenTextures(8, (GLuint*)m_AttachmentTextures);
+	glGenTextures(7, (GLuint*)m_AttachmentTextures);
 	if (error = glGetError())
 		printf("error generating textures for GBbuffer\n");
 	//Depth texture+stencil
@@ -620,7 +626,7 @@ _bool	RGP_CORE::GLRenderer::CreateColorsObjects()
 			0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 
 		///THE OTHER TEXTURES
-	for (_s16b k = 1; k<8; ++k) {
+	for (_s16b k = 1; k<7; ++k) {
 			glBindTexture(GL_TEXTURE_2D, m_AttachmentTextures[k]);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -653,13 +659,12 @@ _bool RGP_CORE::GLRenderer::AttachColorsTextures() {
 	if (error = glGetError()) {
 		printf("error binding framebuffer = %u error %d\n", m_FBO, error);
 	}
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_AttachmentTextures[DIFFUSE_TEXTURE1], 0);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, m_AttachmentTextures[DIFFUSE_TEXTURE2], 0);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, m_AttachmentTextures[SPECULAR_TEXTURE], 0);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, m_AttachmentTextures[NORMAL_TEXTURE], 0);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT4, GL_TEXTURE_2D, m_AttachmentTextures[MATERIAL_TEXTURE], 0);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT5, GL_TEXTURE_2D, m_AttachmentTextures[POSITION_TEXTURE], 0);
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT6, GL_TEXTURE_2D, m_AttachmentTextures[TRANSPARENCY_TEXTURE], 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_AttachmentTextures[DIFFUSE_TEXTURE], 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT1, GL_TEXTURE_2D, m_AttachmentTextures[SPECULAR_TEXTURE], 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT2, GL_TEXTURE_2D, m_AttachmentTextures[NORMAL_TEXTURE], 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT3, GL_TEXTURE_2D, m_AttachmentTextures[MATERIAL_TEXTURE], 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT4, GL_TEXTURE_2D, m_AttachmentTextures[POSITION_TEXTURE], 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT5, GL_TEXTURE_2D, m_AttachmentTextures[TRANSPARENCY_TEXTURE], 0);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_AttachmentTextures[DEPTH_TEXTURE], 0);
 	error = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 	if (GL_FRAMEBUFFER_COMPLETE != error) {
@@ -859,17 +864,28 @@ _bool RGP_CORE::GLRenderer::UpdateCameraMtxUBO()
 
 	return true;
 }
+_bool RGP_CORE::GLRenderer::UpdateLightDataUBO()
+{
+	_u32b light = 0;
+	_u32b lightdatasize = 28 * sizeof(_float);
+	LightSource* source = NULL;
+	_float data[3] = { 0.0f,0.0f,0.0f };
+	this->BindBuffer(GL_UNIFORM_BUFFER,m_LightDataUBO);
+	for (_u32b i = 0; i < m_SelectedScene->getNumActors(); ++i) {
+		if (m_SelectedScene->getActor(i)->getID() & LIGHTSOURCE) {
+			source = dynamic_cast<LightSource*>(m_SelectedScene->getActor(i));
+			this->setBufferSubData(GL_UNIFORM_BUFFER, light*lightdatasize                       , 16 * sizeof(_float), source->getTransMtx());
+			this->setBufferSubData(GL_UNIFORM_BUFFER, light*lightdatasize+ 16 * sizeof(_float)  , 3 * sizeof(_float),(void*) source->getLightDiffuseColor());
+			this->setBufferSubData(GL_UNIFORM_BUFFER, light*lightdatasize+ 20 * sizeof(_float)  , 3 * sizeof(_float),(void*) source->getLightSpecularColor());
+			data[0] = source->getLightDistance(); data[1] = source->getLightCutoffAngle(); data[2] = source->getLightShiness();
+			this->setBufferSubData(GL_UNIFORM_BUFFER, light*lightdatasize + 24 * sizeof(_float) , 3 * sizeof(_float),data );
+			++light;
+		}
+	}
+	return true;
+}
 _bool RGP_CORE::GLRenderer::UpdateMaterialsUBO()
 {
-	_u32b chuncksize = 2 * sizeof(_float) + 3 * sizeof(_u64b);
-	/*for (_u32b i = 0; i < m_NumMaterials; ++i) {
-		
-		this->setBufferSubData(GL_UNIFORM_BUFFER, i*chuncksize											, sizeof(_u64b), &m_GPUMaterials[i].DiffuseBindless, m_AllMaterialUBO);
-		this->setBufferSubData(GL_UNIFORM_BUFFER, i*chuncksize + sizeof(_u64b)							, sizeof(_u64b), &m_GPUMaterials[i].SpecularBindless, m_AllMaterialUBO);
-		this->setBufferSubData(GL_UNIFORM_BUFFER, i*chuncksize + 2*sizeof(_u64b)						, sizeof(_u64b), &m_GPUMaterials[i].NormalBindless, m_AllMaterialUBO);
-		this->setBufferSubData(GL_UNIFORM_BUFFER, i*chuncksize + 3*sizeof(_u64b)						, sizeof(_float), &m_GPUMaterials[i].IOR, m_AllMaterialUBO);
-		this->setBufferSubData(GL_UNIFORM_BUFFER, i*chuncksize + 3 * sizeof(_u64b) + sizeof(_float)		, sizeof(_float), &m_GPUMaterials[i].Opacity, m_AllMaterialUBO);
-	}*/
 	this->setBufferSubData(GL_UNIFORM_BUFFER, 0, m_NumMaterials * sizeof(GPUMaterial), m_GPUMaterials, m_AllMaterialUBO);
 	return true;
 }
@@ -898,6 +914,7 @@ _bool RGP_CORE::GLRenderer::reRegisterLightSources()
 	_u32b* tmp = NULL;
 	LightSource* Source = NULL;
 	int error;
+	m_NumRegisteredLights = 0;
 	if (m_SelectedScene) {
 		//determine how many shadow map needed
 		
@@ -907,6 +924,7 @@ _bool RGP_CORE::GLRenderer::reRegisterLightSources()
 				Source = dynamic_cast<LightSource*>(m_SelectedScene->getActor(i));
 				if (Source->getLightCutoffAngle() < 0.0)
 					NumShadowmaps += 5;
+				++m_NumRegisteredLights;
 			}
 		}
 
@@ -957,21 +975,22 @@ _bool RGP_CORE::GLRenderer::reRegisterLightSources()
 		}
 		m_NumShadowFBOs = NumShadowmaps;
 	}
+	this->UpdateLightDataUBO();
 	return true;
 }
 
 void	RGP_CORE::GLRenderer::RenderScene(_u32b FBO_Target,Camera* camera)
 {
 
-	//RENDER SCENE Colors to the SelectedFBO
-	this->RenderSceneColors(m_FBO,camera);
-	if (!m_noLightMode) {
-		////if should draw shadows
-		if (m_Config.EnableShadows == true) {
-			this->RenderSceneShadows(m_ShadowAccumBuffer, camera);
+		//RENDER SCENE Colors to the SelectedFBO
+		this->RenderSceneColors(m_FBO, camera);
+		if (!m_noLightMode) {
+			////if should draw shadows
+			if (m_Config.EnableShadows == true) {
+				this->RenderSceneShadows(m_ShadowAccumBuffer, camera);
+			}
+			this->RenderSceneLightAccum();
 		}
-		this->RenderSceneLightAccum();
-	}
 	///combine results and render to the screen ;
 	this->RenderToTarget(FBO_Target);
 };
@@ -1018,23 +1037,14 @@ void RGP_CORE::GLRenderer::RenderSceneColors(_u32b FBO,Camera *camera)
 		glCullFace(GL_BACK);
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_TEXTURE);
-		//glDisable(GL_BLEND);
-		//glEnable(GL_BLEND);
-		//glBlendEquation(GL_FUNC_ADD);
-		//glBlendFunci(0, GL_ONE, GL_ZERO);
-		//glBlendFunci(1, GL_ONE, GL_ONE);
-		//glBlendFunci(2, GL_ONE, GL_ZERO);
-		//glBlendFunci(3, GL_ONE, GL_ZERO);
-		//glBlendFunci(4, GL_ONE, GL_ZERO);
-		//glBlendFunci(5, GL_ONE, GL_ZERO);
-		//glBlendFunci(6, GL_ONE, GL_SRC_COLOR);
 		///glClear attachements
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		_float Ones[4] = { 1.0f,1.0f,1.0f,1.0f };
 		_float Zeros[4] = { 0.0f,0.0f,0.0f,0.0f };
 		glClearBufferfv(GL_COLOR, 0, Zeros);
 		glClearBufferfv(GL_COLOR, 1, Zeros);
-		glClearBufferfv(GL_COLOR, 6, Ones);
+		glClearBufferfv(GL_COLOR, 3, Zeros);
+		glClearBufferfv(GL_COLOR, 5, Ones);
 		///start searching for renderable objects and rendering
 		for (_u32b i = 0; i < nbActors; ++i){
 			actor = m_SelectedScene->getActor(i);
@@ -1042,10 +1052,7 @@ void RGP_CORE::GLRenderer::RenderSceneColors(_u32b FBO,Camera *camera)
 				dynamic_cast<Renderable*>(actor)->Render(Eye);
 			}
 		}
-	
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		
-		
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);	
 	}
 };
 void RGP_CORE::GLRenderer::RenderSceneShadows(_u32b FBO, Camera* camera)
@@ -1054,13 +1061,12 @@ void RGP_CORE::GLRenderer::RenderSceneShadows(_u32b FBO, Camera* camera)
 	
 	if (m_SelectedScene && m_Config.EnableShadows){
 		_u32b NumActors = m_SelectedScene->getNumActors();
-		_u32b ShadowIndex = 0;// , numLights = 0;// m_SelectedScene->getNumLights();
+		_u32b ShadowIndex = 0;
 		_s32b Location1 = -1, Location2 = -1, Location3 = -1;
 		LightSource*	Source = NULL;
 		Renderable*		actor = NULL;
 		
-		/*if (numLights == 0)
-			return;*/
+
 		if (camera) {
 			Eye = camera;
 		}
@@ -1160,6 +1166,7 @@ void RGP_CORE::GLRenderer::RenderSceneShadows(_u32b FBO, Camera* camera)
 
 			
 			Location1 = this->GetUniformLocation(m_ShadowAccumProgram, "ShadowMap");
+			//TODO :: pass handle instead
 			glActiveTexture(GL_TEXTURE1);
 			glBindTexture(GL_TEXTURE_2D, m_ShadowAttachmentTexture[ShadowIndex]);
 			glUniform1i(Location1, 1);
@@ -1208,14 +1215,16 @@ void	RGP_CORE::GLRenderer:: RenderSceneLightAccum(Camera* camera)
 		this->SetShaderProgram(m_LightAccumProgram);
 		glDrawBuffers(2, DrawBuff);
 		glDisable(GL_DEPTH_TEST);
-		glEnable(GL_BLEND);
-		glBlendEquation(GL_FUNC_ADD);
 		glViewport(0, 0, m_Target->getWidth(), m_Target->getHeight());
 		glClear(GL_COLOR_BUFFER_BIT);
 		glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 		
 		
 		//common uniform variables
+		this->BindBufferBase(GL_UNIFORM_BUFFER, 0, m_LightDataUBO);
+		Location = this->GetUniformLocation(m_LightAccumProgram, "NumLights");
+		this->SetUniformI(Location, m_NumRegisteredLights);
+
 		Location = this->GetUniformLocation(m_LightAccumProgram, "NormalMap");
 		this->BindTexture(m_AttachmentTextures[NORMAL_TEXTURE],0);
 		this->SetUniformSample(Location, 0);
@@ -1226,51 +1235,14 @@ void	RGP_CORE::GLRenderer:: RenderSceneLightAccum(Camera* camera)
 		this->SetUniform3F(Location, Eye->getPosition().x,
 			Eye->getPosition().y,
 			Eye->getPosition().z);
-
-
-		//for each light
-		for (_u32b Index = 0; Index < m_SelectedScene->getNumActors(); ++Index) {
-			if (!(m_SelectedScene->getActor(Index)->getID() & LIGHTSOURCE))
-				continue;
-
-			Source = dynamic_cast<LightSource*>(m_SelectedScene->getActor(Index));
-			//specific light uniform variables
-			///initializing world matrix
-			Location = this->GetUniformLocation(m_LightAccumProgram, "Source.WorldMtx");
-			this->SetUniformvMtx(Location, Source->getTransMtx());
-			
-			///init Diffuse Color ;
-			Location = this->GetUniformLocation(m_LightAccumProgram, "Source.DiffuseColor");
-			glUniform3fv(Location, 1, Source->getLightDiffuseColor());
-
-			///init Specular Color
-			Location = this->GetUniformLocation(m_LightAccumProgram, "Source.SpecularColor");
-			glUniform3fv(Location, 1, Source->getLightSpecularColor());
-
-			///init Attinuation
-			Location = this->GetUniformLocation(m_LightAccumProgram, "Source.Distance");
-			glUniform1f(Location, Source->getLightDistance());
-
-			///init CutoffAngle
-			Location = this->GetUniformLocation(m_LightAccumProgram, "Source.CutoffAngle");
-			glUniform1f(Location, Source->getLightCutoffAngle());
-
-			///init Shiness
-			Location = this->GetUniformLocation(m_LightAccumProgram, "Source.Shininess");
-			glUniform1f(Location, Source->getLightShiness());
-			//render
-			glBindVertexArray(m_FinalRenderSurface->VertexArrayObject);
-			glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-		}
-
-
-		glDisable(GL_BLEND);
+		//render
+		glBindVertexArray(m_FinalRenderSurface->VertexArrayObject);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+	
+		//after render
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glBindVertexArray(0);
-		glBindBuffer(GL_ARRAY_BUFFER, 0);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-		glActiveTexture(GL_NONE);
-		m_ShaderManager->BindProgram(0);
+		this->SetShaderProgram(0);
 
 	}
 };
@@ -1288,48 +1260,44 @@ void RGP_CORE::GLRenderer::RenderToTarget(_u32b FBO_Target){
         ///construct and render the final result
 		m_ShaderManager->BindProgram(m_FinalRenderProgram);
 
-		
+		//TODO use texture handles instead
         ///other uniforms
-        location= this->GetUniformLocation(m_FinalRenderProgram,"Diffuse1");
+        location= this->GetUniformLocation(m_FinalRenderProgram,"Diffuse");
         glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D,m_AttachmentTextures[DIFFUSE_TEXTURE1]);
+        glBindTexture(GL_TEXTURE_2D,m_AttachmentTextures[DIFFUSE_TEXTURE]);
         glUniform1i(location,0);
 		
-		location = this->GetUniformLocation(m_FinalRenderProgram, "Diffuse2");
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, m_AttachmentTextures[DIFFUSE_TEXTURE2]);
-		glUniform1i(location, 1);
 
         location= this->GetUniformLocation(m_FinalRenderProgram,"Specular");
-        glActiveTexture(GL_TEXTURE2);
+        glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D,m_AttachmentTextures[SPECULAR_TEXTURE]);
-        glUniform1i(location,2);
+        glUniform1i(location,1);
 
 
         location= this->GetUniformLocation(m_FinalRenderProgram,"Depth");
-        glActiveTexture(GL_TEXTURE3);
+        glActiveTexture(GL_TEXTURE2);
         glBindTexture(GL_TEXTURE_2D,m_AttachmentTextures[DEPTH_TEXTURE]);
-        glUniform1i(location,3);
+        glUniform1i(location,2);
 
 		location = this->GetUniformLocation(m_FinalRenderProgram, "Shadow");
-		glActiveTexture(GL_TEXTURE4);
+		glActiveTexture(GL_TEXTURE3);
 		glBindTexture(GL_TEXTURE_2D, m_ShadowAccumTexture);
-		glUniform1i(location,4);
+		glUniform1i(location,3);
 
 		location = this->GetUniformLocation(m_FinalRenderProgram, "LightDiffuse");
-		glActiveTexture(GL_TEXTURE5);
+		glActiveTexture(GL_TEXTURE4);
 		glBindTexture(GL_TEXTURE_2D, m_LightAccumDiffuseTexture);
-		glUniform1i(location, 5);
+		glUniform1i(location, 4);
 
 		location = this->GetUniformLocation(m_FinalRenderProgram, "LightSpecular");
+		glActiveTexture(GL_TEXTURE5);
+		glBindTexture(GL_TEXTURE_2D, m_LightAccumSpecularTexture);
+		glUniform1i(location, 5);
+
+		location = this->GetUniformLocation(m_FinalRenderProgram, "MaterialID");
 		glActiveTexture(GL_TEXTURE6);
-		glBindTexture(GL_TEXTURE_2D, m_LightAccumSpecularTexture);
+		glBindTexture(GL_TEXTURE_2D, m_AttachmentTextures[MATERIAL_TEXTURE]);
 		glUniform1i(location, 6);
-		
-		location = this->GetUniformLocation(m_FinalRenderProgram, "LightSpecular");
-		glActiveTexture(GL_TEXTURE7);
-		glBindTexture(GL_TEXTURE_2D, m_LightAccumSpecularTexture);
-		glUniform1i(location, 7);
 
 
 		location = this->GetUniformLocation(m_FinalRenderProgram, "noLight");
@@ -1345,8 +1313,6 @@ void RGP_CORE::GLRenderer::RenderToTarget(_u32b FBO_Target){
 
         glBindVertexArray(0);
 		m_ShaderManager->BindProgram(0);
-        glBindBuffer(GL_ARRAY_BUFFER,0);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,0);
 
 };
 
@@ -1410,7 +1376,6 @@ void RGP_CORE::GLRenderer::printExtension()
 	}
 }
 
-//TODO
 _u32b RGP_CORE::GLRenderer::CreateMaterial(Material material)
 {
 	OGLMaterial* tmp1 = NULL;
@@ -1420,19 +1385,33 @@ _u32b RGP_CORE::GLRenderer::CreateMaterial(Material material)
 		if (m_SizeofMaterialVector == m_NumMaterials) {
 			
 			tmp1 = (OGLMaterial*)malloc((m_SizeofMaterialVector + 5) * sizeof(OGLMaterial));
-			tmp2 = (GPUMaterial*)malloc((m_SizeofMaterialVector + 5) * sizeof(GPUMaterial));
+			if (!tmp1)
+				return 0;
+			if (DoesSupportBindlessTexture()) {
+				tmp2 = (GPUMaterial*)malloc((m_SizeofMaterialVector + 5) * sizeof(GPUMaterial));
+				if (!tmp2) {
+					free(tmp1);
+					return 0;
+				}
+			}
 
-			if (!tmp1 || !tmp2)
+			
+			if (DoesSupportBindlessTexture() && !tmp2)
 				return 0;
 			
 			for (_u32b i = 0; i < m_NumMaterials; ++i) {
 				tmp1[i] = m_Materials[i];
-				tmp2[i] = m_GPUMaterials[i];
+				if (DoesSupportBindlessTexture())
+					tmp2[i] = m_GPUMaterials[i];
 			}
+
 			free(m_Materials);
-			free(m_GPUMaterials);
 			m_Materials = tmp1;
-			m_GPUMaterials = tmp2;
+			if (DoesSupportBindlessTexture()) {
+				free(m_GPUMaterials);
+				m_GPUMaterials = tmp2;
+			}
+			m_SizeofMaterialVector += 5;
 		}
 		//copy material data 
 		m_Materials[m_NumMaterials].Name = CreateStringCopy(material.Name);
@@ -1441,11 +1420,13 @@ _u32b RGP_CORE::GLRenderer::CreateMaterial(Material material)
 		m_Materials[m_NumMaterials].NormalsMap = 0;
 		m_Materials[m_NumMaterials].IOR = material.IOR;
 		m_Materials[m_NumMaterials].Opacity = material.Opacity;
-		m_GPUMaterials[m_NumMaterials].DiffuseBindless = 0;
-		m_GPUMaterials[m_NumMaterials].SpecularBindless = 0;
-		m_GPUMaterials[m_NumMaterials].NormalBindless = 0;
-		m_GPUMaterials[m_NumMaterials].IOR = material.IOR;
-		m_GPUMaterials[m_NumMaterials].Opacity = material.Opacity;
+		if (DoesSupportBindlessTexture()) {
+			m_GPUMaterials[m_NumMaterials].DiffuseBindless = 0;
+			m_GPUMaterials[m_NumMaterials].SpecularBindless = 0;
+			m_GPUMaterials[m_NumMaterials].NormalBindless = 0;
+			m_GPUMaterials[m_NumMaterials].IOR = material.IOR;
+			m_GPUMaterials[m_NumMaterials].Opacity = material.Opacity;
+		}
 
 
 		if (material.DiffuseMap && material.DiffuseMap->Pixels) {
@@ -1453,30 +1434,36 @@ _u32b RGP_CORE::GLRenderer::CreateMaterial(Material material)
 			this->BindTexture(m_Materials[m_NumMaterials].DiffuseMap);
 			this->SetImageData2D(material.DiffuseMap);
 			this->BindTexture(0);
-			m_GPUMaterials[m_NumMaterials].DiffuseBindless = this->GetTextureHandle(m_Materials[m_NumMaterials].DiffuseMap);
-			this->MakeTextureHandleResidant(m_GPUMaterials[m_NumMaterials].DiffuseBindless);
+			if (DoesSupportBindlessTexture()) {
+				m_GPUMaterials[m_NumMaterials].DiffuseBindless = this->GetTextureHandle(m_Materials[m_NumMaterials].DiffuseMap);
+				this->MakeTextureHandleResidant(m_GPUMaterials[m_NumMaterials].DiffuseBindless);
+			}
 		}
 		if (material.SpecularMap && material.SpecularMap->Pixels) {
 			this->GenTextures2D(1, &(m_Materials[m_NumMaterials].SpecularMap));
 			this->BindTexture(m_Materials[m_NumMaterials].SpecularMap);
 			this->SetImageData2D(material.SpecularMap);
 			this->BindTexture(0);
-			m_GPUMaterials[m_NumMaterials].SpecularBindless = this->GetTextureHandle(m_Materials[m_NumMaterials].SpecularMap);
-			this->MakeTextureHandleResidant(m_GPUMaterials[m_NumMaterials].SpecularBindless);
+			if (DoesSupportBindlessTexture()) {
+				m_GPUMaterials[m_NumMaterials].SpecularBindless = this->GetTextureHandle(m_Materials[m_NumMaterials].SpecularMap);
+				this->MakeTextureHandleResidant(m_GPUMaterials[m_NumMaterials].SpecularBindless);
+			}
 		}
 		if (material.NormalsMap && material.NormalsMap->Pixels) {
 			this->GenTextures2D(1, &(m_Materials[m_NumMaterials].NormalsMap));
 			this->BindTexture(m_Materials[m_NumMaterials].NormalsMap);
 			this->SetImageData2D(material.NormalsMap);
 			this->BindTexture(0);
-			m_GPUMaterials[m_NumMaterials].NormalBindless = this->GetTextureHandle(m_Materials[m_NumMaterials].NormalsMap);
-			this->MakeTextureHandleResidant(m_GPUMaterials[m_NumMaterials].NormalBindless);
+			if (DoesSupportBindlessTexture()) {
+				m_GPUMaterials[m_NumMaterials].NormalBindless = this->GetTextureHandle(m_Materials[m_NumMaterials].NormalsMap);
+				this->MakeTextureHandleResidant(m_GPUMaterials[m_NumMaterials].NormalBindless);
+			}
 		}
 		//TODO:: update material UBO
 
 		++m_NumMaterials;
-		this->UpdateMaterialsUBO();
-		return m_NumMaterials - 1;
+		//this->UpdateMaterialsUBO();
+		return m_NumMaterials-1;
 	}
 	else {
 		return index;
@@ -1501,9 +1488,9 @@ RGP_CORE::OGLMaterial * RGP_CORE::GLRenderer::GetMaterial(_u32b index)
 }
 _bool RGP_CORE::GLRenderer::RemoveMaterial(const _s8b * materialname)
 {
-	return this->RemeoveMaterialAt(GetMaterialIndex(materialname));
+	return this->RemoveMaterialAt(GetMaterialIndex(materialname));
 }
-_bool RGP_CORE::GLRenderer::RemeoveMaterialAt(_u32b index)
+_bool RGP_CORE::GLRenderer::RemoveMaterialAt(_u32b index)
 {
 	if (index < 1 || index >= m_NumMaterials)
 		return false;
@@ -1551,7 +1538,6 @@ void RGP_CORE::GLRenderer::ClearMaterials()
 	}
 	if (m_GPUMaterials) {
 		free(m_GPUMaterials);
-		free(m_GPUMaterials);
 		m_GPUMaterials = NULL;
 	}
 
@@ -1585,6 +1571,11 @@ void RGP_CORE::GLRenderer::ClearMaterials()
 _u32b RGP_CORE::GLRenderer::getNumMetrials()
 {
 	return m_NumMaterials;
+}
+
+void RGP_CORE::GLRenderer::Color(_float red, _float green, _float blue)
+{
+	glColor3f(0.5f, 0.5f, 0.5f);
 }
 
 
@@ -1783,8 +1774,10 @@ _bool RGP_CORE::GLRenderer::BindTexture(_u32b textureID, _u32b unit ,_bool Textu
 		glBindTexture(GL_TEXTURE_2D,textureID);
 	else
 		glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
-    if(glGetError())
-        return false ;
+	if (glGetError()) {
+		printf("error binding textures\n");
+		return false;
+	}
 	this->SetActiveTexture(0);
     return true ;
 };
@@ -1792,6 +1785,7 @@ _bool RGP_CORE::GLRenderer::BindTexture(_u32b textureID, _u32b unit ,_bool Textu
 
 _u64b RGP_CORE::GLRenderer::GetTextureHandle(_u32b textureID)
 {
+	
 	if (glGetTextureHandleARB(textureID))
 		return  glGetTextureHandleARB(textureID);
 	else if (glGetTextureHandleNV)

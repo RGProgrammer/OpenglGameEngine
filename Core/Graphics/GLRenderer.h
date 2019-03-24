@@ -16,11 +16,13 @@
 #include "..//Common//Common.h"
 #include "..//BaseActors//Renderable.h"
 #include "..//Scene//GameScene.h"
+#include "../Common/Timer.h"
 #include "..//..//tools//freeimage//include//FreeImage.h"
 #include <string.h>
 
 
 #define MAXNUMAMTERIALS 100
+#define MAXNUMLIGHTSOURCES  100 
 
 namespace RGP_CORE{
 
@@ -149,13 +151,12 @@ namespace RGP_CORE{
 
         enum TextureOrder {
             DEPTH_TEXTURE		= 0,
-            DIFFUSE_TEXTURE1	= 1, //Base color with transparent material 
-			DIFFUSE_TEXTURE2	= 2,//Base color without transparent material
-            SPECULAR_TEXTURE	= 3,
-            NORMAL_TEXTURE		= 4,
-			MATERIAL_TEXTURE	= 5,
-			POSITION_TEXTURE	= 6,
-			TRANSPARENCY_TEXTURE= 7 //define transparent spots in the scene
+            DIFFUSE_TEXTURE		= 1, //Base color with transparent material 
+            SPECULAR_TEXTURE	= 2,
+            NORMAL_TEXTURE		= 3,
+			MATERIAL_TEXTURE	= 4,
+			POSITION_TEXTURE	= 5,
+			TRANSPARENCY_TEXTURE= 6 //define transparent spots in the scene
 
         };
 	public:
@@ -191,12 +192,15 @@ namespace RGP_CORE{
 		_u32b			GetMaterialIndex(const _s8b* Name);
 		OGLMaterial*	GetMaterial(_u32b index);
 		_bool			RemoveMaterial(const _s8b* materialname);
-		_bool			RemeoveMaterialAt(_u32b index);
+		_bool			RemoveMaterialAt(_u32b index);
 		void			ClearMaterials();// remove all created materials
 		_u32b			getNumMetrials();
 
-		//this is for testing
-		_u32b	getLastFrameTexture();
+
+
+		void           Color(_float red, _float green, _float blue);
+
+
         ///buffers manager
         ///Buffer Objects
         _bool GenBuffers(_u32b numBuffers,_u32b*    target);
@@ -271,6 +275,7 @@ namespace RGP_CORE{
 		_bool	CreateDefaultMaterial();
         _bool   InitFinalPhase();
 		_bool   UpdateCameraMtxUBO(); //TODO
+		_bool   UpdateLightDataUBO();
 	public:
 		_bool   UpdateMaterialsUBO();
 
@@ -320,8 +325,10 @@ namespace RGP_CORE{
 		_u32b						m_CurrentShaderProgram;
 		_u32b						m_AllMaterialUBO;
 		_u32b						m_CameraMtxUBO;//TODO
-
-
+		_u32b						m_LightDataUBO;
+		_u32b						m_NumRegisteredLights;
+		Timer						m_Timer;
+		_double						m_Time;
 		_u32b						num_exts_i;
 		_s8b**						exts_i;
 		

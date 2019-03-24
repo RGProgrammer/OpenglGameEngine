@@ -1,27 +1,27 @@
 #include "BaseActor.h"
 
-RGP_CORE::BaseActor::BaseActor(const _s8b* name ):m_ID(UNKNOWN),  m_Position({0.0f,0.0f,0.0f}), m_Direction({0.0f,0.0f,-1.0f}),
+RGP_CORE::BaseActor::BaseActor(const _s8b* name ):m_ID(UNKNOWN), m_Name(NULL),  m_Position({0.0f,0.0f,0.0f}), m_Direction({0.0f,0.0f,-1.0f}),
                             m_Up({0.0f,1.0f,0.0f}),  m_TransMtx(NULL),m_Scale({1.0f,1.0f,1.0f})
 {
-	if(name)
-		strcpy(m_Name, name);
+	if (name)
+		m_Name = CreateStringCopy(name);
 	m_TransMtx=(_float*)malloc(16*sizeof(_float));
 	UpdateTransMtx();
 	
 };
-RGP_CORE::BaseActor::BaseActor(Vertex3d Pos, const _s8b* name):m_ID(UNKNOWN),  m_Position(Pos), m_Direction({0.0f,0.0f,-1.0f}),
+RGP_CORE::BaseActor::BaseActor(Vertex3d Pos, const _s8b* name):m_ID(UNKNOWN), m_Name(NULL), m_Position(Pos), m_Direction({0.0f,0.0f,-1.0f}),
                                         m_Up({0.0f,1.0f,0.0f}),  m_TransMtx(NULL),m_Scale({1.0f,1.0f,1.0f})
 {
 	if (name)
-		strcpy(m_Name, name);
+		m_Name = CreateStringCopy(name);
     m_TransMtx=(_float*)malloc(16*sizeof(_float));
 	UpdateTransMtx();
 };
-RGP_CORE::BaseActor::BaseActor(Vertex3d Pos,Vertex3d Dir,Vertex3d Up, const _s8b* name):m_ID(UNKNOWN),  m_Position(Pos), m_Direction(Dir),
+RGP_CORE::BaseActor::BaseActor(Vertex3d Pos,Vertex3d Dir,Vertex3d Up, const _s8b* name):m_ID(UNKNOWN), m_Name(NULL), m_Position(Pos), m_Direction(Dir),
                                                                 m_Up(Up),  m_TransMtx(NULL),m_Scale({1.0f,1.0f,1.0f})
 {
 	if (name)
-		strcpy(m_Name, name);
+		m_Name = CreateStringCopy(name);
 	m_TransMtx=(_float*)malloc(16*sizeof(_float));
 	UpdateTransMtx();
 };
@@ -32,12 +32,18 @@ void RGP_CORE::BaseActor::Destroy(){
 	if(m_TransMtx){
 		free(m_TransMtx);
 	}
+	if (m_Name) {
+		free(m_Name);
+		m_Name = NULL;
+	}
 	m_TransMtx=NULL ;
 };
 
 _bool		RGP_CORE::BaseActor::setName(const _s8b* name)
 {
-	if (strcpy(m_Name, name))
+	if (name)
+		m_Name = CreateStringCopy(name);
+	if (m_Name)
 		return true;
 	else
 		return false;

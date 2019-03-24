@@ -50,7 +50,7 @@ namespace RGP_CORE {
 	
 	protected:
 		_u16b ProcessNode(aiNode* Node,const aiScene* Scene);/// currently this function copy only a static model
-        _u16b AddMesh(const char* Name,_u16b MaterialID);
+        _u16b AddMesh(const char* Name,_u32b MaterialID);
         _u16b CopyVertices(const aiVector3D*   buffer,_u32b nbVertices);
         _u16b CopyNormals(const aiVector3D*   buffer,_u32b nbVertices);
         _u16b CopyTangents(const aiVector3D*   Tbuffer,const aiVector3D*   Bibuffer,_u32b nbVertices);

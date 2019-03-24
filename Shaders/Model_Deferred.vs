@@ -11,17 +11,20 @@ layout(std140, binding=1) uniform TransformsMtx{
 	mat4 ProjMtx ;
 };
 
+
 uniform mat4 WorldMtx ;
-out vec4 PositionColor ;
 out mat3 TBN ;
-out vec2 texcoord0;;
+out vec4 PositionColor ;
+out vec2 texcoord0;
+out vec3 normal ;
 
 void main(){
+
 	vec3 T = normalize(vec3(WorldMtx * vec4(Tangent,   0.0)));
 	vec3 B = normalize(vec3(WorldMtx * vec4(Bitangent, 0.0)));
    	vec3 N= normalize(vec3(WorldMtx * vec4(Normal,    0.0)));
+	normal=N ;
 	TBN = mat3(T, B, N);
-
 	texcoord0=Texcoord.xy;
 	PositionColor=WorldMtx*vec4(Position,1.0);
 	gl_Position=ProjMtx*ViewMtx*WorldMtx*vec4(Position,1.0);

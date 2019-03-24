@@ -2,11 +2,16 @@
 
 RGP_CORE::BaseActor*	RGP_CORE::Model3D::Create(void ** args) 
 {
+	if (!args)
+		return NULL;
 
+	GLRenderer* renderer = static_cast<GLRenderer*>(args[0]);
+	if (!renderer)
+		return NULL;
 	Model3D* model = new Model3D();
 	if (!model)
 		return NULL;
-	model->setRenderer((GLRenderer*)args[0]);
+	model->setRenderer(renderer);
 	if (!model->LoadModelFromFile((_s8b*)args[1])) {
 		delete model;
 		return NULL;
@@ -168,8 +173,10 @@ _s16b RGP_CORE::Model3D::LoadModelFromFile(char* filename, _bool ClearDataAfterL
         aiReleaseImport(Scene);
         return 0 ;
   	 }
-  	// We're done. Release all resources associated with this import
-  	aiReleaseImport(Scene);
+	
+	 // We're done. Release all resources associated with this import
+	 aiReleaseImport(Scene);
+
   	if(!GenerateVerticesBuffers()){
         printf("could not generate vertices buffers \n");
         return 0;
@@ -192,6 +199,7 @@ _s16b RGP_CORE::Model3D::LoadModelFromFile(char* filename, _bool ClearDataAfterL
 	m_WorldMtxLocation = m_GLRenderer->GetUniformLocation(m_ShaderProgram, "WorldMtx");
 	if (!InitVAOs())
 		return 0;
+	
 	if (ClearDataAfterLoad)
 		ClearModelLoadedData();
     return 1;
@@ -254,15 +262,17 @@ _s16b   RGP_CORE::Model3D::InitVAOs(){
 
 
 void RGP_CORE::Model3D::Render(Camera* Selected){
+	
     if(isVisible() && Selected && m_GLRenderer && m_GLRenderer->isInitialized() ){
 		_s32b location = -1;
 		_s8b shaderVariableString[100];
+		
         ///new rendering code here using the high level opengl interface(m_GLRenderer)
         //set the program to use
 		if (m_GLRenderer->getCurrentShaderProgram() != m_ShaderProgram) {
 
 			m_GLRenderer->SetShaderProgram(m_ShaderProgram);
-			m_GLRenderer->BindBufferBase(GL_UNIFORM_BUFFER, 0, m_GLRenderer->getCameratransformsUBO());
+			m_GLRenderer->BindBufferBase(GL_UNIFORM_BUFFER, 1, m_GLRenderer->getCameratransformsUBO());
 		}
 		m_GLRenderer->SetUniformvMtx(m_WorldMtxLocation, this->getTransMtx());
 		//TODO :providing attached reflection probe to the shader program
@@ -272,7 +282,6 @@ void RGP_CORE::Model3D::Render(Camera* Selected){
 		m_GLRenderer->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_Buffer.Wrappers[5]);
 			m_GLRenderer->BindBuffer(GL_DRAW_INDIRECT_BUFFER, 0);
 			for (_u32b i = 0; i < m_NumMeshes; ++i) {
-
 				if (m_GLRenderer->DoesSupportBindlessTexture())
 				{
 					location = m_GLRenderer->GetUniformLocation(m_ShaderProgram, "DiffuseMap");
@@ -289,7 +298,6 @@ void RGP_CORE::Model3D::Render(Camera* Selected){
 					location = m_GLRenderer->GetUniformLocation(m_ShaderProgram, "DiffuseMap");
 					m_GLRenderer->BindTexture(m_GLRenderer->GetMaterial(m_DrawCommands[i].baseInstance)->DiffuseMap,0);
 					m_GLRenderer->SetUniformSample(location, 0);
-					
 
 					location = m_GLRenderer->GetUniformLocation(m_ShaderProgram, "SpecularMap");
 					m_GLRenderer->BindTexture(m_GLRenderer->GetMaterial(m_DrawCommands[i].baseInstance)->SpecularMap, 1);
@@ -305,7 +313,13 @@ void RGP_CORE::Model3D::Render(Camera* Selected){
 
 				location = m_GLRenderer->GetUniformLocation(m_ShaderProgram, "Opacity");
 				m_GLRenderer->SetUniformF(location, m_GLRenderer->GetMaterial(m_DrawCommands[i].baseInstance)->Opacity);
-				
+
+				location = m_GLRenderer->GetUniformLocation(m_ShaderProgram, "NotAffectedByLight");
+				if(isEffectedByLight())
+					m_GLRenderer->SetUniformI(location, 0);
+				else
+					m_GLRenderer->SetUniformI(location, 1);
+
 				m_GLRenderer->DrawElementsIndirect(GL_TRIANGLES, GL_UNSIGNED_INT, &m_DrawCommands[i]);
 			}
 		m_GLRenderer->BindVertexArray(0);
@@ -378,7 +392,7 @@ _u16b RGP_CORE::Model3D::ProcessNode(aiNode* Node,const aiScene* Scene){
     return 1;
 };
 
-_u16b RGP_CORE::Model3D::AddMesh(const char* Name, _u16b MaterialID){
+_u16b RGP_CORE::Model3D::AddMesh(const char* Name, _u32b MaterialID){
     ///add a mesh structure to the mesh vector
     ///initilize attibutes to 0 or NULL and init Material index
     pMesh tmp=(pMesh)malloc((m_NumMeshes+1)*sizeof(Mesh));
@@ -531,8 +545,6 @@ _u16b RGP_CORE::Model3D::LoadMaterialstoMemory(const aiScene* Scene){
 		aiGetMaterialString(Scene->mMaterials[i],AI_MATKEY_NAME,&materialname);
 		aiGetMaterialFloat(Scene->mMaterials[i],AI_MATKEY_REFRACTI,&(m_Materials[i].IOR));
 		aiGetMaterialFloat(Scene->mMaterials[i], AI_MATKEY_OPACITY, &(m_Materials[i].Opacity));
-		//m_Materials[i].IOR = 1.0f;
-		//m_Materials[i].Opacity = 1.0f;
         hasDiffusemap=false;
 		hasNormalmap = false;
 		hasSpecularmap = false;
@@ -620,7 +632,7 @@ _u16b RGP_CORE::Model3D::LoadMaterialstoMemory(const aiScene* Scene){
             m_Materials[i].NormalsMap->Width=1;
             m_Materials[i].NormalsMap->Pixels=(_u8b*)malloc(4*sizeof(_u8b));
             m_Materials[i].NormalsMap->Pixels[0]=128 ;
-            m_Materials[i].NormalsMap->Pixels[1]=127 ;
+            m_Materials[i].NormalsMap->Pixels[1]=128 ;
             m_Materials[i].NormalsMap->Pixels[2]=255 ;
             m_Materials[i].NormalsMap->Pixels[3]=0 ;
         }

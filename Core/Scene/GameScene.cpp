@@ -37,18 +37,18 @@ _u32b RGP_CORE::GameScene::AddActor(BaseActor* actor){
         return m_NumActors ;
 };
 void RGP_CORE::GameScene::FreeVector(){
-    BaseActor* tmp=NULL ;
     if(v_Actors){
-        for(_u32b i=0;i< m_NumActors ;++i){
-            tmp=v_Actors[i];
-            tmp->Destroy();
-            delete tmp;
+        for(_u32b i=0 ; i< m_NumActors ;++i){
+			v_Actors[i]->Destroy();
+            delete v_Actors[i];
+			v_Actors[i]=NULL;
         }
         free(v_Actors);
+		v_Actors = NULL;
+		m_NumActors = 0;
+		Size = 10;
     }
-    v_Actors=NULL ;
-    m_NumActors=0 ;
-    Size=10;
+   
  
 
 	if (m_EnvMaps) {

@@ -36,12 +36,12 @@ void RGP_CORE::Test::Start() {
 	RGP_CORE::Model3D* testmodel1 = NULL;
 	LightSource* light = NULL;
 	PModel*	PM = NULL;
-	light = new SpotLight();
+	/*light = new SpotLight();
 	light->setLightSpecularColor({ 0.3f,0.3f,0.3f });
 	light->setPosition({ 0.0f,10.0f,0.0f });
 	light->setOrientation({ 0.0f,-1.0f,0.0f }, { 0.0f,0.0f,1.0f });
 	light->setShadowStrengh(0.5);
-	m_CurrentScene->AddActor(light);
+	m_CurrentScene->AddActor(light);*/
 
 	/*light = new PointLight();
 	light->setPosition({ 0.0f,30.0f,0.0f });
@@ -49,19 +49,19 @@ void RGP_CORE::Test::Start() {
 	light->setShadowStrengh(0.5);
 	m_CurrentScene->AddLight(light);*/
 
-	/*light = new DirectionnalLight();
+	light = new DirectionnalLight();
 	light->setLightSpecularColor({0.3f,0.3f,0.3f});
 	light->setOrientation({ -0.5f,-0.5f,0.0f }, { -0.5f,0.5f,0.0f });
-	m_CurrentScene->AddLight(light);*/
+	m_CurrentScene->AddActor(light);
 	
-	
+	/*
 	testmodel1 = new Model3D();
 	testmodel1->setRenderer(m_Renderer);
 	testmodel1->ScaleUniform(10.0f);
 	if (!testmodel1->LoadModelFromFile("..//test//Samples//sky.obj"))
 		printf("error \n");
 	else
-		m_CurrentScene->AddActor(testmodel1);
+		m_CurrentScene->AddActor(testmodel1);*/
 
 
 

@@ -9,12 +9,10 @@ namespace RGP_CORE {
 	namespace Class_DB {
 		typedef struct {
 			char* name;
-			
 			void* ptrMethod;
 		} Method;
 		typedef struct{
 			char*		currentclassname;
-			//char*		parentclassname;
 			Method*     ptrMethods;
 			_u32b		numMethods;
 			void*       (*createInstanceMethod)(void** args);
@@ -29,7 +27,7 @@ namespace RGP_CORE {
 		 _u32b find(const _s8b* classname);
 
 		 void		Clear();
-		 _bool addClass(const _s8b* classname, void*(*createmethod)(void** args) =NULL,_u32b numArgs=0 );
+		 _bool addClass(const _s8b* classname, void*(*createmethod)(void** args) =NULL );
 		 _bool addMethod(const _s8b* classname, const _s8b* methodname, void* pointer);
 		 void* getMethod(const _s8b* classname, const _s8b* methodname);
 		 void* getCreateMethod(const _s8b* classname);

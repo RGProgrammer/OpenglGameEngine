@@ -128,15 +128,15 @@ _bool InfiniteMirror::Init(GLRenderer* renderer)
 	m_GLRenderer->BindVertexArray(m_VAO);
 
 	m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER, m_VertexBuffer);
-	m_GLRenderer->SetVertexAttribPointer(0, 3, 0, 0);
+	m_GLRenderer->SetVertexAttribPointerF(0, 3, 0, 0);
 	m_GLRenderer->EnableVertexAttribArray(0);
 
 	m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER,m_NormalBuffer);
-	m_GLRenderer->SetVertexAttribPointer(1, 3, 0, 0);
+	m_GLRenderer->SetVertexAttribPointerF(1, 3, 0, 0);
 	m_GLRenderer->EnableVertexAttribArray(1);
 
 	m_GLRenderer->BindBuffer(GL_ARRAY_BUFFER,m_TexCoordBuffer );
-	m_GLRenderer->SetVertexAttribPointer(2, 2, 0, 0);
+	m_GLRenderer->SetVertexAttribPointerF(2, 2, 0, 0);
 	m_GLRenderer->EnableVertexAttribArray(2);
 
 	m_GLRenderer->BindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_IndexBuffer);
@@ -188,8 +188,8 @@ void InfiniteMirror::Render(Camera* camera)
 		Location = m_GLRenderer->GetUniformLocation(m_ShaderProgram, "Capture");
 		m_GLRenderer->SetActiveTexture(0);
 		//m_GLRenderer->BindTexture(m_Texture);
-		m_GLRenderer->BindTexture(m_GLRenderer->getLastFrameTexture());
-		m_GLRenderer->SetUniformSample(Location, 0);
+		//m_GLRenderer->BindTexture(m_GLRenderer->getLastFrameTexture());
+		//m_GLRenderer->SetUniformSample(Location, 0);
 
 		//render this object
 		m_GLRenderer->BindVertexArray(m_VAO);

@@ -11,31 +11,12 @@ PModel*	PModel::CreateCube(GLRenderer* renderer,Vertex3d Pos, Vertex3d Dir, Vert
 		return NULL;
 	}
 	Object->setRenderer(renderer);
-	if (!Object->LoadModelFromFile("..//test//Samples//Cube.obj")) {
-		printf("error loading Cubre\n");
+	if (!Object->LoadModelFromFile("..//Resources//Cube.obj")) {
+		printf("error loading cube\n");
 		delete Object;
 		return NULL;
 	}
-	/*Object->BaseActor::setPosition(Pos);
-	Object->BaseActor::setOrientation(Dir, Up);
-	//
-	Object->m_Mass = 2.0f;
-
-	btTransform Transfom;
-	btVector3 haftextent(2.0, 2.0, 2.0), LocalInertia(0.0, 0.0, 0.0);
-	Object->m_Collider = new btCompoundShape();
-
-	Transfom.setFromOpenGLMatrix(Object->getTransMtx());
-	btMotionState* motionstate = new btDefaultMotionState(Transfom);
-
-
-	btCollisionShape* shape = NULL;
-	Transfom.setIdentity();
-	shape = new btBoxShape(haftextent);
-	dynamic_cast<btCompoundShape*>(Object->m_Collider)->addChildShape(Transfom, shape);
-	Object->m_Collider->calculateLocalInertia(Object->m_Mass, LocalInertia);
-	btRigidBody::btRigidBodyConstructionInfo info(Object->m_Mass, motionstate, Object->m_Collider, LocalInertia);
-	Object->m_Rigidbody = new btRigidBody(info);*/
+	
 
 	btVector3 haftextent(2.0, 2.0, 2.0);
 	btCollisionShape* shape = NULL;
@@ -58,30 +39,12 @@ PModel*	PModel::CreateSphere(GLRenderer* renderer, Vertex3d Pos, Vertex3d Dir, V
 		return NULL;
 	}
 	Object->setRenderer(renderer);
-	if (!Object->LoadModelFromFile("..//test//Samples//Sphere.obj")) {
+	if (!Object->LoadModelFromFile("..//Resources//sphere.obj")) {
 		printf("error loading sphere\n");
 		delete Object;
 		return NULL;
 	}
-	/*Object->BaseActor::setPosition(Pos);
-	Object->BaseActor::setOrientation(Dir, Up);
-	//
-	Object->m_Mass = 2.0f;
-
-	btTransform Transfom;
-	btVector3  LocalInertia(0.0, 0.0, 0.0);
-	Object->m_Collider = new btCompoundShape();
 	
-	Transfom.setFromOpenGLMatrix(Object->getTransMtx());
-	btMotionState* motionstate = new btDefaultMotionState(Transfom);
-	
-	btCollisionShape* shape = NULL;
-	Transfom.setIdentity();
-	shape = new btSphereShape(2.0);
-	dynamic_cast<btCompoundShape*>(Object->m_Collider)->addChildShape(Transfom, shape);
-	Object->m_Collider->calculateLocalInertia(Object->m_Mass, LocalInertia);
-	btRigidBody::btRigidBodyConstructionInfo info(Object->m_Mass, motionstate, Object->m_Collider, LocalInertia);
-	Object->m_Rigidbody = new btRigidBody(info);*/
 	btCollisionShape* shape = NULL;
 	btTransform Transform;
 	Transform.setIdentity();
@@ -102,31 +65,12 @@ PModel*	PModel::CreateGround(GLRenderer* renderer, Vertex3d Pos)
 		return NULL;
 	}
 	Object->setRenderer(renderer);
-	if (!Object->LoadModelFromFile("..//test//Samples//Ground1.obj")) {
+	if (!Object->LoadModelFromFile("..//Resources//Ground1.obj")) {
 		printf("error loading Ground\n");
 		delete Object;
 		return NULL;
 	}
-	/*Object->BaseActor::setPosition(Pos);
-	Object->BaseActor::RotateViaDirection(0.5);
-	//
-	Object->m_Mass = 0.0f;
-
-	btTransform Transfom;
-	btVector3 haftextent(15.0, 1.0, 15.0), LocalInertia(0.0, 0.0, 0.0);
-	Object->m_Collider = new btCompoundShape();
 	
-	Transfom.setFromOpenGLMatrix(Object->getTransMtx());
-	btMotionState* motionstate = new btDefaultMotionState(Transfom);
-	
-	
-	btCollisionShape* shape = NULL;
-	Transfom.setIdentity();
-	shape = new btBoxShape(haftextent);
-	dynamic_cast<btCompoundShape*>(Object->m_Collider)->addChildShape(Transfom, shape);
-	Object->m_Collider->calculateLocalInertia(Object->m_Mass, LocalInertia);
-	btRigidBody::btRigidBodyConstructionInfo info(Object->m_Mass, motionstate, Object->m_Collider, LocalInertia);
-	Object->m_Rigidbody = new btRigidBody(info);*/
 	
 	Object->setPosition(Pos);
 	Object->m_Mass = 0.0;

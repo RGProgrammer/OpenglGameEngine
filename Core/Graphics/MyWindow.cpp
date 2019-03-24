@@ -1,6 +1,6 @@
 #include "MyWindow.h"
 
-RGP_CORE::Window* RGP_CORE::Window::Create(char* title,_u16b width, _u16b height, bool Fullscreen){
+RGP_CORE::Window* RGP_CORE::Window::Create(char* title,_u32b width, _u32b height, bool Fullscreen){
     Window *Target=NULL;
     Target=new Window();
     if(!Target)
@@ -40,7 +40,7 @@ void RGP_CORE::Window::Destroy(){
     this->m_Height=this->m_Width=0;
     m_FullScreen=false ;
 };
-_u16b RGP_CORE::Window::InitWindow(char* Title,_u16b Width, _u16b Height, bool Fullscreen){
+_u32b RGP_CORE::Window::InitWindow(char* Title,_u32b Width, _u32b Height, bool Fullscreen){
 	m_ptrWindow=glfwCreateWindow(Width,Height,Title,NULL,NULL);
 	if(m_ptrWindow==NULL)
         return 0 ;
@@ -49,7 +49,7 @@ _u16b RGP_CORE::Window::InitWindow(char* Title,_u16b Width, _u16b Height, bool F
     m_FullScreen=Fullscreen ;
     return 1;
 };
-_u16b RGP_CORE::Window::InitWindow(Window& Main)
+_u32b RGP_CORE::Window::InitWindow(Window& Main)
 {
 	m_ptrWindow = glfwCreateWindow(Main.getWidth(), Main.getHeight(),"", NULL, Main.getglfwWindow());
 	if (m_ptrWindow == NULL)
@@ -65,9 +65,13 @@ void RGP_CORE::Window::setFullScreen(bool Value){
 
 bool RGP_CORE::Window::isFullScreen(){ return m_FullScreen ;};
 
-void RGP_CORE::Window::Reszie(_u16b Width,_u16b Height){
+void RGP_CORE::Window::Reszie(_u32b Width,_u32b Height){
 
 };
-_u16b RGP_CORE::Window::getHeight(){ return m_Height ;};
-_u16b RGP_CORE::Window::getWidth(){ return m_Width ;};
+_u32b RGP_CORE::Window::getHeight(){ 
+	glfwGetWindowSize(m_ptrWindow, (int*)&m_Width, (int*)&m_Height);
+	return m_Height ;};
+_u32b RGP_CORE::Window::getWidth(){
+	glfwGetWindowSize(m_ptrWindow, (int*)&m_Width, (int*)&m_Height);
+	return m_Width ;};
 GLFWwindow* RGP_CORE::Window::getglfwWindow(){ return m_ptrWindow; };

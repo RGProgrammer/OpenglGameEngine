@@ -6,7 +6,6 @@
 
 
 
-
 _s8b Title[] = "LEVEL DEIGN TOOL";
 static RGP_LEVELBUILDER::LevelBuilder* _Instance=NULL ;
 RGP_LEVELBUILDER::LevelBuilder* RGP_LEVELBUILDER::LevelBuilder::Create()
@@ -36,6 +35,7 @@ void RGP_LEVELBUILDER::LevelBuilder::StartLoop()
 	if (!m_isInitilized)
 		return;
 	//m_RendererInstance->printExtension();
+	m_RendererInstance->reRegisterLightSources();
 	while (true) {
 		glfwPollEvents();
 		if (glfwWindowShouldClose(m_RendererInstance->getTarget()->getglfwWindow()))
@@ -113,7 +113,6 @@ _bool				RGP_LEVELBUILDER::LevelBuilder::Init()
 	if (!m_RendererInstance->InitRenderer({ Title,1600,900,false ,256,false })) {
 		return false;
 	}
-	//m_RendererInstance->SwitchNoLightMode();
 	m_RendererInstance->setScene(m_SceneInstance);
 
 	m_PhysicsEngineInstance = new PhysicsEngine();
@@ -168,19 +167,15 @@ void				RGP_LEVELBUILDER::LevelBuilder::removeActor(_u32b index)
 _bool				RGP_LEVELBUILDER::LevelBuilder::LoadDefaultScene()
 {
 	BaseActor* Actor = NULL;
-	BaseActor* (*ptr)(void**) = ((BaseActor*(*)(void** args))RGP_CORE::Class_DB::getCreateMethod("Model3D"));
-	if (ptr) {
-		
-		void* args[2] = { m_RendererInstance,(void*)"..//test//Samples//Plane.obj" };
-		Actor = (*ptr)(args);
-		if (Actor) {
-			Actor->setName("Plane");
-			m_SceneInstance->AddActor(Actor);
-		}
-		
-	}
-	else
-		return false;
+
+	BaseActor* (*ptr)(void**) = NULL;
+	
+	Actor =Grid::CreateGrid(m_RendererInstance);
+	Actor->setName("Grid");
+	m_SceneInstance->AddActor(Actor);
+	
+	
+
 	ptr = ((BaseActor*(*)(void** args))RGP_CORE::Class_DB::getCreateMethod("DirectionnalLight"));
 	if (ptr) {
 		Actor = NULL;
@@ -192,8 +187,20 @@ _bool				RGP_LEVELBUILDER::LevelBuilder::LoadDefaultScene()
 	}
 	else
 		return false;
-	m_RendererInstance->reRegisterLightSources();
 
+	ptr = ((BaseActor*(*)(void** args))RGP_CORE::Class_DB::getCreateMethod("Model3D"));
+	if (ptr) {
+		Actor = NULL;
+		void* args[2] = { m_RendererInstance,(void*)"../Resources/sky.obj" };
+		Actor = (*ptr)(args);
+		if (Actor) {
+			Actor->setName("SkyBox");
+			dynamic_cast<Renderable*>(Actor)->setEffectedByLight(false);
+			Actor->ScaleUniform(50.0f);
+			m_SceneInstance->AddActor(Actor);
+		}
+	}
+	
 	return true;
 
 };
@@ -211,8 +218,10 @@ _bool				RGP_LEVELBUILDER::LevelBuilder::ImportStaticModel(const _s8b* filename)
 {
 	BaseActor* (*ptr)(void**) = ((BaseActor*(*)(void** args))RGP_CORE::Class_DB::getCreateMethod("Model3D"));
 	if (ptr) {
+		void** args =(void**) malloc(2 * sizeof(void*));
+		args[0] = m_RendererInstance;
+		args[1] = (void*)filename;
 		BaseActor* model = NULL;
-		void* args[2] = { m_RendererInstance,(void*)filename };
 		model = (*ptr)(args);
 		m_SceneInstance->AddActor(model);
 	}

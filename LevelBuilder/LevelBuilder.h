@@ -7,6 +7,7 @@
 #include "..//Core//Common//Thread.h"
 #include "..//tools//imgui//imgui.h"
 #include "CustomGameScene.h"
+#include "Grid.h"
 using namespace RGP_CORE;
 
 
