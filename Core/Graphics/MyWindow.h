@@ -6,15 +6,15 @@
 
 namespace RGP_CORE{
 
-	class Window {
+	class MyWindow {
 	public:
-	    static Window* Create(char* title,_u32b width, _u32b height, bool Fullscreen=false);
-		static Window* Create(Window& Main);
-		Window();
-		~Window();
+	    static MyWindow* Create(char* title,_u32b width, _u32b height, bool Fullscreen=false);
+		static MyWindow* Create(MyWindow& Main);
+		MyWindow();
+		~MyWindow();
 		void Destroy();
 		_u32b InitWindow(char* title,_u32b width, _u32b height, bool Fullscreen=false);
-		_u32b InitWindow(Window& Main);
+		_u32b InitWindow(MyWindow& Main);
 		void setFullScreen(bool Value);
 		bool isFullScreen();
 		void Reszie(_u32b Width,_u32b Height);

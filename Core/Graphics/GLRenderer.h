@@ -23,7 +23,7 @@
 
 #define MAXNUMAMTERIALS 100
 #define MAXNUMLIGHTSOURCES  100 
-
+#define NUMTEXTUREGBUFFER 8 
 namespace RGP_CORE{
 
     typedef struct {
@@ -40,6 +40,7 @@ namespace RGP_CORE{
 		Image*			DiffuseMap;
 		Image*			SpecularMap;
 		Image*			NormalsMap;
+		Image*          EmissiveMap;
 		_float			IOR;
 		_float			Opacity;
 	} Material ;
@@ -49,6 +50,7 @@ namespace RGP_CORE{
         _u32b			DiffuseMap;
 		_u32b			SpecularMap;
 		_u32b			NormalsMap;
+		_u32b			EmissiveMap;
 		_float			IOR;
 		_float			Opacity;
 	} OGLMaterial ;
@@ -58,6 +60,7 @@ namespace RGP_CORE{
 		_u64b			DiffuseBindless;
 		_u64b			SpecularBindless;
 		_u64b			NormalBindless;
+		_u64b			EmissiveBindless;
 		_float			IOR;
 		_float			Opacity;
 		
@@ -71,13 +74,6 @@ namespace RGP_CORE{
 		_u32b			numFaces;
     } MeshBuffers ;
 
-	
-    ///OpenGL Renderer
-	
-    typedef enum RenderType {
-        FORWARD_RENDERING,
-        DEFERRED_RENDERING
-    } RenderMode;
 
 	//renderer configuration
     typedef struct {
@@ -147,26 +143,26 @@ namespace RGP_CORE{
 
     class GLRenderer{
     private:
-		GLenum DrawBuff[7];
+		GLenum DrawBuff[NUMTEXTUREGBUFFER-1]; //(minus depth map)
 
         enum TextureOrder {
             DEPTH_TEXTURE		= 0,
-            DIFFUSE_TEXTURE		= 1, //Base color with transparent material 
+            DIFFUSE_TEXTURE		= 1, 
             SPECULAR_TEXTURE	= 2,
             NORMAL_TEXTURE		= 3,
 			MATERIAL_TEXTURE	= 4,
 			POSITION_TEXTURE	= 5,
-			TRANSPARENCY_TEXTURE= 6 //define transparent spots in the scene
+			TRANSPARENCY_TEXTURE= 6 ,//define transparent spots in the scene
+			EMISSION_TEXTURE = 7
 
         };
 	public:
-        GLRenderer(RenderMode Type=DEFERRED_RENDERING);
+        GLRenderer();
         ~GLRenderer();
         void Destroy();
         _bool InitRenderer(gfxConfig Config);
         _bool isInitialized();
-        RenderMode  getRenderMode();
-        Window*     getTarget();
+        MyWindow*   getTarget();
 		void		MakeContext();
         void	setScene(GameScene*   Scene);
 		_bool	reRegisterLightSources();
@@ -187,7 +183,7 @@ namespace RGP_CORE{
 		_bool	DoesSupportBindlessTexture();
 		void	printExtension();
 
-		//todo material
+		// material
 		_u32b			CreateMaterial(Material material); //return material index (>=1)
 		_u32b			GetMaterialIndex(const _s8b* Name);
 		OGLMaterial*	GetMaterial(_u32b index);
@@ -283,14 +279,13 @@ namespace RGP_CORE{
         
 
     private :
-        Window*						m_Target ;
-        RenderMode					m_Mode;
+		_bool						m_isInitialized;
+		MyWindow*					m_Target ;
+		GLShaderProgramsManager*	m_ShaderManager;
 		gfxConfig					m_Config;
 		MeshBuffers*				m_FinalRenderSurface;
 		_u32b						m_FinalRenderProgram;
-		GLShaderProgramsManager*	m_ShaderManager;
-        _bool						m_isInitialized ;
-		Material					defaultMAaterial;
+		
 		//scene to render
 		GameScene*					m_SelectedScene;
 
@@ -315,20 +310,26 @@ namespace RGP_CORE{
 		_u32b						m_ShadowAccumBuffer;
 		_u32b						m_ShadowAccumTexture;
 		_bool						m_noLightMode;
+
 		
+		//Material Management
+		Material					defaultMAaterial;
 		OGLMaterial*				m_Materials; //all the needed materials will be stored here (not in the scene actors);
 		GPUMaterial*				m_GPUMaterials;
 		_u32b						m_NumMaterials;
 		_u32b						m_SizeofMaterialVector;
 
-		//UBOs
+		//
 		_u32b						m_CurrentShaderProgram;
 		_u32b						m_AllMaterialUBO;
-		_u32b						m_CameraMtxUBO;//TODO
+		_u32b						m_CameraMtxUBO;
 		_u32b						m_LightDataUBO;
 		_u32b						m_NumRegisteredLights;
 		Timer						m_Timer;
 		_double						m_Time;
+
+
+
 		_u32b						num_exts_i;
 		_s8b**						exts_i;
 		

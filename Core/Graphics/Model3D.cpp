@@ -151,11 +151,11 @@ _s16b RGP_CORE::Model3D::LoadModelFromFile(char* filename, _bool ClearDataAfterL
 	const aiScene* Scene = aiImportFile(filename, aiProcessPreset_TargetRealtime_Quality  );
 	//if failed
 	if(!Scene){
-        printf("error loading file\n");
+        printf(" ASSIMP ERROR :error loading file\n");
 		return 0 ;
 	}
   	if(Scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || Scene->mRootNode==NULL){
-        printf("error laoding scene\n");
+        printf("ASSIMP ERROR : error laoding scene\n");
         aiReleaseImport(Scene);
         return 0 ;
   	}
@@ -293,6 +293,9 @@ void RGP_CORE::Model3D::Render(Camera* Selected){
 					location = m_GLRenderer->GetUniformLocation(m_ShaderProgram, "NormalMap");
 					m_GLRenderer->SetUniformHandleu64(location, m_GLRenderer->GetTextureHandle(m_GLRenderer->GetMaterial(m_DrawCommands[i].baseInstance)->NormalsMap));
 
+					location = m_GLRenderer->GetUniformLocation(m_ShaderProgram, "EmissiveMap");
+					m_GLRenderer->SetUniformHandleu64(location, m_GLRenderer->GetTextureHandle(m_GLRenderer->GetMaterial(m_DrawCommands[i].baseInstance)->EmissiveMap));
+
 				}
 				else {
 					location = m_GLRenderer->GetUniformLocation(m_ShaderProgram, "DiffuseMap");
@@ -306,6 +309,10 @@ void RGP_CORE::Model3D::Render(Camera* Selected){
 					location = m_GLRenderer->GetUniformLocation(m_ShaderProgram, "NormalMap");
 					m_GLRenderer->BindTexture(m_GLRenderer->GetMaterial(m_DrawCommands[i].baseInstance)->NormalsMap, 2);
 					m_GLRenderer->SetUniformSample(location, 2);
+
+					location = m_GLRenderer->GetUniformLocation(m_ShaderProgram, "EmissiveMap");
+					m_GLRenderer->BindTexture(m_GLRenderer->GetMaterial(m_DrawCommands[i].baseInstance)->EmissiveMap, 3);
+					m_GLRenderer->SetUniformSample(location, 3);
 					
 				}
 				location = m_GLRenderer->GetUniformLocation(m_ShaderProgram, "IOR");
@@ -351,7 +358,23 @@ void RGP_CORE::Model3D::setReflectionProbe(EnvMapProbe* Probe)
 RGP_CORE::EnvMapProbe*	RGP_CORE::Model3D::getReflectionProbe(EnvMapProbe* Probe)
 {
 	return m_ReflectionProbe;
-};
+}
+_bool RGP_CORE::Model3D::ApplyMaterialToMesh(_u32b meshindex, _u32b materialindex)
+{
+	if (meshindex >= m_NumMeshes)
+		return false;
+	if(m_Meshes)
+		m_Meshes[meshindex].AppliedMaterial = materialindex;
+	if (m_DrawCommands)
+		m_DrawCommands[meshindex].baseInstance = materialindex;
+}
+void RGP_CORE::Model3D::ApplyMaterialToAll(_u32b materialindex)
+{
+	for (_u32b i = 0; i < m_NumMeshes; ++i) {
+		this->ApplyMaterialToMesh(i, materialindex);
+	}
+}
+;
 
 const RGP_CORE::pMesh		RGP_CORE::Model3D::getMesh(_u32b index)
 {
@@ -532,6 +555,8 @@ _u16b RGP_CORE::Model3D::LoadMaterialstoMemory(const aiScene* Scene){
     _bool hasDiffusemap=false;
 	_bool hasNormalmap = false;
 	_bool hasSpecularmap = false;
+	_bool hasEmissivemap = false;
+	aiColor4D DiffuseColor,SpecularColor;
 	aiString materialname;
     this->m_Materials=(Material*)malloc(m_NumMaterials*sizeof(Material));
     if(!m_Materials){
@@ -542,12 +567,16 @@ _u16b RGP_CORE::Model3D::LoadMaterialstoMemory(const aiScene* Scene){
         m_Materials[i].NormalsMap=NULL ;
         m_Materials[i].SpecularMap=NULL;
         m_Materials[i].DiffuseMap=NULL;
+		m_Materials[i].EmissiveMap = NULL;
 		aiGetMaterialString(Scene->mMaterials[i],AI_MATKEY_NAME,&materialname);
 		aiGetMaterialFloat(Scene->mMaterials[i],AI_MATKEY_REFRACTI,&(m_Materials[i].IOR));
 		aiGetMaterialFloat(Scene->mMaterials[i], AI_MATKEY_OPACITY, &(m_Materials[i].Opacity));
+		aiGetMaterialColor(Scene->mMaterials[i], AI_MATKEY_COLOR_DIFFUSE, &DiffuseColor);
+		aiGetMaterialColor(Scene->mMaterials[i], AI_MATKEY_COLOR_SPECULAR, &SpecularColor);
         hasDiffusemap=false;
 		hasNormalmap = false;
 		hasSpecularmap = false;
+		hasEmissivemap = false;
 		m_Materials[i].Name = CreateStringCopy(materialname.C_Str());
         for(_u16b j=0 ;j< Scene->mMaterials[i]->mNumProperties;j++){
 			
@@ -614,17 +643,38 @@ _u16b RGP_CORE::Model3D::LoadMaterialstoMemory(const aiScene* Scene){
                             m_Materials[i].NormalsMap = LoadImageFromFile(path.C_Str());
                     }
                     hasNormalmap=true ;
-                }
+             }
+			else if(Scene->mMaterials[i]->mProperties[j]->mSemantic==aiTextureType_EMISSIVE){
+				
+                    m_Materials[i].EmissiveMap=(Image*)malloc(sizeof(Image));
+                    m_Materials[i].EmissiveMap->Height=0 ;
+                    m_Materials[i].EmissiveMap->Width=0;
+                    m_Materials[i].EmissiveMap->Pixels=NULL;
+                    if(Scene->mMaterials[i]->mProperties[j]->mIndex!=0){
+                        CopyTextureData(Scene->mTextures[Scene->mMaterials[i]->mProperties[j]->mIndex-1],m_Materials[i].EmissiveMap);
+                    }else if(Scene->mMaterials[i]->mProperties[j]->mType==aiPTI_String){
+                        aiString path ;
+                        Scene->mMaterials[i]->GetTexture(aiTextureType_NORMALS,0,&path);
+                        char* filename=NULL ;
+                        if(m_FileDirectory){
+                            RGP_CORE::CatStrings(m_FileDirectory,path.C_Str(),&filename);
+                            m_Materials[i].EmissiveMap = LoadImageFromFile(filename);
+                            free(filename);
+                        }else
+                            m_Materials[i].EmissiveMap = LoadImageFromFile(path.C_Str());
+                    }
+                    hasEmissivemap=true ;
+             }
         }
         if(!hasDiffusemap){
             m_Materials[i].DiffuseMap=(Image*)malloc(sizeof(Image));
             m_Materials[i].DiffuseMap->Height=1 ;
             m_Materials[i].DiffuseMap->Width=1;
             m_Materials[i].DiffuseMap->Pixels=(_u8b*)malloc(4*sizeof(_u8b));
-            m_Materials[i].DiffuseMap->Pixels[0]=128 ;
-            m_Materials[i].DiffuseMap->Pixels[1]=128 ;
-            m_Materials[i].DiffuseMap->Pixels[2]=128 ;
-            m_Materials[i].DiffuseMap->Pixels[3]=0 ;
+			m_Materials[i].DiffuseMap->Pixels[0] = DiffuseColor.r;
+			m_Materials[i].DiffuseMap->Pixels[1] = DiffuseColor.g;
+			m_Materials[i].DiffuseMap->Pixels[2] = DiffuseColor.b;
+			m_Materials[i].DiffuseMap->Pixels[3] = DiffuseColor.a;
         }
         if(!hasNormalmap){
             m_Materials[i].NormalsMap=(Image*)malloc(sizeof(Image));
@@ -641,11 +691,21 @@ _u16b RGP_CORE::Model3D::LoadMaterialstoMemory(const aiScene* Scene){
             m_Materials[i].SpecularMap->Height=1 ;
             m_Materials[i].SpecularMap->Width=1;
             m_Materials[i].SpecularMap->Pixels=(_u8b*)malloc(4*sizeof(_u8b));
-            m_Materials[i].SpecularMap->Pixels[0]=120 ;
-            m_Materials[i].SpecularMap->Pixels[1]=120 ;
-            m_Materials[i].SpecularMap->Pixels[2]=120 ;
-            m_Materials[i].SpecularMap->Pixels[3]=0 ;
+			m_Materials[i].SpecularMap->Pixels[0] = 120;
+			m_Materials[i].SpecularMap->Pixels[1] = 120;
+			m_Materials[i].SpecularMap->Pixels[2] = 120;
+			m_Materials[i].SpecularMap->Pixels[3] = 0;
         }
+		if (!hasEmissivemap) {
+			m_Materials[i].EmissiveMap = (Image*)malloc(sizeof(Image));
+			m_Materials[i].EmissiveMap->Height = 1;
+			m_Materials[i].EmissiveMap->Width = 1;
+			m_Materials[i].EmissiveMap->Pixels = (_u8b*)malloc(4 * sizeof(_u8b));
+			m_Materials[i].EmissiveMap->Pixels[0] = 0;
+			m_Materials[i].EmissiveMap->Pixels[1] = 0;
+			m_Materials[i].EmissiveMap->Pixels[2] = 0;
+			m_Materials[i].EmissiveMap->Pixels[3] = 0;
+		}
     }
     return 1;
 }

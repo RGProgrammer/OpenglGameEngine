@@ -14,6 +14,7 @@
 #include "PhysicalExample.h"
 #include "ParticaleSystemExample.h"
 #include "InfiniteMirror.h"
+#include "emissive.h"
 #include <exception>
 
 namespace RGP_CORE {

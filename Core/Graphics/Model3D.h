@@ -47,6 +47,8 @@ namespace RGP_CORE {
 		_u32b			getNumMeshes();
 		void			setReflectionProbe(EnvMapProbe* Probe);
 		EnvMapProbe*	getReflectionProbe(EnvMapProbe* Probe);
+		_bool			ApplyMaterialToMesh(_u32b meshindex, _u32b materialindex = 0);
+		void			ApplyMaterialToAll(_u32b materialindex = 0);
 	
 	protected:
 		_u16b ProcessNode(aiNode* Node,const aiScene* Scene);/// currently this function copy only a static model

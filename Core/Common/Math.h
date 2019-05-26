@@ -35,6 +35,10 @@ typedef struct {
     _float u,v ;
 } Vertex2d,Point2d,Normal2d ;
 
+inline _float frand_a_b(_float a, _float b) {
+	return (rand() / (_float)RAND_MAX) * (b - a) + a;
+};
+
 
 inline _float Magnitude3d(Vertex3d Ver){
 	_float tmp = Ver.x*Ver.x + Ver.y*Ver.y + Ver.z*Ver.z;

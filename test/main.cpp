@@ -14,6 +14,5 @@ int main(void){
     testprogram->Start();
     testprogram->Destroy();
     delete testprogram;
-	system("PAUSE");
     return 0 ;
 }

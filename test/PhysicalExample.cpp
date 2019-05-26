@@ -70,7 +70,7 @@ PModel*	PModel::CreateGround(GLRenderer* renderer, Vertex3d Pos)
 		delete Object;
 		return NULL;
 	}
-	
+
 	
 	Object->setPosition(Pos);
 	Object->m_Mass = 0.0;

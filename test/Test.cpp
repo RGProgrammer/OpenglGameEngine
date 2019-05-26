@@ -43,16 +43,16 @@ void RGP_CORE::Test::Start() {
 	light->setShadowStrengh(0.5);
 	m_CurrentScene->AddActor(light);*/
 
-	/*light = new PointLight();
-	light->setPosition({ 0.0f,30.0f,0.0f });
-	light->setLightDistance(50.0f);
+	light = new PointLight();
+	//light->setPosition({ 0.0f,30.0f,0.0f });
+	light->setLightDistance(20.0f);
 	light->setShadowStrengh(0.5);
-	m_CurrentScene->AddLight(light);*/
+	m_CurrentScene->AddActor(light);
 
-	light = new DirectionnalLight();
+	/*light = new DirectionnalLight();
 	light->setLightSpecularColor({0.3f,0.3f,0.3f});
 	light->setOrientation({ -0.5f,-0.5f,0.0f }, { -0.5f,0.5f,0.0f });
-	m_CurrentScene->AddActor(light);
+	m_CurrentScene->AddActor(light);*/
 	
 	/*
 	testmodel1 = new Model3D();
@@ -74,11 +74,17 @@ void RGP_CORE::Test::Start() {
 		printf("something \n");
 	}
 	m_CurrentScene->AddActor(test);*/
+
+	EmissiveObject * emissive = EmissiveObject::Create(m_Renderer);
+	if (!emissive) {
+		printf("can not create emissive object \n");
+	}else
+		m_CurrentScene->AddActor(emissive);
 	
 	PM = PModel::CreateGround(m_Renderer,{ 0.0f,-2.0f,0.0f });
 	PM->setShadowCast(false);
 	m_CurrentScene->AddActor(PM);
-	PM = PModel::CreateCube(m_Renderer, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,1.0f }, { 0.0f,1.0f,0.0f });
+	/*PM = PModel::CreateCube(m_Renderer, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,1.0f }, { 0.0f,1.0f,0.0f });
 	PM->setShadowCast(false);
 	m_CurrentScene->AddActor(PM);
 	PM = PModel::CreateCube(m_Renderer, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,1.0f }, { 0.0f,1.0f,0.0f });
@@ -89,7 +95,7 @@ void RGP_CORE::Test::Start() {
 	m_CurrentScene->AddActor(PM);
 	PM = PModel::CreateSphere(m_Renderer, { 0.0f,0.0f,0.0f }, { 0.0f,0.0f,1.0f }, { 0.0f,1.0f,0.0f });
 	PM->setShadowCast(true);
-	m_CurrentScene->AddActor(PM);
+	m_CurrentScene->AddActor(PM);*/
 
 	
 	
