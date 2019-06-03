@@ -12,9 +12,6 @@ what libraries i (will) use:
 </p><p>
 -IMGui for UI
 </p>
-<p>
-i will implement my own animation software which exports animation independantly from the model and a scene editor
-</p>
-<p>PS: the source code lacks documentation and comments because i'm working on this project alone</p>
 
+<p> The Actors types are defined by inheritance and not components. this approach have been taken to gain the most performance out of the C++ Language. besides if we are are talking about testability and upgradability then components based types are better then following Inheritance approach</p>
 
