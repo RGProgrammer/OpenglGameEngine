@@ -1,0 +1,208 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{1BC7B856-DDAE-45C5-9506-ADDEE1EFD93E}</ProjectGuid>
+    <RootNamespace>RGP_GameEngine</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
+    <ProjectName>RGP_Core</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <PlatformToolset>v141</PlatformToolset>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <PlatformToolset>v141</PlatformToolset>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(SolutionDir)$(Configuration)\..\..\bin</OutDir>
+    <TargetName>Core</TargetName>
+    <IncludePath>$(IncludePath)</IncludePath>
+    <TargetExt>.lib</TargetExt>
+    <IntDir>$(Configuration)\..\..\bin</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(SolutionDir)$(Configuration)\..\..\bin</OutDir>
+    <TargetName>Core_debug</TargetName>
+    <TargetExt>.lib</TargetExt>
+    <IntDir>$(Configuration)\..\..\bin</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <TargetName>Core</TargetName>
+    <TargetExt>.lib</TargetExt>
+    <OutDir>$(ProjectDir)/../../bin</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <TargetName>Core_debug</TargetName>
+    <TargetExt>.lib</TargetExt>
+    <OutDir>$(ProjectDir)/../../bin</OutDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <AdditionalIncludeDirectories>../../tools/bullet3;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>../../tools/bullet3/lib/Bullet3Common_Debug.lib;../../tools/bullet3/lib/LinearMath_Debug.lib;../../tools/bullet3/lib/BulletCollision_Debug.lib;../../tools/bullet3/lib/BulletDynamics_Debug.lib;../../tools/assimp/lib-md/Debug/assimp-vc140-mt.lib;../../tools/freeimage/lib/Debug/FreeImage.lib;../../tools/glfw/VClibs/glfw3dll.lib;../../tools/openal/libs/Win32/OpenAL32.lib;msvcrt.lib;msvcmrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <Lib>
+      <AdditionalDependencies>../../tools/assimp/lib-md/Debug/assimp-vc140-mt.lib;../../tools/freeimage/lib/Debug/FreeImaged.lib;../../tools/bullet3/lib/Bullet3Common_Debug.lib;../../tools/bullet3/lib/LinearMath_Debug.lib;../../tools/bullet3/lib/BulletCollision_Debug.lib;../../tools/bullet3/lib/BulletDynamics_Debug.lib;../../tools/glfw/VClibs/glfw3dll.lib;../../tools/openal/libs/Win32/OpenAL32.lib;opengl32.lib;msvcrt.lib;msvcmrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalIncludeDirectories>../../tools/bullet3;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>../../tools/bullet3/lib/Bullet3Common.lib;../../tools/bullet3/lib/LinearMath.lib;../../tools/bullet3/lib/BulletCollision.lib;../../tools/bullet3/lib/BulletDynamics.lib;../../tools/glfw/VClibs/glfw3dll.lib;../../tools/openal/libs/Win32/OpenAL32.lib;../../tools/assimp/lib-md/Release/assimp-vc140-mt.lib;../../tools/freeimage/lib/Release/FreeImage.lib;msvcrt.lib;msvcmrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <ProjectReference>
+      <UseLibraryDependencyInputs>true</UseLibraryDependencyInputs>
+    </ProjectReference>
+    <Lib>
+      <AdditionalDependencies>../../tools/assimp/lib-md/Release/assimp-vc140-mt.lib;../../tools/freeimage/lib/Release/FreeImage.lib;../../tools/bullet3/lib/Bullet3Common.lib;../../tools/bullet3/lib/LinearMath.lib;../../tools/bullet3/lib/BulletCollision.lib;../../tools/bullet3/lib/BulletDynamics.lib;../../tools/glfw/VClibs/glfw3dll.lib;../../tools/openal/libs/Win32/OpenAL32.lib;opengl32.lib;msvcrt.lib;msvcmrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <TargetMachine>MachineX64</TargetMachine>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Lib>
+      <AdditionalDependencies>../../tools/assimp/lib-mt/Release/assimp-vc140-mt.lib;../../tools/freeimage/lib/Release/FreeImage.lib;../../tools/bullet3/lib/Bullet3Common.lib;../../tools/bullet3/lib/LinearMath.lib;../../tools/bullet3/lib/BulletCollision.lib;../../tools/bullet3/lib/BulletDynamics.lib;../../tools/glfw/VClibs/glfw3.lib;../../tools/openal/libs/Win32/OpenAL32.lib;opengl32.lib;msvcrt.lib;msvcmrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Lib>
+    <ClCompile>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <Optimization>Disabled</Optimization>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Lib>
+      <AdditionalDependencies>../../tools/assimp/lib-mt/Debug/assimp-vc140-mt.lib;../../tools/freeimage/lib/Debug/FreeImaged.lib;../../tools/bullet3/lib/Bullet3Common_Debug.lib;../../tools/bullet3/lib/LinearMath_Debug.lib;../../tools/bullet3/lib/BulletCollision_Debug.lib;../../tools/bullet3/lib/BulletDynamics_Debug.lib;../../tools/glfw/VClibs/glfw3.lib;../../tools/openal/libs/Win32/OpenAL32.lib;opengl32.lib;msvcrt.lib;msvcmrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Lib>
+    <ClCompile>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <Optimization>Disabled</Optimization>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Core\AdvancedActors\BaseParticaleSystem.cpp" />
+    <ClCompile Include="..\..\Core\AdvancedActors\EnvMapProbe.cpp" />
+    <ClCompile Include="..\..\Core\AdvancedActors\PhysicalModel.cpp" />
+    <ClCompile Include="..\..\Core\BaseActors\BaseActor.cpp" />
+    <ClCompile Include="..\..\Core\BaseActors\Dynamic.cpp" />
+    <ClCompile Include="..\..\Core\BaseActors\Physical.cpp" />
+    <ClCompile Include="..\..\Core\BaseActors\Renderable.cpp" />
+    <ClCompile Include="..\..\Core\ClassesDB\ClassesDB.cpp" />
+    <ClCompile Include="..\..\Core\Common\Thread.cpp" />
+    <ClCompile Include="..\..\Core\Common\Timer.cpp" />
+    <ClCompile Include="..\..\Core\Graphics\GLRenderer.cpp" />
+    <ClCompile Include="..\..\Core\Graphics\Model3D.cpp" />
+    <ClCompile Include="..\..\Core\Graphics\MyWindow.cpp" />
+    <ClCompile Include="..\..\Core\Physics\PhysicsEngine.cpp" />
+    <ClCompile Include="..\..\Core\Scene\Camera.cpp" />
+    <ClCompile Include="..\..\Core\Scene\DirectionnalLight.cpp" />
+    <ClCompile Include="..\..\Core\Scene\GameScene.cpp" />
+    <ClCompile Include="..\..\Core\Scene\LightSource.cpp" />
+    <ClCompile Include="..\..\Core\Scene\PointLight.cpp" />
+    <ClCompile Include="..\..\Core\Scene\SpotLight.cpp" />
+    <ClCompile Include="..\..\Core\Sound\SoundEngine.cpp" />
+    <ClCompile Include="..\..\tools\glad\src\glad.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Core\AdvancedActors\AnimatedModel.h" />
+    <ClInclude Include="..\..\Core\AdvancedActors\BaseParticaleSystem.h" />
+    <ClInclude Include="..\..\Core\AdvancedActors\DataType.h" />
+    <ClInclude Include="..\..\Core\AdvancedActors\EnvMapProbe.h" />
+    <ClInclude Include="..\..\Core\AdvancedActors\PhysicalModel.h" />
+    <ClInclude Include="..\..\Core\BaseActors\BaseActor.h" />
+    <ClInclude Include="..\..\Core\BaseActors\Dynamic.h" />
+    <ClInclude Include="..\..\Core\BaseActors\Physical.h" />
+    <ClInclude Include="..\..\Core\BaseActors\Renderable.h" />
+    <ClInclude Include="..\..\Core\ClassesDB\ClassesDB.h" />
+    <ClInclude Include="..\..\Core\Common\BasePrimitiveTypes.h" />
+    <ClInclude Include="..\..\Core\Common\Math.h" />
+    <ClInclude Include="..\..\Core\Common\Common.h" />
+    <ClInclude Include="..\..\Core\Common\Thread.h" />
+    <ClInclude Include="..\..\Core\Common\Timer.h" />
+    <ClInclude Include="..\..\Core\Graphics\glHeaders.h" />
+    <ClInclude Include="..\..\Core\Graphics\GLRenderer.h" />
+    <ClInclude Include="..\..\Core\Graphics\Model3D.h" />
+    <ClInclude Include="..\..\Core\Graphics\MyWindow.h" />
+    <ClInclude Include="..\..\Core\Graphics\utils.h" />
+    <ClInclude Include="..\..\Core\Input\InputHandler.h" />
+    <ClInclude Include="..\..\Core\Physics\PhysicsEngine.h" />
+    <ClInclude Include="..\..\Core\Scene\Camera.h" />
+    <ClInclude Include="..\..\Core\Scene\DirectionnalLight.h" />
+    <ClInclude Include="..\..\Core\Scene\GameScene.h" />
+    <ClInclude Include="..\..\Core\Scene\LightSource.h" />
+    <ClInclude Include="..\..\Core\Scene\PointLight.h" />
+    <ClInclude Include="..\..\Core\Scene\SpotLight.h" />
+    <ClInclude Include="..\..\Core\Sound\SoundEngine.h" />
+    <ClInclude Include="..\..\tools\glad\include\glad.h" />
+    <ClInclude Include="..\..\tools\glad\include\khrplatform.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\Core\Graphics\utils.inl" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
