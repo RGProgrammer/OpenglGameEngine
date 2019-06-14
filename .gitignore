@@ -3,3 +3,6 @@
 *.ipch
 *.obj
 *.pdb
+*.ilk
+*.exp
+*.exe
